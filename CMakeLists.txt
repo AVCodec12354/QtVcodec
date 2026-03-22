@@ -47,14 +47,17 @@ add_executable(${PROJECT_NAME}
         codecs/bases/C2Component.cpp
         codecs/apv/enc/C2ApvEnc.cpp
         codecs/apv/dec/C2ApvDec.cpp
-        ui/mainwindow.cpp
-        ui/mainwindow.h
-        ui/mainwindow.ui
+        ui/view/mainwindow.cpp
+        ui/view/mainwindow.ui
+        ui/viewmodels/EncoderViewModel.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${openapv_lib_SOURCE_DIR}/inc
         ${CMAKE_CURRENT_SOURCE_DIR}/ui
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui/helpers
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui/view
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui/viewmodels
         ${CMAKE_CURRENT_SOURCE_DIR}/renderers
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs
         ${CMAKE_CURRENT_BINARY_DIR}

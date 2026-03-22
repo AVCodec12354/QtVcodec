@@ -1,7 +1,7 @@
 #include "oapv.h"
 #include <QApplication>
 #include <QWidget>
-#include "mainwindow.h"
+#include "../ui/view/mainwindow.h"
 
 int main(int argc, char *argv[])
 {
