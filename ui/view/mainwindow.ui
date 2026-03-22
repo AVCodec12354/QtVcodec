@@ -374,7 +374,7 @@
                 <item>
                  <layout class="QVBoxLayout" name="Action1_2">
                   <property name="spacing">
-                   <number>24</number>
+                   <number>12</number>
                   </property>
                   <item>
                    <layout class="QVBoxLayout" name="EncodinInfo_2">
@@ -532,7 +532,7 @@
                <x>0</x>
                <y>0</y>
                <width>381</width>
-               <height>1001</height>
+               <height>1003</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -1288,7 +1288,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QComboBox" name="band_4">
+                     <widget class="QComboBox" name="band_variable_2">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                         <horstretch>0</horstretch>
@@ -2512,10 +2512,10 @@
             <widget class="QWidget" name="ScrollView_Settings">
              <property name="geometry">
               <rect>
-               <x>0</x>
+               <x>-119</x>
                <y>0</y>
                <width>500</width>
-               <height>984</height>
+               <height>988</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -3338,7 +3338,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QComboBox" name="band_2">
+                     <widget class="QComboBox" name="band_variable">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                         <horstretch>0</horstretch>
@@ -3350,6 +3350,15 @@
                         <width>0</width>
                         <height>0</height>
                        </size>
+                      </property>
+                      <property name="baseSize">
+                       <size>
+                        <width>1</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="currentIndex">
+                       <number>0</number>
                       </property>
                       <item>
                        <property name="text">
@@ -3677,11 +3686,6 @@
                       </property>
                       <item>
                        <property name="text">
-                        <string>auto</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
                         <string>bt709</string>
                        </property>
                       </item>
@@ -3782,11 +3786,6 @@
                       <property name="currentText">
                        <string>auto</string>
                       </property>
-                      <item>
-                       <property name="text">
-                        <string>auto</string>
-                       </property>
-                      </item>
                       <item>
                        <property name="text">
                         <string>bt709</string>
