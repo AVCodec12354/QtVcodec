@@ -48,7 +48,7 @@
        <enum>QTabWidget::TabShape::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_decoder">
        <property name="maximumSize">
@@ -532,7 +532,7 @@
                <x>0</x>
                <y>0</y>
                <width>381</width>
-               <height>1003</height>
+               <height>1001</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -2012,7 +2012,7 @@
                  <number>100</number>
                 </property>
                 <property name="value">
-                 <number>-1</number>
+                 <number>80</number>
                 </property>
                </widget>
               </item>
@@ -2514,8 +2514,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>381</width>
-               <height>1003</height>
+               <width>500</width>
+               <height>984</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -2820,7 +2820,7 @@
                        </size>
                       </property>
                       <property name="currentIndex">
-                       <number>1</number>
+                       <number>0</number>
                       </property>
                       <property name="maxVisibleItems">
                        <number>7</number>
@@ -2909,22 +2909,32 @@
                     </property>
                     <item>
                      <property name="text">
-                      <string>BT2020</string>
+                      <string>YCbCr400</string>
                      </property>
                     </item>
                     <item>
                      <property name="text">
-                      <string>BT709</string>
+                      <string>None</string>
                      </property>
                     </item>
                     <item>
                      <property name="text">
-                      <string>BT2020</string>
+                      <string>YCbCr422</string>
                      </property>
                     </item>
                     <item>
                      <property name="text">
-                      <string>BTHLG</string>
+                      <string>YCbCr444</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr4444</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCR_PLANAR2</string>
                      </property>
                     </item>
                    </widget>
@@ -3093,22 +3103,32 @@
                       </property>
                       <item>
                        <property name="text">
-                        <string>auto</string>
+                        <string>422_10</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
+                        <string>422_12</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>11</string>
+                        <string>444_10</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>12</string>
+                        <string>444_12</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>4444_10</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>4444_12</string>
                        </property>
                       </item>
                      </widget>
@@ -3161,22 +3181,72 @@
                       </property>
                       <item>
                        <property name="text">
-                        <string>auto</string>
+                        <string>1</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
+                        <string>1.1</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>11</string>
+                        <string>2</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>12</string>
+                        <string>2.1</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>3</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>3.1</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>4</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>4.1</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>5</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>5.1</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>6</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>6.1</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>7</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>7.1</string>
                        </property>
                       </item>
                      </widget>
@@ -3224,22 +3294,22 @@
                       </property>
                       <item>
                        <property name="text">
-                        <string>1</string>
+                        <string>422_LQ</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
+                        <string>422_SQ</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>11</string>
+                        <string>422_HQ</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>12</string>
+                        <string>444_UQ</string>
                        </property>
                       </item>
                      </widget>
@@ -3283,22 +3353,22 @@
                       </property>
                       <item>
                        <property name="text">
+                        <string>0</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
                         <string>1</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
+                        <string>2</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>11</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>12</string>
+                        <string>3</string>
                        </property>
                       </item>
                      </widget>
@@ -3612,17 +3682,62 @@
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
+                        <string>bt709</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>11</string>
+                        <string>uspecified</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>12</string>
+                        <string>reserved</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt470m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt470bg</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte170m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte240m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>film</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt2020</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte4280</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte4311</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte4322</string>
                        </property>
                       </item>
                      </widget>
@@ -3674,17 +3789,87 @@
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
+                        <string>bt709</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>11</string>
+                        <string>unspecified</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>12</string>
+                        <string>bt470m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt470bg</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte170m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte240m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>linear</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>log100</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>log316</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>iec61966-2-1</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt1361e</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>iec61966-2-1</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt2020-10</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt2020-12</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte2084</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte428</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>hybrid log-gamma</string>
                        </property>
                       </item>
                      </widget>
@@ -3731,29 +3916,79 @@
                        </size>
                       </property>
                       <property name="currentText">
-                       <string>auto</string>
+                       <string>gbr</string>
                       </property>
                       <property name="currentIndex">
                        <number>0</number>
                       </property>
                       <item>
                        <property name="text">
-                        <string>auto</string>
+                        <string>gbr</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
+                        <string>bt709</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>11</string>
+                        <string>unspecified</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>12</string>
+                        <string>fcc</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt470bg</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte170m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte240m</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>ycgco</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt2020nc</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>bt2020c</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>smpte2085</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>chroma-derived-nc</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>chroma-derived-c</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>ictcp</string>
                        </property>
                       </item>
                      </widget>
@@ -3796,26 +4031,16 @@
                        </size>
                       </property>
                       <property name="currentText">
-                       <string>auto</string>
+                       <string>limited</string>
                       </property>
                       <item>
                        <property name="text">
-                        <string>auto</string>
+                        <string>limited</string>
                        </property>
                       </item>
                       <item>
                        <property name="text">
-                        <string>10</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>11</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>12</string>
+                        <string>full</string>
                        </property>
                       </item>
                      </widget>
