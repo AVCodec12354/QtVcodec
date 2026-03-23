@@ -7,6 +7,10 @@ QTextBrowser* QTLogger::m_browser = nullptr;
 
 void QTLogger::setOutput(QTextBrowser* browser) {
     m_browser = browser;
+
+    if (m_browser) {
+        m_browser->document()->setMaximumBlockCount(1000);
+    }
 }
 
 QString QTLogger::levelToString(Level level) {

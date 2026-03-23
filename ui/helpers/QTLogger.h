@@ -3,6 +3,7 @@
 
 #include <QTextBrowser>
 #include <QTime>
+#include <QTextDocument>
 
 #pragma once
 #include <QString>
