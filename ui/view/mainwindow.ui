@@ -12,8 +12,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1615</width>
-    <height>1086</height>
+    <width>2028</width>
+    <height>1129</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -531,8 +531,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>381</width>
-               <height>1003</height>
+               <width>484</width>
+               <height>1046</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -2012,7 +2012,7 @@
                  <number>100</number>
                 </property>
                 <property name="value">
-                 <number>80</number>
+                 <number>0</number>
                 </property>
                </widget>
               </item>
@@ -2037,7 +2037,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>80 %</string>
+                 <string>0 %</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -2106,6 +2106,9 @@
                     </property>
                     <item>
                      <widget class="QLineEdit" name="input_path">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                         <horstretch>0</horstretch>
@@ -2129,11 +2132,20 @@
                         <pointsize>18</pointsize>
                        </font>
                       </property>
+                      <property name="inputMethodHints">
+                       <set>Qt::InputMethodHint::ImhNone</set>
+                      </property>
                       <property name="text">
-                       <string>C:/videos/input.yuv</string>
+                       <string/>
                       </property>
                       <property name="dragEnabled">
                        <bool>true</bool>
+                      </property>
+                      <property name="readOnly">
+                       <bool>true</bool>
+                      </property>
+                      <property name="placeholderText">
+                       <string>Select input file...</string>
                       </property>
                      </widget>
                     </item>
@@ -2197,6 +2209,9 @@
                     </property>
                     <item>
                      <widget class="QLineEdit" name="output_path">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                         <horstretch>0</horstretch>
@@ -2221,10 +2236,16 @@
                        </font>
                       </property>
                       <property name="text">
-                       <string>C:/videos/output.bin</string>
+                       <string/>
                       </property>
                       <property name="dragEnabled">
                        <bool>true</bool>
+                      </property>
+                      <property name="readOnly">
+                       <bool>true</bool>
+                      </property>
+                      <property name="placeholderText">
+                       <string>Select output folder</string>
                       </property>
                      </widget>
                     </item>
@@ -2288,6 +2309,9 @@
                     </property>
                     <item>
                      <widget class="QLineEdit" name="reconstructed_path">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                         <horstretch>0</horstretch>
@@ -2312,10 +2336,16 @@
                        </font>
                       </property>
                       <property name="text">
-                       <string>C:/videos/reconstructed.yuv</string>
+                       <string/>
                       </property>
                       <property name="dragEnabled">
                        <bool>true</bool>
+                      </property>
+                      <property name="readOnly">
+                       <bool>true</bool>
+                      </property>
+                      <property name="placeholderText">
+                       <string>Select recontructed folder</string>
                       </property>
                      </widget>
                     </item>
@@ -2377,7 +2407,7 @@
                        </font>
                       </property>
                       <property name="text">
-                       <string>Frames: 1250/1920</string>
+                       <string>Frames: 0/0</string>
                       </property>
                      </widget>
                     </item>
@@ -2397,7 +2427,7 @@
                        </font>
                       </property>
                       <property name="text">
-                       <string>Time Encoding: 00:01:25</string>
+                       <string>Time Encoding: 00:00:00</string>
                       </property>
                      </widget>
                     </item>
@@ -2492,7 +2522,11 @@
                </layout>
               </item>
               <item>
-               <widget class="QTextBrowser" name="text_show_log"/>
+               <widget class="QTextBrowser" name="text_show_log">
+                <property name="placeholderText">
+                 <string>Log will print here.</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -2512,10 +2546,10 @@
             <widget class="QWidget" name="ScrollView_Settings">
              <property name="geometry">
               <rect>
-               <x>-119</x>
+               <x>-16</x>
                <y>0</y>
                <width>500</width>
-               <height>988</height>
+               <height>1031</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -2641,14 +2675,20 @@
                       <property name="autoFillBackground">
                        <bool>false</bool>
                       </property>
+                      <property name="inputMethodHints">
+                       <set>Qt::InputMethodHint::ImhNone</set>
+                      </property>
                       <property name="text">
-                       <string>1920</string>
+                       <string/>
                       </property>
                       <property name="frame">
                        <bool>true</bool>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>1920</string>
                       </property>
                       <property name="clearButtonEnabled">
                        <bool>false</bool>
@@ -2698,11 +2738,20 @@
                         <height>16777215</height>
                        </size>
                       </property>
+                      <property name="mouseTracking">
+                       <bool>true</bool>
+                      </property>
+                      <property name="inputMethodHints">
+                       <set>Qt::InputMethodHint::ImhNone</set>
+                      </property>
                       <property name="text">
-                       <string>1080</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>1080</string>
                       </property>
                       <property name="clearButtonEnabled">
                        <bool>false</bool>
@@ -2762,14 +2811,20 @@
                       <property name="toolTip">
                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                       </property>
+                      <property name="inputMethodHints">
+                       <set>Qt::InputMethodHint::ImhNone</set>
+                      </property>
                       <property name="text">
-                       <string>30</string>
+                       <string/>
                       </property>
                       <property name="cursorPosition">
-                       <number>2</number>
+                       <number>0</number>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>30</string>
                       </property>
                       <property name="cursorMoveStyle">
                        <enum>Qt::CursorMoveStyle::LogicalMoveStyle</enum>
@@ -3047,7 +3102,7 @@
                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                       </property>
                       <property name="text">
-                       <string>25</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -3444,10 +3499,13 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>25</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>25</string>
                       </property>
                      </widget>
                     </item>
@@ -3489,10 +3547,13 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>25</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>25</string>
                       </property>
                      </widget>
                     </item>
@@ -3544,10 +3605,13 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>25</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>25</string>
                       </property>
                      </widget>
                     </item>
@@ -3610,10 +3674,13 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>25</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>25</string>
                       </property>
                      </widget>
                     </item>
@@ -3679,7 +3746,7 @@
                        </size>
                       </property>
                       <property name="currentText">
-                       <string>auto</string>
+                       <string>bt709</string>
                       </property>
                       <property name="minimumContentsLength">
                        <number>0</number>
@@ -3784,7 +3851,7 @@
                        </size>
                       </property>
                       <property name="currentText">
-                       <string>auto</string>
+                       <string>bt709</string>
                       </property>
                       <item>
                        <property name="text">
@@ -4086,10 +4153,13 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>1000</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>1000</string>
                       </property>
                      </widget>
                     </item>
@@ -4143,10 +4213,13 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>0</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                      <property name="placeholderText">
+                       <string>0</string>
                       </property>
                      </widget>
                     </item>

@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFileDialog>
+#include <QRegularExpressionValidator>
+
 #include "EncoderViewModel.h"
 
 QT_BEGIN_NAMESPACE
@@ -18,9 +21,12 @@ public:
 
     void connectToDecoderUI(MainWindow* window);
     void connectToEncoderUI(MainWindow* window);
+    void setValidatorForEditText();
 
 private:
     Ui::MainWindow *ui;
+    QString lastInputDir, lastOutputDir, lastReconstructedDir;
+
     std::shared_ptr<EncoderViewModel> encoderViewModel;
 };
 

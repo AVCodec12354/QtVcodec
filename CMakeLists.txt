@@ -50,6 +50,7 @@ add_executable(${PROJECT_NAME}
         ui/view/mainwindow.cpp
         ui/view/mainwindow.ui
         ui/viewmodels/EncoderViewModel.cpp
+        ui/helpers/QTLogger.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
