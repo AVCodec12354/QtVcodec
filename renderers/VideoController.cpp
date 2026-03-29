@@ -16,21 +16,26 @@ VideoController::~VideoController() {
 
 bool VideoController::loadVideo(const QString &filePath) {
     m_extractor->setFile(filePath.toStdString());
-    m_widget->resize(m_extractor->getY4MParam().w, m_extractor->getY4MParam().h);
     return true;
 }
 
 void VideoController::play() {
+    QTDebug("VideoController", "Play video");
     if (!m_timer->isActive()) {
-        m_timer->start(33);
+        int num = m_extractor->getY4MParam().fps_num;
+        int den = m_extractor->getY4MParam().fps_den;
+        int fps = num / den;
+        m_timer->start(fps);
     }
 }
 
 void VideoController::pause() {
+    QTDebug("VideoController", "Pause video");
     m_timer->stop();
 }
 
 void VideoController::stop() {
+    QTDebug("VideoController", "Stopped video");
     m_timer->stop();
     // RESET UI
 }
@@ -63,6 +68,6 @@ void VideoController::onTimerTick() {
         imgb_release(buffer);
         // update UI during display
     } else {
-        m_timer->stop();
+        stop();
     }
 }

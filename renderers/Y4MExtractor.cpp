@@ -28,9 +28,11 @@ void Y4MExtractor::updateY4MParams() {
 }
 
 oapv_imgb_t* Y4MExtractor::getBuffer() {
-    updateY4MParams();
-    oapv_imgb_t *buffer = new oapv_imgb_t();
-    buffer = imgb_create(y4m_params.w, y4m_params.h, OAPV_CS_YCBCR422_10LE);
-    imgb_read(file, buffer, y4m_params.w, y4m_params.h, true);
+    oapv_imgb_t *buffer = imgb_create(y4m_params.w, y4m_params.h, OAPV_CS_SET(y4m_params.color_format, y4m_params.bit_depth, 0));
+    if (imgb_read(file, buffer, y4m_params.w, y4m_params.h, true) == -1) {
+        QTInfo("Y4MExtractor", "Error reading Y4M file");
+        imgb_release(buffer);
+        return nullptr;
+    }
     return buffer;
 }

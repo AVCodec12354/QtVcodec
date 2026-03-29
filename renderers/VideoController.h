@@ -6,6 +6,7 @@
 #include <QString>
 #include "Y4MExtractor.h"
 #include "VideoGLWidget.h"
+#include "QTLogger.h"
 
 class VideoController : public QObject {
     Q_OBJECT
