@@ -28,8 +28,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
+
 #ifndef _OAPV_APP_Y4M_H_
 #define _OAPV_APP_Y4M_H_
+
+#include <oapv.h>
+#include "oapv_app_util.h"
+#include "oapv_app_args.h"
 
 typedef struct y4m_params {
     int w;
@@ -180,7 +186,7 @@ static int y4m_parse_tags(y4m_params_t *y4m, char *tags)
     return OAPV_OK;
 }
 
-int y4m_header_parser(FILE *ip_y4m, y4m_params_t *y4m)
+static int y4m_header_parser(FILE *ip_y4m, y4m_params_t *y4m)
 {
     const int head_size = 128;
     char      buffer[128];

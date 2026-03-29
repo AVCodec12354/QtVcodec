@@ -62,6 +62,7 @@ void VideoGLWidget::paintGL() {
     if (mData.isEmpty() || mWidth <= 0 || mHeight <=0) return;
 
     mProgram.bind();
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     const unsigned short* pData = (const unsigned short*)mData.data();
 
     // 4:2:2 10-bit: Y là W*H, U và V là (W/2)*H

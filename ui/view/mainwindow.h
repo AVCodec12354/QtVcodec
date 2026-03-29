@@ -6,6 +6,7 @@
 #include <QRegularExpressionValidator>
 
 #include "EncoderViewModel.h"
+#include "VideoController.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +26,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    VideoController *videoController;
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 
     std::shared_ptr<EncoderViewModel> encoderViewModel;

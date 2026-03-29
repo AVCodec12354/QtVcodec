@@ -65,12 +65,28 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
     });
     connect(ui->btn_start, &QPushButton::clicked, window, [this](){
         encoderViewModel->start();
+
+        videoController = new VideoController(this);
+        if (!ui->openGLWidget->layout()) {
+            QVBoxLayout *layout = new QVBoxLayout(ui->openGLWidget);
+            layout->setContentsMargins(0, 0, 0, 0); // Remove margins so video fills the space
+            ui->openGLWidget->setLayout(layout);
+        }
+        ui->openGLWidget->layout()->addWidget(videoController->getVideoWidget());
+        if (!ui->input_path->text().isEmpty()) {
+            videoController->loadVideo(ui->input_path->text());
+            videoController->play();
+            QTInfo("Encoder", "Start encoding...");
+        } else {
+            QTError("Encoder", "Input path is empty!");
+        }
     });
     connect(ui->btn_save_config, &QPushButton::clicked, window, [this](){
         QTDebug("Encoder", "btn_save_config clicked!");
     });
     connect(ui->btn_stop, &QPushButton::clicked, window, [this](){
         encoderViewModel->stop();
+        videoController->stop();
     });
     connect(ui->btn_reset, &QPushButton::clicked, window, [this](){
         QTDebug("Encoder", "btn_reset clicked!");
