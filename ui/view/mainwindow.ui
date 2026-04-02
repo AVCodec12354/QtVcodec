@@ -1971,8 +1971,11 @@
             </property>
             <item>
              <layout class="QVBoxLayout" name="GLFrameLayout">
-              <item>
-               <widget class="QOpenGLWidget" name="openGLWidget">
+              <property name="sizeConstraint">
+               <enum>QLayout::SizeConstraint::SetFixedSize</enum>
+              </property>
+              <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+               <widget class="VideoGLWidget" name="openGLWidget">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -2546,7 +2549,7 @@
             <widget class="QWidget" name="ScrollView_Settings">
              <property name="geometry">
               <rect>
-               <x>-16</x>
+               <x>0</x>
                <y>0</y>
                <width>500</width>
                <height>1031</height>
@@ -4242,6 +4245,13 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VideoGLWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>VideoGLWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

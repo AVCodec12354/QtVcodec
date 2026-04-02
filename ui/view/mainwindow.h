@@ -12,17 +12,15 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow, public VideoController::Listener {
     Q_OBJECT
-
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void connectToDecoderUI(MainWindow* window);
-    void connectToEncoderUI(MainWindow* window);
-    void setValidatorForEditText();
+protected:
+    void onPlaying(long currentFrame, long totalFrame) override;
+    void onFinished() override;
 
 private:
     Ui::MainWindow *ui;
@@ -30,6 +28,11 @@ private:
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 
     std::shared_ptr<EncoderViewModel> encoderViewModel;
+
+    void resetUI();
+    void setValidatorForEditText();
+    void connectToDecoderUI(MainWindow* window);
+    void connectToEncoderUI(MainWindow* window);
 };
 
 #endif // MAINWINDOW_H

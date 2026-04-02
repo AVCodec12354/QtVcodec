@@ -10,6 +10,28 @@ MainWindow::MainWindow(QWidget *parent)
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
+
+    ui->progressBar->setValue(0);
+    ui->percent_on_progressBar->setText("0 %");
+}
+
+void MainWindow::onPlaying(long currentFrame, long totalFrame) {
+    if (videoController) {
+        int progress = static_cast<int>((currentFrame * 100) / totalFrame);
+        ui->progressBar->setValue(progress);
+        ui->percent_on_progressBar->setText(QString::number(progress) + " %");
+    }
+}
+
+void MainWindow::onFinished() {
+    ui->progressBar->setValue(0);
+    ui->btn_start->setEnabled(true);
+    ui->btn_stop->setEnabled(false);
+    QTInfo("Encoder", "Playback/Encoding finished.");
+}
+
+void MainWindow::resetUI() {
+    // TODO: Reset UI
 }
 
 void MainWindow::connectToDecoderUI(MainWindow* window) {
@@ -64,16 +86,14 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         }
     });
     connect(ui->btn_start, &QPushButton::clicked, window, [this](){
-        encoderViewModel->start();
-
-        videoController = new VideoController(this);
-        if (!ui->openGLWidget->layout()) {
-            QVBoxLayout *layout = new QVBoxLayout(ui->openGLWidget);
-            layout->setContentsMargins(0, 0, 0, 0); // Remove margins so video fills the space
-            ui->openGLWidget->setLayout(layout);
-        }
-        ui->openGLWidget->layout()->addWidget(videoController->getVideoWidget());
         if (!ui->input_path->text().isEmpty()) {
+            encoderViewModel->start();
+            ui->btn_start->setEnabled(false);
+            ui->btn_stop->setEnabled(true);
+
+            videoController = new VideoController(this, ui->openGLWidget);
+            videoController->setListener(this);
+
             videoController->loadVideo(ui->input_path->text());
             videoController->play();
             QTInfo("Encoder", "Start encoding...");

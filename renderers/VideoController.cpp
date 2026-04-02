@@ -1,25 +1,48 @@
 #include "VideoController.h"
 
-VideoController::VideoController(QObject *parent)
+VideoController::VideoController(QObject *parent, VideoGLWidget *glWidget)
         : QObject(parent) {
-    m_widget = new VideoGLWidget();
+    m_widget = glWidget;
     m_extractor = new Y4MExtractor();
+    if (m_widget) {
+        m_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    }
+
     m_timer = new QTimer(this);
     connect(m_timer, &QTimer::timeout, this, &VideoController::onTimerTick);
 }
 
 VideoController::~VideoController() {
     stop();
+    delete m_listener;
     delete m_extractor;
     delete m_timer;
 }
 
-void VideoController::setListener(Listener listener) {
-    m_listener = listener
+void VideoController::setListener(Listener *listener) {
+    m_listener = listener;
 }
 
 bool VideoController::loadVideo(const QString &filePath) {
     m_extractor->setFile(filePath.toStdString());
+    auto params = m_extractor->getY4MParam();
+    int vW = params.w;
+    int vH = params.h;
+
+    if (m_widget && vW > 0 && vH > 0) {
+        const int MAX_LAYOUT_W = 1280;
+        const int MAX_LAYOUT_H = 720;
+
+        float ratioW = (float) MAX_LAYOUT_W / vW;
+        float ratioH = (float) MAX_LAYOUT_H / vH;
+        float scale = qMin(1.0f, qMin(ratioW, ratioH));
+
+        int finalW = static_cast<int>(vW * scale);
+        int finalH = static_cast<int>(vH * scale);
+
+        m_widget->setFixedSize(finalW, finalH);
+        m_widget->updateGeometry();
+    }
     return true;
 }
 
@@ -29,7 +52,8 @@ void VideoController::play() {
         int num = m_extractor->getY4MParam().fps_num;
         int den = m_extractor->getY4MParam().fps_den;
         int fps = num / den;
-        m_timer->start(fps);
+        int time = 1000 / fps;
+        m_timer->start(time);
     }
 }
 
@@ -40,8 +64,9 @@ void VideoController::pause() {
 
 void VideoController::stop() {
     QTDebug("VideoController", "Stopped video");
+    m_currentFrame = 0;
     m_timer->stop();
-    m_listener.onFinished();
+    if (m_listener) m_listener->onFinished();
 }
 
 void VideoController::onTimerTick() {
@@ -70,7 +95,7 @@ void VideoController::onTimerTick() {
         }
         m_widget->setFrameData(frameData, buffer->w[0], buffer->h[0]);
         imgb_release(buffer);
-        m_listener.onPlaying();
+        if (m_listener) m_listener->onPlaying(m_currentFrame++, m_extractor->getTotalFrame());
     } else {
         stop();
     }
