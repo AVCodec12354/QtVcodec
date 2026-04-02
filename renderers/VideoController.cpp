@@ -93,7 +93,10 @@ void VideoController::onTimerTick() {
         }
         m_widget->setFrameData(frameData, buffer->w[0], buffer->h[0]);
         imgb_release(buffer);
-        if (m_listener) m_listener->onPlaying(m_currentFrame++, m_extractor->getTotalFrame());
+        if (m_listener) {
+            QTDebug("VideoController", "Current frame: " + QString::number(m_currentFrame) + ", Total frame: " + QString::number(m_extractor->getTotalFrame()));
+            m_listener->onPlaying(m_currentFrame++, m_extractor->getTotalFrame());
+        }
     } else {
         stop();
     }

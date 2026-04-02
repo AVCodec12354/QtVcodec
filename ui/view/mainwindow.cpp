@@ -10,21 +10,25 @@ MainWindow::MainWindow(QWidget *parent)
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
+    videoController = new VideoController(this, ui->openGLWidget);
+    videoController->setListener(this);
 
     ui->progressBar->setValue(0);
     ui->percent_on_progressBar->setText("0 %");
+    ui->input_path->setText("/Volumes/D/Projects/pattern1_yuv422p10le_320x240_25fps.y4m");
 }
 
 void MainWindow::onPlaying(long currentFrame, long totalFrame) {
     if (videoController) {
         int progress = static_cast<int>((currentFrame * 100) / totalFrame);
         ui->progressBar->setValue(progress);
-        ui->percent_on_progressBar->setText(QString::number(progress) + " %");
+        ui->percent_on_progressBar->setText(QString::number(progress) + "%");
     }
 }
 
 void MainWindow::onFinished() {
     ui->progressBar->setValue(0);
+    ui->percent_on_progressBar->setText("0%");
     ui->btn_start->setEnabled(true);
     ui->btn_stop->setEnabled(false);
     QTInfo("Encoder", "Playback/Encoding finished.");
@@ -90,9 +94,6 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
             encoderViewModel->start();
             ui->btn_start->setEnabled(false);
             ui->btn_stop->setEnabled(true);
-
-            videoController = new VideoController(this, ui->openGLWidget);
-            videoController->setListener(this);
 
             videoController->loadVideo(ui->input_path->text());
             videoController->play();

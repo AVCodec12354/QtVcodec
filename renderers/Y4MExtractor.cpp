@@ -8,10 +8,10 @@ void Y4MExtractor::setFile(std::string filePath) {
     fileSize = ftell(file);
     QTInfo("Y4MExtractor", "File size: " + std::to_string(fileSize));
     updateY4MParams();
-    m_total_frame = getTotalFrame();
+    m_total_frame = calculateTotalFrame();
 }
 
-int Y4MExtractor::calculateTotalFrame() {
+long Y4MExtractor::calculateTotalFrame() {
     double pixelMultiplier = 0;
     switch (y4m_params.color_format) {
         case OAPV_CF_YCBCR400: // Chỉ có kênh Y
@@ -36,14 +36,14 @@ int Y4MExtractor::calculateTotalFrame() {
     }
     int bytesPerPixel = (y4m_params.bit_depth > 8) ? 2 : 1;
     long frameDataSize = (long)(y4m_params.w * y4m_params.h * pixelMultiplier * bytesPerPixel);
-
     long totalSizePerFrame = frameDataSize + 6; // 6 bytes for "FRAME\n"
-    long remainingSize = fileSize - ftell(file); // Call after read Y4M Header - updateY4MParams()
-    return (int)(remainingSize / totalSizePerFrame);
+    long currentPos = ftell(file);
+    long remainingSize = fileSize - currentPos; // Call after read Y4M Header - updateY4MParams()
+    return remainingSize / totalSizePerFrame;
 }
 
 bool Y4MExtractor::isHeaderExists() {
-    if (file == nullptr) { return false; }\
+    if (file == nullptr) { return false; }
     fseek(file, 0, SEEK_SET);
     return (y4m_test(file) == 1);
 }

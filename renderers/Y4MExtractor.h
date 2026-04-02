@@ -19,7 +19,7 @@ public:
 
     void setFile(std::string filePath);
     oapv_imgb_t* getBuffer();
-    int getTotalFrame() { return m_total_frame; }
+    long getTotalFrame() { return m_total_frame; }
     y4m_params_t getY4MParam() { return y4m_params; }
 
 private:
@@ -30,7 +30,7 @@ private:
 
     void updateY4MParams();
     bool isHeaderExists();
-    int calculateTotalFrame();
+    long calculateTotalFrame();
 };
 
 #endif // Y4MEXTRACTOR_H
