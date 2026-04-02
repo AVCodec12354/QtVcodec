@@ -14,6 +14,10 @@ VideoController::~VideoController() {
     delete m_timer;
 }
 
+void VideoController::setListener(Listener listener) {
+    m_listener = listener
+}
+
 bool VideoController::loadVideo(const QString &filePath) {
     m_extractor->setFile(filePath.toStdString());
     return true;
@@ -37,7 +41,7 @@ void VideoController::pause() {
 void VideoController::stop() {
     QTDebug("VideoController", "Stopped video");
     m_timer->stop();
-    // RESET UI
+    m_listener.onFinished();
 }
 
 void VideoController::onTimerTick() {
@@ -66,7 +70,7 @@ void VideoController::onTimerTick() {
         }
         m_widget->setFrameData(frameData, buffer->w[0], buffer->h[0]);
         imgb_release(buffer);
-        // update UI during display
+        m_listener.onPlaying();
     } else {
         stop();
     }

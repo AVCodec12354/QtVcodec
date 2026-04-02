@@ -11,11 +11,17 @@
 class VideoController : public QObject {
     Q_OBJECT
 public:
+    class Listener {
+        void onPlaying();
+        void onFinished();
+    };
+
     explicit VideoController(QObject *parent = nullptr);
     ~VideoController();
 
     VideoGLWidget* getVideoWidget() const { return m_widget; }
 
+    void setListener(Listener listener);
     bool loadVideo(const QString &filePath);
     void play();
     void pause();
@@ -25,6 +31,7 @@ private slots:
             void onTimerTick();
 
 private:
+    Listener m_listener;
     VideoGLWidget *m_widget;
     Y4MExtractor *m_extractor;
     QTimer *m_timer;
