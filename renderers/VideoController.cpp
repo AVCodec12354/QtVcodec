@@ -4,10 +4,6 @@ VideoController::VideoController(QObject *parent, VideoGLWidget *glWidget)
         : QObject(parent) {
     m_widget = glWidget;
     m_extractor = new Y4MExtractor();
-    if (m_widget) {
-        m_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    }
-
     m_timer = new QTimer(this);
     connect(m_timer, &QTimer::timeout, this, &VideoController::onTimerTick);
 }
@@ -30,6 +26,8 @@ bool VideoController::loadVideo(const QString &filePath) {
     int vH = params.h;
 
     if (m_widget && vW > 0 && vH > 0) {
+        m_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
         const int MAX_LAYOUT_W = 1280;
         const int MAX_LAYOUT_H = 720;
 
