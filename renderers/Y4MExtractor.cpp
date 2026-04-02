@@ -36,10 +36,9 @@ long Y4MExtractor::calculateTotalFrame() {
     }
     int bytesPerPixel = (y4m_params.bit_depth > 8) ? 2 : 1;
     long frameDataSize = (long)(y4m_params.w * y4m_params.h * pixelMultiplier * bytesPerPixel);
-    long totalSizePerFrame = frameDataSize + 6; // 6 bytes for "FRAME\n"
-    long currentPos = ftell(file);
-    long remainingSize = fileSize - currentPos; // Call after read Y4M Header - updateY4MParams()
-    return remainingSize / totalSizePerFrame;
+    long afterHeaderPosition = ftell(file); // to get size of header => Call after read Y4M Header - updateY4MParams()
+    long remainingSize = fileSize - afterHeaderPosition - 6; // 6 bytes for "FRAME\n"
+    return remainingSize / frameDataSize;
 }
 
 bool Y4MExtractor::isHeaderExists() {
