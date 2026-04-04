@@ -1,13 +1,26 @@
 #include"VideoGLWidget.h"
 
 VideoGLWidget::~VideoGLWidget() {
-
+    makeCurrent();
+    glDeleteTextures(3, mTextures);
+    doneCurrent();
 }
 
-void VideoGLWidget::setFrameData(const QByteArray &data, int w, int h) {
-    mData = data;
-    mWidth = w;
-    mHeight = h;
+void VideoGLWidget::setFrameData(oapv_imgb_t* buffer) {
+    if (!buffer) return;
+    QMutexLocker locker(&mMutex);
+
+    if (mBuffer && mBuffer->release) {
+        mBuffer->release(mBuffer);
+    }
+    mBuffer = buffer;
+    if (mBuffer->addref) {
+        mBuffer->addref(mBuffer);
+    }
+
+    mWidth = buffer->w[0];
+    mHeight = buffer->h[0];
+    locker.unlock();
     update();
 }
 void VideoGLWidget::initializeGL() {
@@ -59,19 +72,18 @@ void VideoGLWidget::initializeGL() {
     }
 }
 void VideoGLWidget::paintGL() {
-    if (mData.isEmpty() || mWidth <= 0 || mHeight <=0) return;
-
+    QMutexLocker locker(&mMutex);
+    if (mBuffer == nullptr || mWidth <= 0 || mHeight <=0) return;
     mProgram.bind();
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    const unsigned short* pData = (const unsigned short*)mData.data();
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    // 4:2:2 10-bit: Y là W*H, U và V là (W/2)*H
-    int y_size = mWidth * mHeight;
-    int uv_size = (mWidth / 2) * mHeight;
-
-    renderPlane(0, pData, mWidth, mHeight);                        // Y
-    renderPlane(1, pData + y_size, mWidth / 2, mHeight);           // U
-    renderPlane(2, pData + y_size + uv_size, mWidth / 2, mHeight);  // V
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, mBuffer->s[0] / 2);
+    renderPlane(0, (const unsigned short *) mBuffer->a[0], mWidth, mHeight);        // Y
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, mBuffer->s[1] / 2);
+    renderPlane(1, (const unsigned short *) mBuffer->a[1], mWidth / 2, mHeight);    // U
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, mBuffer->s[2] / 2);
+    renderPlane(2, (const unsigned short *) mBuffer->a[2], mWidth / 2, mHeight);    // V
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
     static const GLfloat vertices[] = { -1,1, 1,1, -1,-1, 1,-1 };
     static const GLfloat texCoords[] = { 0,0, 1,0, 0,1, 1,1 };
