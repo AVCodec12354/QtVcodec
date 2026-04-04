@@ -99,8 +99,8 @@ void VideoRenderer::onTimerTick() {
         } else {
             QTError("VideoRenderer", "Widget is null");
         }
+        imgb_release(buffer);
     } else {
         stop();
     }
-    imgb_release(buffer);
 }
