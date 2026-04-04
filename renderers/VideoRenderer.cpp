@@ -1,25 +1,25 @@
-#include "VideoController.h"
+#include "VideoRenderer.h"
 
 const int MAX_LAYOUT_W = 1280;
 const int MAX_LAYOUT_H = 720;
 
-VideoController::VideoController(VideoGLWidget *glWidget, QObject *parent)
+VideoRenderer::VideoRenderer(VideoGLWidget *glWidget, QObject *parent)
         : QObject(parent)
         , mExtractor(std::make_unique<Y4MExtractor>())
         , mTimer(std::make_unique<QTimer>()) {
     mWidget = glWidget;
-    connect(mTimer.get(), &QTimer::timeout, this, &VideoController::onTimerTick);
+    connect(mTimer.get(), &QTimer::timeout, this, &VideoRenderer::onTimerTick);
 }
 
-VideoController::~VideoController() {
+VideoRenderer::~VideoRenderer() {
     stop();
 }
 
-void VideoController::setListener(Listener *listener) {
+void VideoRenderer::setListener(Listener *listener) {
     mListener = listener;
 }
 
-bool VideoController::loadVideo(const QString &filePath) {
+bool VideoRenderer::loadVideo(const QString &filePath) {
     mExtractor->setFile(filePath.toStdString());
     auto params = mExtractor->getY4MParam();
     int vW = params.w;
@@ -41,8 +41,8 @@ bool VideoController::loadVideo(const QString &filePath) {
     return true;
 }
 
-void VideoController::play() {
-    QTDebug("VideoController", "Play video");
+void VideoRenderer::play() {
+    QTDebug("VideoRenderer", "Play video");
     if (!mTimer->isActive()) {
         int num = mExtractor->getY4MParam().fps_num;
         int den = mExtractor->getY4MParam().fps_den;
@@ -52,19 +52,19 @@ void VideoController::play() {
     }
 }
 
-void VideoController::pause() {
-    QTDebug("VideoController", "Pause video");
+void VideoRenderer::pause() {
+    QTDebug("VideoRenderer", "Pause video");
     mTimer->stop();
 }
 
-void VideoController::stop() {
-    QTDebug("VideoController", "Stopped video");
+void VideoRenderer::stop() {
+    QTDebug("VideoRenderer", "Stopped video");
     mCurrentFrame = 0;
     mTimer->stop();
     if (mListener) mListener->onFinished();
 }
 
-void VideoController::onTimerTick() {
+void VideoRenderer::onTimerTick() {
     oapv_imgb_t* buffer = mExtractor->getBuffer();
     if (buffer != nullptr) {
         int totalSize = 0;
@@ -92,12 +92,12 @@ void VideoController::onTimerTick() {
             mWidget->setFrameData(frameData, buffer->w[0], buffer->h[0]);
 
             if (mListener) {
-                QTDebug("VideoController", "Current frame: " + QString::number(mCurrentFrame) +
+                QTDebug("VideoRenderer", "Current frame: " + QString::number(mCurrentFrame) +
                                            ", Total frame: " + QString::number(mExtractor->getTotalFrame()));
                 mListener->onPlaying(mCurrentFrame++, mExtractor->getTotalFrame());
             }
         } else {
-            QTError("VideoController", "Widget is null");
+            QTError("VideoRenderer", "Widget is null");
         }
     } else {
         stop();

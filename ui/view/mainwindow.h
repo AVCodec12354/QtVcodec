@@ -7,13 +7,13 @@
 
 #include <iostream>
 #include "EncoderViewModel.h"
-#include "VideoController.h"
+#include "VideoRenderer.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow, public VideoController::Listener {
+class MainWindow : public QMainWindow, public VideoRenderer::Listener {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -27,7 +27,7 @@ private:
     std::unique_ptr<Ui::MainWindow> ui;
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 
-    std::unique_ptr<VideoController> videoController;
+    std::unique_ptr<VideoRenderer> videoRenderer;
     std::unique_ptr<EncoderViewModel> encoderViewModel;
 
     void resetUI();

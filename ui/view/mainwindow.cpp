@@ -8,11 +8,11 @@ MainWindow::MainWindow(QWidget *parent)
         , encoderViewModel(std::make_unique<EncoderViewModel>())
 {
     ui->setupUi(this);
-    videoController = std::make_unique<VideoController>(ui->openGLWidget);
+    videoRenderer = std::make_unique<VideoRenderer>(ui->openGLWidget);
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
-    videoController->setListener(this);
+    videoRenderer->setListener(this);
 
     ui->progressBar->setValue(0);
     ui->percent_on_progressBar->setText("0 %");
@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::onPlaying(long currentFrame, long totalFrame) {
-    if (videoController) {
+    if (videoRenderer) {
         int progress = static_cast<int>((currentFrame * 100) / totalFrame);
         ui->progressBar->setValue(progress);
         ui->percent_on_progressBar->setText(QString::number(progress) + "%");
@@ -94,8 +94,8 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
             ui->btn_start->setEnabled(false);
             ui->btn_stop->setEnabled(true);
 
-            videoController->loadVideo(ui->input_path->text());
-            videoController->play();
+            videoRenderer->loadVideo(ui->input_path->text());
+            videoRenderer->play();
             QTInfo("Encoder", "Start encoding...");
         } else {
             QTError("Encoder", "Input path is empty!");
@@ -106,7 +106,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
     });
     connect(ui->btn_stop, &QPushButton::clicked, window, [this](){
         encoderViewModel->stop();
-        videoController->stop();
+        videoRenderer->stop();
     });
     connect(ui->btn_reset, &QPushButton::clicked, window, [this](){
         QTDebug("Encoder", "btn_reset clicked!");

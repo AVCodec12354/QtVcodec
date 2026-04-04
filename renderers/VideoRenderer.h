@@ -1,5 +1,5 @@
-#ifndef VIDEOCONTROLLER_H
-#define VIDEOCONTROLLER_H
+#ifndef VideoRenderer_H
+#define VideoRenderer_H
 
 #include <QObject>
 #include <QTimer>
@@ -8,7 +8,7 @@
 #include "VideoGLWidget.h"
 #include "QTLogger.h"
 
-class VideoController : public QObject {
+class VideoRenderer : public QObject {
     Q_OBJECT
 public:
     class Listener {
@@ -18,8 +18,8 @@ public:
         virtual void onFinished() = 0;
     };
 
-    explicit VideoController(VideoGLWidget *glWidget, QObject *parent = nullptr);
-    ~VideoController();
+    explicit VideoRenderer(VideoGLWidget *glWidget, QObject *parent = nullptr);
+    ~VideoRenderer();
 
     void setListener(Listener *listener);
     bool loadVideo(const QString &filePath);

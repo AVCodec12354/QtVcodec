@@ -44,7 +44,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 add_executable(${PROJECT_NAME}
         src/main.cpp
         renderers/VideoGLWidget.cpp
-        renderers/VideoController.cpp
+        renderers/VideoRenderer.cpp
         renderers/Y4MExtractor.cpp
         codecs/bases/C2Component.cpp
         codecs/apv/enc/C2ApvEnc.cpp
