@@ -2,13 +2,14 @@
 #include "VideoGLWidget.h"
 
 void Y4MExtractor::setFile(std::string filePath) {
-    if (file != nullptr) { fclose(file); }
-    file = fopen(filePath.c_str(), "rb");
-    fseek(file, 0, SEEK_END);
-    fileSize = ftell(file);
-    QTInfo("Y4MExtractor", "File size: " + std::to_string(fileSize));
+    FILE* file = fopen(filePath.c_str(), "rb");
+    mFile.reset(file);
+
+    fseek(mFile.get(), 0, SEEK_END);
+    mFileSize = ftell(mFile.get());
+    QTInfo("Y4MExtractor", "File size: " + std::to_string(mFileSize));
     updateY4MParams();
-    m_total_frame = calculateTotalFrame();
+    mTotalFrame = calculateTotalFrame();
 }
 
 long Y4MExtractor::calculateTotalFrame() {
@@ -36,21 +37,21 @@ long Y4MExtractor::calculateTotalFrame() {
     }
     int bytesPerPixel = (y4m_params.bit_depth > 8) ? 2 : 1;
     long frameDataSize = (long)(y4m_params.w * y4m_params.h * pixelMultiplier * bytesPerPixel);
-    long afterHeaderPosition = ftell(file); // to get size of header => Call after read Y4M Header - updateY4MParams()
-    long remainingSize = fileSize - afterHeaderPosition - 6; // 6 bytes for "FRAME\n"
+    long afterHeaderPosition = ftell(mFile.get()); // to get size of header => Call after read Y4M Header - updateY4MParams()
+    long remainingSize = mFileSize - afterHeaderPosition - 6; // 6 bytes for "FRAME\n"
     return remainingSize / frameDataSize;
 }
 
 bool Y4MExtractor::isHeaderExists() {
-    if (file == nullptr) { return false; }
-    fseek(file, 0, SEEK_SET);
-    return (y4m_test(file) == 1);
+    if (mFile == nullptr) { return false; }
+    fseek(mFile.get(), 0, SEEK_SET);
+    return (y4m_test(mFile.get()) == 1);
 }
 
 void Y4MExtractor::updateY4MParams() {
     if (isHeaderExists()) {
-        fseek(file, 0, SEEK_SET);
-        if (y4m_header_parser(file, &y4m_params) == 0) {
+        fseek(mFile.get(), 0, SEEK_SET);
+        if (y4m_header_parser(mFile.get(), &y4m_params) == 0) {
             QTInfo("Y4MExtractor", "Got video info: " + std::to_string(y4m_params.w) + "x" +
                                    std::to_string(y4m_params.h) + ", FPS: " +
                                    std::to_string(y4m_params.fps_num) + "/" +
@@ -64,7 +65,7 @@ void Y4MExtractor::updateY4MParams() {
 
 oapv_imgb_t* Y4MExtractor::getBuffer() {
     oapv_imgb_t *buffer = imgb_create(y4m_params.w, y4m_params.h, OAPV_CS_SET(y4m_params.color_format, y4m_params.bit_depth, 0));
-    if (imgb_read(file, buffer, y4m_params.w, y4m_params.h, true) == -1) {
+    if (imgb_read(mFile.get(), buffer, y4m_params.w, y4m_params.h, true) == -1) {
         QTInfo("Y4MExtractor", "Error reading Y4M file");
         imgb_release(buffer);
         return nullptr;

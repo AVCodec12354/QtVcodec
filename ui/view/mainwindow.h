@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QRegularExpressionValidator>
 
+#include <iostream>
 #include "EncoderViewModel.h"
 #include "VideoController.h"
 
@@ -23,11 +24,11 @@ protected:
     void onFinished() override;
 
 private:
-    Ui::MainWindow *ui;
-    VideoController *videoController;
+    std::unique_ptr<Ui::MainWindow> ui;
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 
-    std::shared_ptr<EncoderViewModel> encoderViewModel;
+    std::unique_ptr<VideoController> videoController;
+    std::unique_ptr<EncoderViewModel> encoderViewModel;
 
     void resetUI();
     void setValidatorForEditText();

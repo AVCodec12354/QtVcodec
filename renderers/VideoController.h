@@ -18,10 +18,8 @@ public:
         virtual void onFinished() = 0;
     };
 
-    explicit VideoController(QObject *parent = nullptr, VideoGLWidget *glWidget = nullptr);
+    explicit VideoController(VideoGLWidget *glWidget, QObject *parent = nullptr);
     ~VideoController();
-
-    VideoGLWidget* getVideoWidget() const { return m_widget; }
 
     void setListener(Listener *listener);
     bool loadVideo(const QString &filePath);
@@ -33,11 +31,13 @@ private slots:
             void onTimerTick();
 
 private:
-    Listener *m_listener = nullptr;
-    VideoGLWidget *m_widget = nullptr;
-    Y4MExtractor *m_extractor = nullptr;
-    QTimer *m_timer = nullptr;
-    long m_currentFrame = 0;
+    // Manage by UI, So don't need to use SmartPointer
+    VideoGLWidget *mWidget = nullptr;
+    Listener* mListener = nullptr;
+
+    std::unique_ptr<Y4MExtractor> mExtractor{nullptr};
+    std::unique_ptr<QTimer> mTimer{nullptr};
+    long mCurrentFrame = 0;
 };
 
 #endif

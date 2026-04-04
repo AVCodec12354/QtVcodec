@@ -4,13 +4,14 @@
 
 MainWindow::MainWindow(QWidget *parent)
         : QMainWindow(parent)
-        , ui(new Ui::MainWindow)
+        , ui(std::make_unique<Ui::MainWindow>())
+        , encoderViewModel(std::make_unique<EncoderViewModel>())
 {
     ui->setupUi(this);
+    videoController = std::make_unique<VideoController>(ui->openGLWidget);
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
-    videoController = new VideoController(this, ui->openGLWidget);
     videoController->setListener(this);
 
     ui->progressBar->setValue(0);
@@ -60,8 +61,6 @@ void MainWindow::setValidatorForEditText() {
 }
 
 void MainWindow::connectToEncoderUI(MainWindow* window) {
-    encoderViewModel = std::make_shared<EncoderViewModel>();
-
     // connect button
     connect(ui->btn_inputBrowse, &QPushButton::clicked, window, [this](){
         QString filePath = QFileDialog::getOpenFileName(
@@ -274,8 +273,6 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
     });
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     QTLogger::setOutput(nullptr);
-    delete ui;
 }
