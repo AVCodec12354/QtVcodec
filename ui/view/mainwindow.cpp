@@ -36,7 +36,7 @@ void MainWindow::resetEncoderUI() {
 //    ui->input_path->setText("");
     ui->output_path->setText("");
     ui->reconstructed_path->setText("");
-    ui->text_show_log->setText("");
+//    ui->text_show_log->setText("");
     ui->encoded_frame->setText("Frames: 0/0");
     ui->time_encoding->setText("Time Encoding: 00:00:00");
     ui->progressBar->setValue(0);
@@ -114,6 +114,13 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
             ui->reconstructed_path->setText(folderPath);
         }
     });
+    connect(ui->delete_button, &QPushButton::clicked, window, [this](){
+        ui->text_show_log->setText("");
+    });
+    connect(ui->save_log_button, &QPushButton::clicked, window, [this](){
+        QTDebug("Encoder", "save_log_button clicked");
+    });
+
     connect(ui->btn_start, &QPushButton::clicked, window, [this](){
         if (!ui->input_path->text().isEmpty()) {
             encoderViewModel->start();
