@@ -46,9 +46,7 @@ add_executable(${PROJECT_NAME}
         renderers/VideoGLWidget.cpp
         renderers/VideoRenderer.cpp
         readers/Y4MExtractor.cpp
-        codecs/bases/C2Component.cpp
-        codecs/apv/enc/C2ApvEnc.cpp
-        codecs/apv/dec/C2ApvDec.cpp
+        codecs/apv/enc/Qv2ApvEncoder.cpp
         ui/view/mainwindow.cpp
         ui/view/mainwindow.ui
         ui/viewmodels/EncoderViewModel.cpp
