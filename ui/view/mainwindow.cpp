@@ -13,9 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     setValidatorForEditText();
     connectToEncoderUI(this);
     videoRenderer->setListener(this);
-
-    ui->progressBar->setValue(0);
-    ui->percent_on_progressBar->setText("0 %");
+    // TODO: Temporary for quickly testing
     ui->input_path->setText("/Volumes/D/Projects/pattern1_yuv422p10le_320x240_25fps.y4m");
 }
 
@@ -24,19 +22,47 @@ void MainWindow::onPlaying(long currentFrame, long totalFrame) {
         int progress = static_cast<int>((currentFrame * 100) / totalFrame);
         ui->progressBar->setValue(progress);
         ui->percent_on_progressBar->setText(QString::number(progress) + "%");
+        ui->encoded_frame->setText("Frames: " + QString::number(currentFrame) + "/" + QString::number(totalFrame));
     }
 }
 
 void MainWindow::onFinished() {
-    ui->progressBar->setValue(0);
-    ui->percent_on_progressBar->setText("0%");
     ui->btn_start->setEnabled(true);
-    ui->btn_stop->setEnabled(false);
+    resetEncoderUI();
     QTInfo("Encoder", "Playback/Encoding finished.");
 }
 
-void MainWindow::resetUI() {
-    // TODO: Reset UI
+void MainWindow::resetEncoderUI() {
+//    ui->input_path->setText("");
+    ui->output_path->setText("");
+    ui->reconstructed_path->setText("");
+    ui->text_show_log->setText("");
+    ui->encoded_frame->setText("Frames: 0/0");
+    ui->time_encoding->setText("Time Encoding: 00:00:00");
+    ui->progressBar->setValue(0);
+    ui->percent_on_progressBar->setText("0%");
+    // Settings
+    ui->width->setText("");
+    ui->height->setText("");
+    ui->fps->setText("");
+    ui->bitdepth->setCurrentIndex(0);
+    ui->colorspace->setCurrentIndex(0);
+    ui->enableBitrateABR->setChecked(false);
+    ui->qp->setText("");
+    ui->profile->setCurrentIndex(0);
+    ui->level->setCurrentIndex(0);
+    ui->family->setCurrentIndex(0);
+    ui->band_variable->setCurrentIndex(0);
+    ui->max_cu->setText("");
+    ui->speed_cu->setText("");
+    ui->width_of_tile->setText("");
+    ui->height_of_tile->setText("");
+    ui->primaries->setCurrentIndex(0);
+    ui->transfer->setCurrentIndex(0);
+    ui->matrix->setCurrentIndex(0);
+    ui->range->setCurrentIndex(0);
+    ui->mastering_display->setText("");
+    ui->content_light_level->setText("");
 }
 
 void MainWindow::connectToDecoderUI(MainWindow* window) {
@@ -92,8 +118,6 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!ui->input_path->text().isEmpty()) {
             encoderViewModel->start();
             ui->btn_start->setEnabled(false);
-            ui->btn_stop->setEnabled(true);
-
             videoRenderer->loadVideo(ui->input_path->text());
             videoRenderer->play();
             QTInfo("Encoder", "Start encoding...");
@@ -109,6 +133,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         videoRenderer->stop();
     });
     connect(ui->btn_reset, &QPushButton::clicked, window, [this](){
+        resetEncoderUI();
         QTDebug("Encoder", "btn_reset clicked!");
     });
 

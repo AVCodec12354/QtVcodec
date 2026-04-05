@@ -30,7 +30,7 @@ private:
     std::unique_ptr<VideoRenderer> videoRenderer;
     std::unique_ptr<EncoderViewModel> encoderViewModel;
 
-    void resetUI();
+    void resetEncoderUI();
     void setValidatorForEditText();
     void connectToDecoderUI(MainWindow* window);
     void connectToEncoderUI(MainWindow* window);
