@@ -304,7 +304,7 @@ static int imgb_release(oapv_imgb_t *imgb)
     return refcnt;
 }
 
-oapv_imgb_t *imgb_create(int w, int h, int cs)
+static oapv_imgb_t *imgb_create(int w, int h, int cs)
 {
     int          i, bd;
     oapv_imgb_t *imgb;

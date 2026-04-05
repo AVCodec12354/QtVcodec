@@ -12,8 +12,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2028</width>
-    <height>1129</height>
+    <width>1228</width>
+    <height>895</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -531,8 +531,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>484</width>
-               <height>1046</height>
+               <width>372</width>
+               <height>797</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -1971,8 +1971,11 @@
             </property>
             <item>
              <layout class="QVBoxLayout" name="GLFrameLayout">
-              <item>
-               <widget class="QOpenGLWidget" name="openGLWidget">
+              <property name="sizeConstraint">
+               <enum>QLayout::SizeConstraint::SetFixedSize</enum>
+              </property>
+              <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+               <widget class="VideoGLWidget" name="openGLWidget">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -2522,11 +2525,84 @@
                </layout>
               </item>
               <item>
-               <widget class="QTextBrowser" name="text_show_log">
-                <property name="placeholderText">
-                 <string>Log will print here.</string>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <property name="spacing">
+                 <number>0</number>
                 </property>
-               </widget>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_5">
+                  <item>
+                   <widget class="QPushButton" name="delete_button">
+                    <property name="maximumSize">
+                     <size>
+                      <width>32</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <bold>false</bold>
+                      <kerning>true</kerning>
+                     </font>
+                    </property>
+                    <property name="acceptDrops">
+                     <bool>false</bool>
+                    </property>
+                    <property name="layoutDirection">
+                     <enum>Qt::LayoutDirection::LeftToRight</enum>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset theme="QIcon::ThemeIcon::EditDelete"/>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>28</width>
+                      <height>28</height>
+                     </size>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="save_log_button">
+                    <property name="maximumSize">
+                     <size>
+                      <width>32</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>28</width>
+                      <height>28</height>
+                     </size>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QTextBrowser" name="text_show_log">
+                  <property name="placeholderText">
+                   <string>Log will print here.</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </item>
@@ -2546,10 +2622,10 @@
             <widget class="QWidget" name="ScrollView_Settings">
              <property name="geometry">
               <rect>
-               <x>-16</x>
+               <x>0</x>
                <y>0</y>
                <width>500</width>
-               <height>1031</height>
+               <height>797</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -4242,6 +4318,13 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VideoGLWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>VideoGLWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

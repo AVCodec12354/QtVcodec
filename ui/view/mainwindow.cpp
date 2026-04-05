@@ -4,12 +4,65 @@
 
 MainWindow::MainWindow(QWidget *parent)
         : QMainWindow(parent)
-        , ui(new Ui::MainWindow)
+        , ui(std::make_unique<Ui::MainWindow>())
+        , encoderViewModel(std::make_unique<EncoderViewModel>())
 {
     ui->setupUi(this);
+    videoRenderer = std::make_unique<VideoRenderer>(ui->openGLWidget);
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
+    videoRenderer->setListener(this);
+    // TODO: Temporary for quickly testing
+    ui->input_path->setText("/Volumes/D/Projects/pattern1_yuv422p10le_320x240_25fps.y4m");
+}
+
+void MainWindow::onPlaying(long currentFrame, long totalFrame) {
+    if (videoRenderer) {
+        int progress = static_cast<int>((currentFrame * 100) / totalFrame);
+        ui->progressBar->setValue(progress);
+        ui->percent_on_progressBar->setText(QString::number(progress) + "%");
+        ui->encoded_frame->setText("Frames: " + QString::number(currentFrame) + "/" + QString::number(totalFrame));
+    }
+}
+
+void MainWindow::onFinished() {
+    ui->btn_start->setEnabled(true);
+    resetEncoderUI();
+    QTInfo("Encoder", "Playback/Encoding finished.");
+}
+
+void MainWindow::resetEncoderUI() {
+//    ui->input_path->setText("");
+    ui->output_path->setText("");
+    ui->reconstructed_path->setText("");
+//    ui->text_show_log->setText("");
+    ui->encoded_frame->setText("Frames: 0/0");
+    ui->time_encoding->setText("Time Encoding: 00:00:00");
+    ui->progressBar->setValue(0);
+    ui->percent_on_progressBar->setText("0%");
+    // Settings
+    ui->width->setText("");
+    ui->height->setText("");
+    ui->fps->setText("");
+    ui->bitdepth->setCurrentIndex(0);
+    ui->colorspace->setCurrentIndex(0);
+    ui->enableBitrateABR->setChecked(false);
+    ui->qp->setText("");
+    ui->profile->setCurrentIndex(0);
+    ui->level->setCurrentIndex(0);
+    ui->family->setCurrentIndex(0);
+    ui->band_variable->setCurrentIndex(0);
+    ui->max_cu->setText("");
+    ui->speed_cu->setText("");
+    ui->width_of_tile->setText("");
+    ui->height_of_tile->setText("");
+    ui->primaries->setCurrentIndex(0);
+    ui->transfer->setCurrentIndex(0);
+    ui->matrix->setCurrentIndex(0);
+    ui->range->setCurrentIndex(0);
+    ui->mastering_display->setText("");
+    ui->content_light_level->setText("");
 }
 
 void MainWindow::connectToDecoderUI(MainWindow* window) {
@@ -34,8 +87,6 @@ void MainWindow::setValidatorForEditText() {
 }
 
 void MainWindow::connectToEncoderUI(MainWindow* window) {
-    encoderViewModel = std::make_shared<EncoderViewModel>();
-
     // connect button
     connect(ui->btn_inputBrowse, &QPushButton::clicked, window, [this](){
         QString filePath = QFileDialog::getOpenFileName(
@@ -63,16 +114,33 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
             ui->reconstructed_path->setText(folderPath);
         }
     });
+    connect(ui->delete_button, &QPushButton::clicked, window, [this](){
+        ui->text_show_log->setText("");
+    });
+    connect(ui->save_log_button, &QPushButton::clicked, window, [this](){
+        QTDebug("Encoder", "save_log_button clicked");
+    });
+
     connect(ui->btn_start, &QPushButton::clicked, window, [this](){
-        encoderViewModel->start();
+        if (!ui->input_path->text().isEmpty()) {
+            encoderViewModel->start();
+            ui->btn_start->setEnabled(false);
+            videoRenderer->loadVideo(ui->input_path->text());
+            videoRenderer->play();
+            QTInfo("Encoder", "Start encoding...");
+        } else {
+            QTError("Encoder", "Input path is empty!");
+        }
     });
     connect(ui->btn_save_config, &QPushButton::clicked, window, [this](){
         QTDebug("Encoder", "btn_save_config clicked!");
     });
     connect(ui->btn_stop, &QPushButton::clicked, window, [this](){
         encoderViewModel->stop();
+        videoRenderer->stop();
     });
     connect(ui->btn_reset, &QPushButton::clicked, window, [this](){
+        resetEncoderUI();
         QTDebug("Encoder", "btn_reset clicked!");
     });
 
@@ -237,8 +305,6 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
     });
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     QTLogger::setOutput(nullptr);
-    delete ui;
 }
