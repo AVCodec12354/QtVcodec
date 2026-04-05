@@ -22,7 +22,8 @@ public:
     ~VideoRenderer();
 
     void setListener(Listener *listener);
-    bool loadVideo(const QString &filePath);
+    void setInputPath(const QString &filePath);
+    void updateGLWidgetSize();
     void play();
     void pause();
     void stop();

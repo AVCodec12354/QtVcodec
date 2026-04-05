@@ -125,7 +125,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!ui->input_path->text().isEmpty()) {
             encoderViewModel->start();
             ui->btn_start->setEnabled(false);
-            videoRenderer->loadVideo(ui->input_path->text());
+            videoRenderer->setInputPath(ui->input_path->text());
             videoRenderer->play();
             QTInfo("Encoder", "Start encoding...");
         } else {
