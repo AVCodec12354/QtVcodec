@@ -1,5 +1,5 @@
 #include "Y4MExtractor.h"
-#include "VideoGLWidget.h"
+#include "../renderers/VideoGLWidget.h"
 
 void Y4MExtractor::setFile(std::string filePath) {
     FILE* file = fopen(filePath.c_str(), "rb");

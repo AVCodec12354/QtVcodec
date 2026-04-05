@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QString>
-#include "Y4MExtractor.h"
+#include "../readers/Y4MExtractor.h"
 #include "VideoGLWidget.h"
 #include "QTLogger.h"
 

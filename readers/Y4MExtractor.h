@@ -4,8 +4,8 @@
 #include <iostream>
 #include <cstdio>
 #include <string>
-#include "QTLogger.h"
-#include "../readers/oapv_app_y4m.h"
+#include "../ui/helpers/QTLogger.h"
+#include "oapv_app_y4m.h"
 
 class Y4MExtractor {
 public:

@@ -45,7 +45,7 @@ add_executable(${PROJECT_NAME}
         src/main.cpp
         renderers/VideoGLWidget.cpp
         renderers/VideoRenderer.cpp
-        renderers/Y4MExtractor.cpp
+        readers/Y4MExtractor.cpp
         codecs/bases/C2Component.cpp
         codecs/apv/enc/C2ApvEnc.cpp
         codecs/apv/dec/C2ApvDec.cpp
