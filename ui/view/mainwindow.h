@@ -24,11 +24,11 @@ protected:
     void onFinished() override;
 
 private:
-    std::unique_ptr<Ui::MainWindow> ui;
+    std::shared_ptr<Ui::MainWindow> ui;
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 
-    std::unique_ptr<VideoRenderer> videoRenderer;
-    std::unique_ptr<EncoderViewModel> encoderViewModel;
+    std::shared_ptr<VideoRenderer> videoRenderer;
+    std::shared_ptr<EncoderViewModel> encoderViewModel;
 
     void resetEncoderUI();
     void setValidatorForEditText();

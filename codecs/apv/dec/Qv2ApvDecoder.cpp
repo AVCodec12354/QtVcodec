@@ -84,12 +84,12 @@ void Qv2ApvDecoder::processLoop() {
         }
 
         if (!work || !work->input) {
-            if (mListener) mListener->onError(this, QV2_ERR_INVALID_ARG);
+            if (mListener) mListener->onError(weak_from_this(), QV2_ERR_INVALID_ARG);
             continue;
         }
 
         if (work->input->type() != Qv2BufferType::BUFFER_1D) {
-            if (mListener) mListener->onError(this, QV2_ERR_BAD_FORMAT);
+            if (mListener) mListener->onError(weak_from_this(), QV2_ERR_BAD_FORMAT);
             continue;
         }
         Qv2Buffer1D* input1D = static_cast<Qv2Buffer1D*>(work->input.get());
@@ -99,7 +99,7 @@ void Qv2ApvDecoder::processLoop() {
         bitb.ssize = (int)input1D->size();
 
         if (!work->output || work->output->type() != Qv2BufferType::BUFFER_2D) {
-             if (mListener) mListener->onError(this, QV2_ERR_INVALID_ARG);
+             if (mListener) mListener->onError(weak_from_this(), QV2_ERR_INVALID_ARG);
              continue;
         }
         Qv2Buffer2D* output2D = static_cast<Qv2Buffer2D*>(work->output.get());
@@ -116,7 +116,7 @@ void Qv2ApvDecoder::processLoop() {
         work->processedSize = stat.read;
 
         if (mListener) {
-            mListener->onWorkDone(this, std::move(work));
+            mListener->onWorkDone(weak_from_this(), std::move(work));
         }
     }
 }

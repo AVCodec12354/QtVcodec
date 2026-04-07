@@ -4,11 +4,11 @@
 
 MainWindow::MainWindow(QWidget *parent)
         : QMainWindow(parent)
-        , ui(std::make_unique<Ui::MainWindow>())
-        , encoderViewModel(std::make_unique<EncoderViewModel>())
+        , ui(std::make_shared<Ui::MainWindow>())
+        , encoderViewModel(std::make_shared<EncoderViewModel>())
 {
     ui->setupUi(this);
-    videoRenderer = std::make_unique<VideoRenderer>(ui->openGLWidget);
+    videoRenderer = std::make_shared<VideoRenderer>(ui->openGLWidget);
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
