@@ -49,7 +49,7 @@ inline std::string Qv2StatusToString(int status) {
         case QV2_ERR_BAD_FORMAT:      return "Bad Format";
         case QV2_ERR_MALFORMED:       return "Malformed Bitstream";
         case QV2_ERR_BUFFER_OVERFLOW: return "Buffer Overflow";
-        case QV2_ERR_EOS:               return "End of Stream";
+        case QV2_ERR_EOS:             return "End of Stream";
         case QV2_ERR_HW_FAILURE:      return "Hardware Failure";
         case QV2_ERR_INTERNAL:        return "Internal Error";
         default:                      return "Unknown Error (" + std::to_string(status) + ")";

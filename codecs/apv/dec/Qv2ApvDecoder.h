@@ -1,5 +1,5 @@
-#ifndef QV2APVENCODER_H
-#define QV2APVENCODER_H
+#ifndef QV2APVDECODER_H
+#define QV2APVDECODER_H
 
 #include "../../bases/Qv2Component.h"
 #include "oapv.h"
@@ -9,7 +9,7 @@
 #include <queue>
 #include <atomic>
 
-class Qv2ApvEncoder : public Qv2Component {
+class Qv2ApvDecoder : public Qv2Component {
 public:
     enum State {
         STATE_UNINITIALIZED,
@@ -19,8 +19,8 @@ public:
         STATE_ERROR
     };
 
-    Qv2ApvEncoder();
-    ~Qv2ApvEncoder() override;
+    Qv2ApvDecoder();
+    ~Qv2ApvDecoder() override;
 
     // Qv2Component interface
     void setListener(Listener* listener) override { mListener = listener; }
@@ -31,7 +31,7 @@ public:
     void release() override;
 
     // APV Specific setup
-    int initialize(oapve_param_t* param);
+    int initialize(oapvd_cdesc_t* cdesc);
     State getState() const { return mState; }
 
 private:
@@ -39,7 +39,7 @@ private:
     void setState(State state);
     
     // OpenAPV Handles
-    oapve_t mHandler = nullptr;
+    oapvd_t mHandler = nullptr;
     
     // Threading
     std::thread mThread;
@@ -51,4 +51,4 @@ private:
     Listener* mListener = nullptr;
 };
 
-#endif // QV2APVENCODER_H
+#endif // QV2APVDECODER_H

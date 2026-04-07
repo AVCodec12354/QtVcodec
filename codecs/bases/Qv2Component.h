@@ -68,6 +68,11 @@ public:
      */
     virtual void flush() = 0;
 
+    /**
+     * @brief Releases all resources held by the component.
+     */
+    virtual void release() = 0;
+
 protected:
     std::string mName;
 };

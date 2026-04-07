@@ -15,7 +15,7 @@ struct Qv2Work {
     std::unique_ptr<Qv2Buffer> input;
     std::unique_ptr<Qv2Buffer> output;
 
-    int result = QV2_OK;
+    Qv2Status result = QV2_OK;
     size_t processedSize = 0;
 
     explicit Qv2Work(uint64_t idx) : index(idx) {};
