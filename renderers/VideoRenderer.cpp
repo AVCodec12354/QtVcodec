@@ -14,7 +14,13 @@ VideoRenderer::VideoRenderer(VideoGLWidget *glWidget, QObject *parent)
 VideoRenderer::~VideoRenderer() {
     stop();
     if (mWidget) delete mWidget;
-    if (mListener) delete mListener;
+/*
+ * QtVCodec(3984,0x200d37ac0) malloc: *** error for object 0x16d567498: pointer being freed was not allocate
+ * QtVCodec(3984,0x200d37ac0) malloc: *** set a breakpoint in malloc_error_break to debug
+ * --------------------------------------------
+ * // if (mListener) delete mListener;
+ * We are calling delete on the same pointer twice, "mainwindow.cpp" already released it.
+ */
 }
 
 void VideoRenderer::setListener(Listener *listener) {
