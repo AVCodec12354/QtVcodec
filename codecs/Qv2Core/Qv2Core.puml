@@ -130,7 +130,20 @@ package "Qv2Core Interfaces" {
     enum Qv2Status {
         QV2_OK = 0
         QV2_ERR_GENERIC = -1
-        ...
+        QV2_ERR_INVALID_ARG = -101
+        QV2_ERR_NO_MEMORY = -102
+        QV2_ERR_NOT_INITIALIZED = -103
+        QV2_ERR_ALREADY_EXISTS = -104
+        QV2_ERR_NOT_FOUND = -105
+        QV2_ERR_UNSUPPORTED = -201
+        QV2_ERR_BAD_VALUE = -202
+        QV2_ERR_BAD_FORMAT = -203
+        QV2_ERR_MALFORMED = -301
+        QV2_ERR_BUFFER_OVERFLOW = -302
+        QV2_ERR_EOS = -303
+        QV2_ERR_TIMEOUT = -304
+        QV2_ERR_HW_FAILURE = -401
+        QV2_ERR_INTERNAL = -402
     }
 }
 
