@@ -72,7 +72,6 @@ package "Qv2Core Interfaces" {
         # mName: string
         # mListener: Listener*
         # mState: atomic<State>
-        + setName(name: string): void
         + getName(): string
         + getState(): State
         + setState(state: State): void
@@ -84,8 +83,8 @@ package "Qv2Core Interfaces" {
         + {abstract} stop(): void
         + {abstract} flush(): void
         + release(): void
-        # {abstract} onRelease(): void
         # onStateChanged(state: State): void
+        # {abstract} onRelease(): void
     }
 
     interface Qv2Component_Listener {
