@@ -1,0 +1,116 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "Qv2Core Interfaces" {
+
+    enum Qv2BufferType {
+        BUFFER_1D
+        BUFFER_2D
+    }
+
+    abstract class Qv2Buffer {
+        + timestamp: uint64_t
+        + flags: uint32_t
+        + {abstract} type(): Qv2BufferType
+    }
+
+    class Qv2Buffer1D {
+        + {abstract} data(): uint8_t*
+        + {abstract} size(): size_t
+        + {abstract} capacity(): size_t
+    }
+
+    class Qv2Buffer2D {
+        + {abstract} width(): uint32_t
+        + {abstract} height(): uint32_t
+        + {abstract} format(): int
+        + {abstract} numPlanes(): int
+        + {abstract} plane(index: int): Plane
+    }
+
+    struct Qv2Work {
+        + input: shared_ptr<Qv2Buffer>
+        + output: shared_ptr<Qv2Buffer>
+        + result: int
+        + processedSize: size_t
+    }
+
+    abstract class Qv2Component {
+        # mName: string
+        # mListener: Listener*
+        # mState: atomic<State>
+        + setName(name: string): void
+        + getName(): string
+        + getState(): State
+        + setState(state: State): void
+        + setListener(listener: Listener*): void
+        + {abstract} configure(params: vector<Qv2Param*>): int
+        + {abstract} query(params: vector<Qv2Param*>): int
+        + {abstract} queue(items: vector<unique_ptr<Qv2Work>>): int
+        + {abstract} start(): bool
+        + {abstract} stop(): void
+        + {abstract} flush(): void
+        + release(): void
+        # {abstract} onRelease(): void
+        # onStateChanged(state: State): void
+    }
+
+    interface Qv2Component_Listener {
+        + {abstract} onWorkDone(component, work): void
+        + {abstract} onError(component, error): void
+        + onStateChanged(component, newState): void
+    }
+
+    enum Qv2Component_State {
+        UNINITIALIZED
+        INITIALIZED
+        CONFIGURED
+        STARTING
+        RUNNING
+        FLUSHING
+        PAUSED
+        STOPPING
+        STOPPED
+        RELEASING
+        ERROR
+    }
+
+    abstract class Qv2Param {
+        + mId: uint32_t
+        + mSize: size_t
+        + {static} makeId(scope, kind, index): uint32_t
+        + {static} cast<T>(param): T*
+    }
+
+    package "Specific Parameters (Examples)" {
+        class Qv2VideoSizeInput
+        class Qv2BitrateSetting
+    }
+
+    enum Qv2Status {
+        QV2_OK = 0
+        QV2_ERR_GENERIC = -1
+        QV2_ERR_INVALID_ARG = -101
+        ... (and more)
+    }
+}
+
+' Relationships
+Qv2Buffer <|-- Qv2Buffer1D
+Qv2Buffer <|-- Qv2Buffer2D
+Qv2Buffer .left.> Qv2BufferType
+
+Qv2Work o-- Qv2Buffer
+
+Qv2Component +-down- Qv2Component_State
+Qv2Component +-right- Qv2Component_Listener
+Qv2Component ..> Qv2Work : processes
+Qv2Component ..> Qv2Param : configured by
+
+Qv2Param <|-- Qv2VideoSizeInput
+Qv2Param <|-- Qv2BitrateSetting
+
+@enduml

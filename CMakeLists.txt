@@ -62,6 +62,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/viewmodels
         ${CMAKE_CURRENT_SOURCE_DIR}/renderers
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/Qv2Core
 )
 
 target_link_libraries(${PROJECT_NAME}

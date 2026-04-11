@@ -20,7 +20,7 @@ public:
     virtual ~Qv2Buffer() = default;
     virtual Qv2BufferType type() const = 0;
 
-    uint64_t timestamp = 0; // PTS
+    uint64_t timestamp = 0;
     uint32_t flags = 0;
 };
 
