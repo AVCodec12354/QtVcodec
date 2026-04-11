@@ -30,12 +30,11 @@ public:
         virtual ~Listener() = default;
         virtual void onWorkDone(std::weak_ptr<Qv2Component> component, std::unique_ptr<Qv2Work> work) = 0;
         virtual void onError(std::weak_ptr<Qv2Component> component, int error) = 0;
-        virtual void onStateChanged(std::weak_ptr<Qv2Component> component, State newState) {}
+        virtual void onStateChanged(std::weak_ptr<Qv2Component> component, State newState) = 0;
     };
 
     virtual ~Qv2Component() = default;
 
-    void setName(const std::string& name) { mName = name; }
     std::string getName() const { return mName; }
     State getState() const { return mState; }
     

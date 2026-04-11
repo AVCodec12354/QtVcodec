@@ -11,7 +11,6 @@ struct Qv2Work {
     std::shared_ptr<Qv2Buffer> input;
     std::shared_ptr<Qv2Buffer> output;
     int result = 0;
-    size_t processedSize = 0;
 };
 
 #endif // QV2WORK_H

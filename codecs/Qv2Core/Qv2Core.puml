@@ -12,23 +12,53 @@ package "Qv2Core Interfaces" {
     }
 
     abstract class Qv2Buffer {
-        + timestamp: uint64_t
-        + flags: uint32_t
-        + {abstract} type(): Qv2BufferType
+        + mTimestamp: uint64_t
+        + mFlags: uint32_t
+        + {abstract} getType(): Qv2BufferType
     }
 
     class Qv2Buffer1D {
-        + {abstract} data(): uint8_t*
-        + {abstract} size(): size_t
-        + {abstract} capacity(): size_t
+        - mData: uint8_t*
+        - mSize: size_t
+        - mCapacity: size_t
+        + getType(): Qv2BufferType
+        + getData(): uint8_t*
+        + getSize(): size_t
+        + getCapacity(): size_t
+        + setSize(size: size_t): void
+    }
+
+    enum Qv2NumPlane {
+        PLANE_Y = 0
+        PLANE_U = 1
+        PLANE_V = 2
+        PLANE_R = 0
+        PLANE_G = 1
+        PLANE_B = 2
+        PLANE_A = 3
+        MAX_NUM_PLANES = 4
+        PLANE_UV = 1
     }
 
     class Qv2Buffer2D {
-        + {abstract} width(): uint32_t
-        + {abstract} height(): uint32_t
-        + {abstract} format(): int
-        + {abstract} numPlanes(): int
-        + {abstract} plane(index: int): Plane
+        - mWidth: uint32_t
+        - mHeight: uint32_t
+        - mBitDepth: uint32_t
+        - mFormat: uint32_t
+        - mNumPlanes: uint32_t
+        - mAddr: uint8_t*[MAX_NUM_PLANES]
+        - mStride: uint32_t[MAX_NUM_PLANES]
+        - mElevation: uint32_t[MAX_NUM_PLANES]
+        + getType(): Qv2BufferType
+        + getWidth(): uint32_t
+        + getHeight(): uint32_t
+        + getBitDepth(): uint32_t
+        + getFormat(): uint32_t
+        + getNumPlanes(): uint32_t
+        + getAddr(index: uint32_t): uint8_t*
+        + getStride(index: uint32_t): uint32_t
+        + getElevation(index: uint32_t): uint32_t
+        + setPlane(index, addr, stride, elevation): void
     }
 
     struct Qv2Work {
@@ -85,6 +115,14 @@ package "Qv2Core Interfaces" {
         + {static} cast<T>(param): T*
     }
 
+    enum Qv2Param_Index {
+        kIndexVideoSize
+        kIndexBitrate
+        kIndexFrameRate
+        kIndexBitDepth
+        kIndexColorFormat
+    }
+
     package "Specific Parameters (Examples)" {
         class Qv2VideoSizeInput
         class Qv2BitrateSetting
@@ -93,8 +131,7 @@ package "Qv2Core Interfaces" {
     enum Qv2Status {
         QV2_OK = 0
         QV2_ERR_GENERIC = -1
-        QV2_ERR_INVALID_ARG = -101
-        ... (and more)
+        ...
     }
 }
 
@@ -102,6 +139,7 @@ package "Qv2Core Interfaces" {
 Qv2Buffer <|-- Qv2Buffer1D
 Qv2Buffer <|-- Qv2Buffer2D
 Qv2Buffer .left.> Qv2BufferType
+Qv2Buffer2D ..> Qv2NumPlane : uses
 
 Qv2Work o-- Qv2Buffer
 
@@ -110,6 +148,7 @@ Qv2Component +-right- Qv2Component_Listener
 Qv2Component ..> Qv2Work : processes
 Qv2Component ..> Qv2Param : configured by
 
+Qv2Param +-- Qv2Param_Index
 Qv2Param <|-- Qv2VideoSizeInput
 Qv2Param <|-- Qv2BitrateSetting
 

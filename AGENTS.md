@@ -34,3 +34,19 @@ Hệ thống ghi log tập trung.
 2. **Execution**: `component->start()` kích hoạt luồng xử lý riêng (Worker Thread).
 3. **Processing**: Dữ liệu từ Reader được đóng gói vào `Qv2Work` -> Đưa vào `queue()`.
 4. **Feedback**: Kết quả trả về qua `onWorkDone` -> Hiển thị thông qua `VideoRenderer`.
+1.
+mCapacity (Sức chứa tối đa):
+◦
+Là tổng lượng bộ nhớ vật lý đã được cấp phát cho con trỏ mData.
+◦
+Nó xác định giới hạn thượng: Bạn không được phép ghi quá số lượng byte này vào buffer (nếu không sẽ bị tràn bộ nhớ - Buffer Overflow).
+◦
+Ví dụ: Bạn chuẩn bị một cái "thùng" có thể chứa tối đa 10 lít nước. mCapacity ở đây là 10.
+2.
+mSize (Kích thước dữ liệu thực tế):
+◦
+Là lượng dữ liệu hữu ích thực sự đang nằm trong buffer tại một thời điểm cụ thể.
+◦
+mSize luôn luôn nhỏ hơn hoặc bằng mCapacity.
+◦
+Ví dụ: Trong cái thùng 10 lít đó, hiện tại bạn chỉ đổ vào 2 lít nước. mSize ở đây là 2.
