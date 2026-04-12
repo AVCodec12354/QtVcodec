@@ -28,9 +28,9 @@ public:
     class Listener {
     public:
         virtual ~Listener() = default;
-        virtual void onWorkDone(std::weak_ptr<Qv2Component> component, std::unique_ptr<Qv2Work> work) = 0;
-        virtual void onError(std::weak_ptr<Qv2Component> component, int error) = 0;
-        virtual void onStateChanged(std::weak_ptr<Qv2Component> component, State newState) {}
+        virtual void onWorkDone(std::weak_ptr<Qv2Component> component, std::vector<std::unique_ptr<Qv2Work>> workItems) = 0;
+        virtual void onError(std::weak_ptr<Qv2Component> component, Qv2Status error) = 0;
+        virtual void onStateChanged(std::weak_ptr<Qv2Component> component, State newState) = 0;
     };
 
     virtual ~Qv2Component() = default;
@@ -50,13 +50,13 @@ public:
 
     void setListener(Listener* listener) { mListener = listener; }
 
-    virtual int configure(const std::vector<Qv2Param*>& params) = 0;
-    virtual int query(std::vector<Qv2Param*>& params) const = 0;
-    virtual int queue(std::vector<std::unique_ptr<Qv2Work>> items) = 0;
+    virtual Qv2Status configure(const std::vector<Qv2Param*>& params) = 0;
+    virtual Qv2Status query(std::vector<Qv2Param*>& params) const = 0;
+    virtual Qv2Status queue(std::vector<std::unique_ptr<Qv2Work>> items) = 0;
     
-    virtual int start() = 0;
-    virtual int stop() = 0;
-    virtual int flush() = 0;
+    virtual Qv2Status start() = 0;
+    virtual Qv2Status stop() = 0;
+    virtual Qv2Status flush() = 0;
     
     void release() {
         if (mState == RUNNING) stop();
@@ -67,7 +67,7 @@ public:
     }
 
 protected:
-    virtual void onStateChanged(State state) {}
+    virtual void onStateChanged(State state) = 0;
     virtual void onRelease() = 0;
 
     std::string mName;

@@ -65,7 +65,6 @@ package "Qv2Core Interfaces" {
         + input: shared_ptr<Qv2Buffer>
         + output: shared_ptr<Qv2Buffer>
         + result: int
-        + processedSize: size_t
     }
 
     abstract class Qv2Component {
@@ -76,20 +75,20 @@ package "Qv2Core Interfaces" {
         + getState(): State
         + setState(state: State): void
         + setListener(listener: Listener*): void
-        + {abstract} configure(params: vector<Qv2Param*>): int
-        + {abstract} query(params: vector<Qv2Param*>): int
-        + {abstract} queue(items: vector<unique_ptr<Qv2Work>>): int
-        + {abstract} start(): bool
-        + {abstract} stop(): void
-        + {abstract} flush(): void
+        + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
+        + {abstract} query(params: vector<Qv2Param*>): Qv2Status
+        + {abstract} queue(items: vector<unique_ptr<Qv2Work>>): Qv2Status
+        + {abstract} start(): Qv2Status
+        + {abstract} stop(): Qv2Status
+        + {abstract} flush(): Qv2Status
         + release(): void
         # onStateChanged(state: State): void
         # {abstract} onRelease(): void
     }
 
     interface Qv2Component_Listener {
-        + {abstract} onWorkDone(component, work): void
-        + {abstract} onError(component, error): void
+        + {abstract} onWorkDone(component, workItems: vector<unique_ptr<Qv2Work>>): void
+        + {abstract} onError(component, error: Qv2Status): void
         + onStateChanged(component, newState): void
     }
 

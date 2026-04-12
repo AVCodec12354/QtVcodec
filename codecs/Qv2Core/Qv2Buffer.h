@@ -45,8 +45,8 @@ enum Qv2NumPlane : uint32_t {
     PLANE_G = 1,
     PLANE_B = 2,
     PLANE_A = 3,
-    MAX_NUM_PLANES = 4,
     PLANE_UV = 1,
+    MAX_NUM_PLANES = 4,
 };
 
 class Qv2Buffer2D : public Qv2Buffer {
