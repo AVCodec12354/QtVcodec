@@ -1,0 +1,95 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam packageStyle rectangle
+' Sử dụng splines để tạo các đường cong mềm mại thay vì đường thẳng hay gấp khúc
+skinparam linetype splines
+skinparam nodesep 120
+skinparam ranksep 150
+skinparam shadowing false
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+package "Qv2Core" {
+    abstract class Qv2Component {
+        # mName: string
+        # mListener: Listener*
+        # mState: atomic<State>
+        + getName(): string
+        + getState(): State
+        + setState(state: State): void
+        + setListener(listener: Listener*): void
+        + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
+        + {abstract} query(params: vector<Qv2Param*>): Qv2Status
+        + {abstract} queue(items: vector<unique_ptr<Qv2Work>>): Qv2Status
+        + {abstract} start(): Qv2Status
+        + {abstract} stop(): Qv2Status
+        + {abstract} flush(): Qv2Status
+        + release(): void
+        # {abstract} onStateChanged(state: State): void
+        # {abstract} onRelease(): void
+    }
+}
+
+package "Codec Implementations" {
+    
+    package "APV Branch" {
+        class Qv2ApvEncoder {
+            + configure(params): Qv2Status
+            + query(params): Qv2Status
+            + queue(items): Qv2Status
+            + start(): Qv2Status
+            + stop(): Qv2Status
+            + flush(): Qv2Status
+            # onStateChanged(state): void
+            # onRelease(): void
+        }
+
+        class Qv2ApvDecoder {
+            + configure(params): Qv2Status
+            + query(params): Qv2Status
+            + queue(items): Qv2Status
+            + start(): Qv2Status
+            + stop(): Qv2Status
+            + flush(): Qv2Status
+            # onStateChanged(state): void
+            # onRelease(): void
+        }
+    }
+
+    package "HEVC Branch" {
+        class Qv2HevcEncoder {
+            + configure(params): Qv2Status
+            + query(params): Qv2Status
+            + queue(items): Qv2Status
+            + start(): Qv2Status
+            + stop(): Qv2Status
+            + flush(): Qv2Status
+            # onStateChanged(state): void
+            # onRelease(): void
+        }
+
+        class Qv2HevcDecoder {
+            + configure(params): Qv2Status
+            + query(params): Qv2Status
+            + queue(items): Qv2Status
+            + start(): Qv2Status
+            + stop(): Qv2Status
+            + flush(): Qv2Status
+            # onStateChanged(state): void
+            # onRelease(): void
+        }
+    }
+}
+
+' Sử dụng các đường nối kế thừa dạng đường cong (splines)
+' Graphviz sẽ tự động tính toán các đường lượn mềm mại từ các lớp con lên lớp cha
+Qv2Component <|-- Qv2ApvEncoder
+Qv2Component <|-- Qv2ApvDecoder
+Qv2Component <|-- Qv2HevcEncoder
+Qv2Component <|-- Qv2HevcDecoder
+
+@enduml

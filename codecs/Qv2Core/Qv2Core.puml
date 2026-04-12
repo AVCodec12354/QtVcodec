@@ -86,6 +86,16 @@ package "Qv2Core Interfaces" {
         # {abstract} onRelease(): void
     }
 
+    class Qv2ComponentFactory {
+        {static} + createByType(type: ComponentType): shared_ptr<Qv2Component>
+        {static} + createByName(name: string): shared_ptr<Qv2Component>
+    }
+
+    enum ComponentType {
+        ENCODER_APV
+        DECODER_APV
+    }
+
     interface Qv2Component_Listener {
         + {abstract} onWorkDone(component, workItems: vector<unique_ptr<Qv2Work>>): void
         + {abstract} onError(component, error: Qv2Status): void
@@ -153,6 +163,9 @@ Qv2Buffer .left.> Qv2BufferType
 Qv2Buffer2D ..> Qv2NumPlane : uses
 
 Qv2Work o-- Qv2Buffer
+
+Qv2ComponentFactory ..> Qv2Component : creates
+Qv2ComponentFactory +-down- ComponentType
 
 Qv2Component +-down- Qv2Component_State
 Qv2Component +-right- Qv2Component_Listener
