@@ -1,0 +1,179 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "Qv2Core Interfaces" {
+
+    enum Qv2BufferType {
+        BUFFER_1D
+        BUFFER_2D
+    }
+
+    abstract class Qv2Buffer {
+        + mTimestamp: uint64_t
+        + mFlags: uint32_t
+        + {abstract} getType(): Qv2BufferType
+    }
+
+    class Qv2Buffer1D {
+        - mData: uint8_t*
+        - mSize: size_t
+        - mCapacity: size_t
+        + getType(): Qv2BufferType
+        + getData(): uint8_t*
+        + getSize(): size_t
+        + getCapacity(): size_t
+        + setSize(size: size_t): void
+    }
+
+    enum Qv2NumPlane {
+        PLANE_Y = 0
+        PLANE_U = 1
+        PLANE_V = 2
+        PLANE_R = 0
+        PLANE_G = 1
+        PLANE_B = 2
+        PLANE_A = 3
+        PLANE_UV = 1
+        MAX_NUM_PLANES = 4
+    }
+
+    class Qv2Buffer2D {
+        - mWidth: uint32_t
+        - mHeight: uint32_t
+        - mBitDepth: uint32_t
+        - mFormat: uint32_t
+        - mNumPlanes: uint32_t
+        - mAddr: uint8_t*[MAX_NUM_PLANES]
+        - mStride: uint32_t[MAX_NUM_PLANES]
+        - mElevation: uint32_t[MAX_NUM_PLANES]
+        + getType(): Qv2BufferType
+        + getWidth(): uint32_t
+        + getHeight(): uint32_t
+        + getBitDepth(): uint32_t
+        + getFormat(): uint32_t
+        + getNumPlanes(): uint32_t
+        + getAddr(index: uint32_t): uint8_t*
+        + getStride(index: uint32_t): uint32_t
+        + getElevation(index: uint32_t): uint32_t
+        + setPlane(index, addr, stride, elevation): void
+    }
+
+    struct Qv2Work {
+        + input: shared_ptr<Qv2Buffer>
+        + output: shared_ptr<Qv2Buffer>
+        + result: int
+    }
+
+    abstract class Qv2Component {
+        # mName: string
+        # mListener: Listener*
+        # mState: atomic<State>
+        + getName(): string
+        + getState(): State
+        + setState(state: State): void
+        + setListener(listener: Listener*): void
+        + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
+        + {abstract} query(params: vector<Qv2Param*>): Qv2Status
+        + {abstract} queue(items: vector<unique_ptr<Qv2Work>>): Qv2Status
+        + {abstract} start(): Qv2Status
+        + {abstract} stop(): Qv2Status
+        + {abstract} flush(): Qv2Status
+        + release(): void
+        # onStateChanged(state: State): void
+        # {abstract} onRelease(): void
+    }
+
+    class Qv2ComponentFactory {
+        {static} + createByType(type: ComponentType): shared_ptr<Qv2Component>
+        {static} + createByName(name: string): shared_ptr<Qv2Component>
+    }
+
+    enum ComponentType {
+        ENCODER_APV
+        DECODER_APV
+    }
+
+    interface Qv2Component_Listener {
+        + {abstract} onWorkDone(component, workItems: vector<unique_ptr<Qv2Work>>): void
+        + {abstract} onError(component, error: Qv2Status): void
+        + onStateChanged(component, newState): void
+    }
+
+    enum Qv2Component_State {
+        UNINITIALIZED
+        INITIALIZED
+        CONFIGURED
+        STARTING
+        RUNNING
+        FLUSHING
+        PAUSED
+        STOPPING
+        STOPPED
+        RELEASING
+        ERROR
+    }
+
+    abstract class Qv2Param {
+        + mId: uint32_t
+        + mSize: size_t
+        + {static} makeId(scope, kind, index): uint32_t
+        + {static} cast<T>(param): T*
+    }
+
+    enum Qv2Param_Index {
+        kIndexVideoSize
+        kIndexBitrate
+        kIndexFrameRate
+        kIndexBitDepth
+        kIndexColorFormat
+    }
+
+    package "Specific Parameters (Examples)" {
+        class Qv2VideoSizeInput
+        class Qv2BitrateSetting
+    }
+
+    enum Qv2Status {
+        QV2_OK = 0
+        QV2_ERR_GENERIC = -1
+        QV2_ERR_INVALID_ARG = -101
+        QV2_ERR_NO_MEMORY = -102
+        QV2_ERR_NOT_INITIALIZED = -103
+        QV2_ERR_ALREADY_EXISTS = -104
+        QV2_ERR_NOT_FOUND = -105
+        QV2_ERR_UNSUPPORTED = -201
+        QV2_ERR_BAD_VALUE = -202
+        QV2_ERR_BAD_FORMAT = -203
+        QV2_ERR_MALFORMED = -301
+        QV2_ERR_BUFFER_OVERFLOW = -302
+        QV2_ERR_EOS = -303
+        QV2_ERR_TIMEOUT = -304
+        QV2_ERR_HW_FAILURE = -401
+        QV2_ERR_INTERNAL = -402
+    }
+}
+
+' Relationships
+Qv2Buffer <|-- Qv2Buffer1D
+Qv2Buffer <|-- Qv2Buffer2D
+Qv2Buffer .left.> Qv2BufferType
+Qv2Buffer2D ..> Qv2NumPlane : uses
+
+Qv2Work o-- Qv2Buffer
+
+Qv2ComponentFactory ..> Qv2Component : creates
+Qv2ComponentFactory +-down- ComponentType
+
+Qv2Component +-down- Qv2Component_State
+Qv2Component +-right- Qv2Component_Listener
+Qv2Component ..> Qv2Work : processes
+Qv2Component ..> Qv2Param : configured by
+
+Qv2Param +-- Qv2Param_Index
+Qv2Param <|-- Qv2VideoSizeInput
+Qv2Param <|-- Qv2BitrateSetting
+
+@enduml

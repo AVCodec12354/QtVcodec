@@ -46,9 +46,11 @@ add_executable(${PROJECT_NAME}
         renderers/VideoGLWidget.cpp
         renderers/VideoRenderer.cpp
         readers/Y4MExtractor.cpp
-        codecs/bases/C2Component.cpp
-        codecs/apv/enc/C2ApvEnc.cpp
-        codecs/apv/dec/C2ApvDec.cpp
+        codecs/Qv2Core/Qv2ComponentFactory.cpp
+        codecs/apv/enc/Qv2ApvEncoder.cpp
+        codecs/apv/dec/Qv2ApvDecoder.cpp
+        codecs/hevc/enc/Qv2HevcEncoder.cpp
+        codecs/hevc/dec/Qv2HevcDecoder.cpp
         ui/view/mainwindow.cpp
         ui/view/mainwindow.ui
         ui/viewmodels/EncoderViewModel.cpp
@@ -63,6 +65,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/viewmodels
         ${CMAKE_CURRENT_SOURCE_DIR}/renderers
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/Qv2Core
 )
 
 target_link_libraries(${PROJECT_NAME}
