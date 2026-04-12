@@ -36,8 +36,8 @@ package "Qv2Core Interfaces" {
         PLANE_G = 1
         PLANE_B = 2
         PLANE_A = 3
-        MAX_NUM_PLANES = 4
         PLANE_UV = 1
+        MAX_NUM_PLANES = 4
     }
 
     class Qv2Buffer2D {
