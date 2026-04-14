@@ -15,7 +15,6 @@ public:
 
     void start();
     void stop();
-    void testEncoder();
 
     // Basic Settings:
     void setWidth(int value);
@@ -42,10 +41,6 @@ public:
     void setRange(string value);
     void setMasteringDisplay(int value);
     void setContentLightLevel(int value);
-
-private:
-    std::shared_ptr<Qv2Component> mEncoder;
-
 };
 
 #endif // ENCODERVIEWMODEL_H

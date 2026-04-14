@@ -1,8 +1,6 @@
 #include "EncoderViewModel.h"
 #include "QTLogger.h"
 
-#define LOG_TAG "EncoderViewModel"
-
 EncoderViewModel::EncoderViewModel() {
     // TODO:
 }
@@ -97,17 +95,4 @@ void EncoderViewModel::setMasteringDisplay(int value) {
 
 void EncoderViewModel::setContentLightLevel(int value) {
     // TODO
-}
-
-void EncoderViewModel::testEncoder() {
-    QTInfo(LOG_TAG, "Saving configuration and creating encoder...");
-
-    mEncoder = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
-
-    if (!mEncoder) {
-        QTError(LOG_TAG, "Failed to create APV Encoder!");
-        return;
-    }
-    QTDebug(LOG_TAG, "APV Encoder version: "+mEncoder->getVersion());
-
 }
