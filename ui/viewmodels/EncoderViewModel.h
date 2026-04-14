@@ -2,6 +2,10 @@
 #define ENCODERVIEWMODEL_H
 
 #include <iostream>
+#include <memory>
+#include <vector>
+#include "Qv2Core/Qv2Component.h"
+#include "Qv2Core/Qv2ComponentFactory.h"
 
 using namespace std;
 
@@ -11,6 +15,8 @@ public:
 
     void start();
     void stop();
+    void testEncoder();
+
     // Basic Settings:
     void setWidth(int value);
     void setHeight(int value);
@@ -36,6 +42,10 @@ public:
     void setRange(string value);
     void setMasteringDisplay(int value);
     void setContentLightLevel(int value);
+
+private:
+    std::shared_ptr<Qv2Component> mEncoder;
+
 };
 
 #endif // ENCODERVIEWMODEL_H

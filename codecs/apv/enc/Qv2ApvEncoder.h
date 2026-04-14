@@ -32,11 +32,6 @@ private:
     std::unique_ptr<oapve_cdesc_t> mCodecDesc;
     oapv_frms_t mInputFrames;
     oapv_frms_t mReconFrames;
-    
-    int mColorFormat;
-    int mBitDepth;
-    
-    static const int CODEC_MAX_CORES = 4;
 };
 
 #endif // QV2APVENCODER_H

@@ -134,6 +134,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
     });
     connect(ui->btn_save_config, &QPushButton::clicked, window, [this](){
         QTDebug("Encoder", "btn_save_config clicked!");
+        encoderViewModel->testEncoder();
     });
     connect(ui->btn_stop, &QPushButton::clicked, window, [this](){
         encoderViewModel->stop();
