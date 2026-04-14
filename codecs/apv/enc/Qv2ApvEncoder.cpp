@@ -10,6 +10,12 @@ Qv2ApvEncoder::~Qv2ApvEncoder() {
     release();
 }
 
+std::string Qv2ApvEncoder::getVersion() const {
+    unsigned int ver_num;
+    const char* ver_str = oapv_version(&ver_num);
+    return std::string("OpenAPV ") + ver_str;
+}
+
 Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param*>& params) {
     // TODO: Implement configuration logic
     setState(CONFIGURED);

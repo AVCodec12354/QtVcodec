@@ -22,6 +22,7 @@ package "Qv2Core" {
         + getState(): State
         + setState(state: State): void
         + setListener(listener: Listener*): void
+        + {abstract} getVersion(): string
         + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
         + {abstract} query(params: vector<Qv2Param*>): Qv2Status
         + {abstract} queue(items: vector<unique_ptr<Qv2Work>>): Qv2Status
@@ -38,6 +39,7 @@ package "Codec Implementations" {
     
     package "APV Branch" {
         class Qv2ApvEncoder {
+            + getVersion(): string
             + configure(params): Qv2Status
             + query(params): Qv2Status
             + queue(items): Qv2Status
@@ -49,6 +51,7 @@ package "Codec Implementations" {
         }
 
         class Qv2ApvDecoder {
+            + getVersion(): string
             + configure(params): Qv2Status
             + query(params): Qv2Status
             + queue(items): Qv2Status
@@ -62,6 +65,7 @@ package "Codec Implementations" {
 
     package "HEVC Branch" {
         class Qv2HevcEncoder {
+            + getVersion(): string
             + configure(params): Qv2Status
             + query(params): Qv2Status
             + queue(items): Qv2Status
@@ -73,6 +77,7 @@ package "Codec Implementations" {
         }
 
         class Qv2HevcDecoder {
+            + getVersion(): string
             + configure(params): Qv2Status
             + query(params): Qv2Status
             + queue(items): Qv2Status

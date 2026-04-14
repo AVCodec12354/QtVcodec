@@ -75,6 +75,7 @@ package "Qv2Core Interfaces" {
         + getState(): State
         + setState(state: State): void
         + setListener(listener: Listener*): void
+        + {abstract} getVersion(): string
         + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
         + {abstract} query(params: vector<Qv2Param*>): Qv2Status
         + {abstract} queue(items: vector<unique_ptr<Qv2Work>>): Qv2Status

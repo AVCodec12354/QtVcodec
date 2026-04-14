@@ -38,6 +38,8 @@ public:
     std::string getName() const { return mName; }
     State getState() const { return mState; }
     
+    virtual std::string getVersion() const = 0;
+
     void setState(State state) { 
         mState = state; 
         if (auto self = weak_from_this().lock()) {

@@ -12,6 +12,7 @@ public:
     ~Qv2ApvDecoder() override;
 
     // Qv2Component overrides
+    std::string getVersion() const override;
     Qv2Status configure(const std::vector<Qv2Param*>& params) override;
     Qv2Status query(std::vector<Qv2Param*>& params) const override;
     Qv2Status queue(std::vector<std::unique_ptr<Qv2Work>> items) override;
