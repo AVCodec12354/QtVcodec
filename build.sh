@@ -3,4 +3,4 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
-./QtVCodec
+../outputs/QtVCodec
