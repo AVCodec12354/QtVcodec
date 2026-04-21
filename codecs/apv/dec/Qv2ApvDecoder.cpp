@@ -1,5 +1,4 @@
 #include "Qv2ApvDecoder.h"
-#include <QDebug>
 
 Qv2ApvDecoder::Qv2ApvDecoder() {
     mName = "qv2.apv.decoder";
@@ -50,7 +49,7 @@ Qv2Status Qv2ApvDecoder::flush() {
 }
 
 void Qv2ApvDecoder::onStateChanged(State state) {
-    qDebug() << "Qv2ApvDecoder state changed to:" << state;
+
 }
 
 void Qv2ApvDecoder::onRelease() {

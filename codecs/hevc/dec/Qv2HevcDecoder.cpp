@@ -1,5 +1,4 @@
 #include "Qv2HevcDecoder.h"
-#include <QDebug>
 
 Qv2HevcDecoder::Qv2HevcDecoder() {
     mName = "qv2.hevc.decoder";
@@ -44,7 +43,7 @@ Qv2Status Qv2HevcDecoder::flush() {
 }
 
 void Qv2HevcDecoder::onStateChanged(State state) {
-    qDebug() << "Qv2HevcDecoder state changed to:" << state;
+
 }
 
 void Qv2HevcDecoder::onRelease() {

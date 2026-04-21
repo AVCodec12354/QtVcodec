@@ -1,5 +1,5 @@
 #include "Qv2ApvEncoder.h"
-#include "QTLogger.h"
+#include "Qv2Log.h"
 #include <cstring>
 
 #define LOG_TAG "Qv2ApvEncoder"
@@ -20,7 +20,7 @@ Qv2ApvEncoder::Qv2ApvEncoder()
 
     setState(UNINITIALIZED);
 
-    QTInfo(LOG_TAG, "Constructor called.");
+    QV2_LOGI("Constructor called.");
     mName = COMPONENT_NAME;
     mCodecDesc = std::make_unique<oapve_cdesc_t>();
 
@@ -37,20 +37,20 @@ Qv2ApvEncoder::Qv2ApvEncoder()
         oapve_param_t* param = &mCodecDesc->param[i];
         ret = oapve_param_default(param);
         if (OAPV_FAILED(ret)) {
-            QTError(LOG_TAG, "cannot set default parameter");
+            QV2_LOGE("cannot set default parameter");
         }
     }
 
     /* create encoder */
     mEncoderId = oapve_create(mCodecDesc.get(), NULL);
     if (mEncoderId == NULL) {
-        QTError(LOG_TAG, "cannot create APV encoder");
+        QV2_LOGE("cannot create APV encoder");
     }
 
     /* create metadata */
     mMetaDataId = oapvm_create(&ret);
     if (mMetaDataId == NULL) {
-        QTError(LOG_TAG, "cannot create APV metadata");
+        QV2_LOGE("cannot create APV metadata");
     }
 
     for (int32_t i = 0; i < MAX_NUM_FRMS; i++) {
@@ -60,7 +60,7 @@ Qv2ApvEncoder::Qv2ApvEncoder()
 
     mBitstreamBuf = new unsigned char[kMaxBitstreamBufSize];
     if (mBitstreamBuf == nullptr) {
-        QTError(LOG_TAG, QString("cannot allocate bitstream buffer, size=%1").arg(kMaxBitstreamBufSize));
+        QV2_LOGE("cannot allocate bitstream buffer, size=%u", kMaxBitstreamBufSize);
         return;
     }
 
@@ -68,7 +68,7 @@ Qv2ApvEncoder::Qv2ApvEncoder()
 }
 
 Qv2ApvEncoder::~Qv2ApvEncoder() {
-    QTInfo(LOG_TAG, "Destructor called.");
+    QV2_LOGI("Destructor called.");
     release();
 }
 
@@ -79,10 +79,10 @@ std::string Qv2ApvEncoder::getVersion() const {
 }
 
 Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param*>& params) {
-    QTInfo(LOG_TAG, QString("configure() called with %1 parameters.").arg(params.size()));
+    QV2_LOGI("configure() called with %zu parameters.", params.size());
 
     if (mState != UNINITIALIZED && mState != INITIALIZED && mState != CONFIGURED) {
-        QTWarn(LOG_TAG, QString("configure() failed: Invalid state %1").arg(static_cast<int>(mState.load())));
+        QV2_LOGW("configure() failed: Invalid state %d", static_cast<int>(mState.load()));
         return QV2_ERR_INTERNAL;
     }
 
@@ -91,38 +91,38 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param*>& params) {
 }
 
 Qv2Status Qv2ApvEncoder::query(std::vector<Qv2Param*>& params) const {
-    QTDebug(LOG_TAG, "query() called.");
+    QV2_LOGD("query() called.");
     return QV2_OK;
 }
 
 Qv2Status Qv2ApvEncoder::queue(std::vector<std::unique_ptr<Qv2Work>> items) {
-    QTDebug(LOG_TAG, QString("queue() called with %1 items.").arg(items.size()));
+    QV2_LOGD("queue() called with %zu items.", items.size());
     return QV2_OK;
 }
 
 Qv2Status Qv2ApvEncoder::start() {
-    QTInfo(LOG_TAG, "start() called.");
+    QV2_LOGI("start() called.");
     setState(RUNNING);
     return QV2_OK;
 }
 
 Qv2Status Qv2ApvEncoder::stop() {
-    QTInfo(LOG_TAG, "stop() called.");
+    QV2_LOGI("stop() called.");
     setState(STOPPED);
     return QV2_OK;
 }
 
 Qv2Status Qv2ApvEncoder::flush() {
-    QTDebug(LOG_TAG, "flush() called.");
+    QV2_LOGD("flush() called.");
     return QV2_OK;
 }
 
 void Qv2ApvEncoder::onStateChanged(State state) {
-    QTInfo(LOG_TAG, QString("state changed to: %1").arg(static_cast<int>(state)));
+    QV2_LOGI("state changed to: %d", static_cast<int>(state));
 }
 
 void Qv2ApvEncoder::onRelease() {
-    QTInfo(LOG_TAG, "onRelease() called.");
+    QV2_LOGI("onRelease() called.");
     if (mEncoderId) {
         oapve_delete(mEncoderId);
         mEncoderId = nullptr;

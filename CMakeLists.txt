@@ -10,6 +10,7 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Cấu hình thư mục xuất file thực thi
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/outputs)
 
 include(FetchContent)
@@ -67,6 +68,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/renderers
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs/Qv2Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/apv/enc
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/apv/dec
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/hevc/enc
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/hevc/dec
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -75,3 +80,6 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::OpenGLWidgets
         oapv
 )
+
+# Thêm thư mục tests
+add_subdirectory(codecs/tests)
