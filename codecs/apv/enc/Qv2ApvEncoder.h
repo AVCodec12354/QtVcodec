@@ -11,7 +11,6 @@ public:
     Qv2ApvEncoder();
     ~Qv2ApvEncoder() override;
 
-    // Qv2Component overrides
     std::string getVersion() const override;
     Qv2Status configure(const std::vector<Qv2Param*>& params) override;
     Qv2Status query(std::vector<Qv2Param*>& params) const override;
@@ -25,6 +24,8 @@ protected:
     void onRelease() override;
 
 private:
+    void showEncoderParams(oapve_cdesc_t* cdsc) const;
+
     oapve_t mEncoderId = nullptr;
     oapvm_t mMetaDataId = nullptr;
     uint8_t* mBitstreamBuf = nullptr;
@@ -32,6 +33,10 @@ private:
     std::unique_ptr<oapve_cdesc_t> mCodecDesc;
     oapv_frms_t mInputFrames;
     oapv_frms_t mReconFrames;
+    oapv_bitb_t    mBitb;
+    oapve_stat_t   mStat;
+
+    bool mIsRec = false;
 };
 
 #endif // QV2APVENCODER_H
