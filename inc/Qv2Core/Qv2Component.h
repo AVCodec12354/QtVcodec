@@ -25,12 +25,35 @@ public:
         ERROR
     };
 
+    /**
+     * @brief Utility function to convert State to human-readable string.
+     */
+    static inline std::string stateToString(State state) {
+        switch (state) {
+            case UNINITIALIZED: return "UNINITIALIZED";
+            case INITIALIZED:   return "INITIALIZED";
+            case CONFIGURED:    return "CONFIGURED";
+            case STARTING:      return "STARTING";
+            case RUNNING:       return "RUNNING";
+            case FLUSHING:      return "FLUSHING";
+            case PAUSED:        return "PAUSED";
+            case STOPPING:      return "STOPPING";
+            case STOPPED:       return "STOPPED";
+            case RELEASING:     return "RELEASING";
+            case ERROR:         return "ERROR";
+            default:            return "UNKNOWN";
+        }
+    }
+
     class Listener {
     public:
         virtual ~Listener() = default;
-        virtual void onWorkDone(std::weak_ptr<Qv2Component> component, std::vector<std::unique_ptr<Qv2Work>> workItems) = 0;
-        virtual void onError(std::weak_ptr<Qv2Component> component, Qv2Status error) = 0;
-        virtual void onStateChanged(std::weak_ptr<Qv2Component> component, State newState) = 0;
+        virtual void onWorkDone(std::weak_ptr<Qv2Component> component,
+                                std::vector<std::unique_ptr<Qv2Work>> workItems) = 0;
+        virtual void onError(std::weak_ptr<Qv2Component> component,
+                             Qv2Status error) = 0;
+        virtual void onStateChanged(std::weak_ptr<Qv2Component> component,
+                                    State newState) = 0;
     };
 
     virtual ~Qv2Component() = default;
@@ -38,6 +61,8 @@ public:
     std::string getName() const { return mName; }
     State getState() const { return mState; }
     
+    virtual std::string getVersion() const = 0;
+
     void setState(State state) { 
         mState = state; 
         if (auto self = weak_from_this().lock()) {

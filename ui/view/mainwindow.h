@@ -29,6 +29,7 @@ private:
 
     std::unique_ptr<VideoRenderer> videoRenderer;
     std::unique_ptr<EncoderViewModel> encoderViewModel;
+    std::shared_ptr<Qv2Component> mEncoder;
 
     void resetEncoderUI();
     void setValidatorForEditText();

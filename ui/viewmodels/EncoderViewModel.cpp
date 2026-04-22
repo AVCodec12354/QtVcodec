@@ -1,4 +1,5 @@
 #include "EncoderViewModel.h"
+#include "QTLogger.h"
 
 EncoderViewModel::EncoderViewModel() {
     // TODO:

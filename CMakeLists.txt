@@ -7,9 +7,11 @@ set(CMAKE_AUTORCC ON)
 set(PROJECT_NAME QtVCodec)
 project(${PROJECT_NAME} LANGUAGES CXX)
 
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Cấu hình thư mục xuất file thực thi
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/outputs)
 
 include(FetchContent)
 
@@ -46,7 +48,7 @@ add_executable(${PROJECT_NAME}
         renderers/VideoGLWidget.cpp
         renderers/VideoRenderer.cpp
         readers/Y4MExtractor.cpp
-        codecs/Qv2Core/Qv2ComponentFactory.cpp
+        inc/Qv2Core/Qv2ComponentFactory.cpp
         codecs/apv/enc/Qv2ApvEncoder.cpp
         codecs/apv/dec/Qv2ApvDecoder.cpp
         codecs/hevc/enc/Qv2HevcEncoder.cpp
@@ -65,7 +67,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/viewmodels
         ${CMAKE_CURRENT_SOURCE_DIR}/renderers
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs
-        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/Qv2Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc/Qv2Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/apv/enc
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/apv/dec
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/hevc/enc
+        ${CMAKE_CURRENT_SOURCE_DIR}/codecs/hevc/dec
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -74,3 +80,6 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::OpenGLWidgets
         oapv
 )
+
+# Thêm thư mục tests
+add_subdirectory(codecs/tests)

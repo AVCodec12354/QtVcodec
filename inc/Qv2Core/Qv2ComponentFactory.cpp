@@ -1,6 +1,6 @@
 #include "Qv2ComponentFactory.h"
-#include "apv/enc/Qv2ApvEncoder.h"
-#include "apv/dec/Qv2ApvDecoder.h"
+#include "Qv2ApvEncoder.h"
+#include "Qv2ApvDecoder.h"
 
 std::shared_ptr<Qv2Component> Qv2ComponentFactory::createByType(ComponentType type) {
     switch (type) {

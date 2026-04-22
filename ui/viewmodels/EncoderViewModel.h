@@ -2,6 +2,10 @@
 #define ENCODERVIEWMODEL_H
 
 #include <iostream>
+#include <memory>
+#include <vector>
+#include "Qv2Component.h"
+#include "Qv2ComponentFactory.h"
 
 using namespace std;
 
@@ -11,6 +15,7 @@ public:
 
     void start();
     void stop();
+
     // Basic Settings:
     void setWidth(int value);
     void setHeight(int value);

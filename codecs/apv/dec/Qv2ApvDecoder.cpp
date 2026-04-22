@@ -1,5 +1,4 @@
 #include "Qv2ApvDecoder.h"
-#include <QDebug>
 
 Qv2ApvDecoder::Qv2ApvDecoder() {
     mName = "qv2.apv.decoder";
@@ -8,6 +7,12 @@ Qv2ApvDecoder::Qv2ApvDecoder() {
 
 Qv2ApvDecoder::~Qv2ApvDecoder() {
     release();
+}
+
+std::string Qv2ApvDecoder::getVersion() const {
+    unsigned int ver_num;
+    const char* ver_str = oapv_version(&ver_num);
+    return std::string("OpenAPV ") + ver_str;
 }
 
 Qv2Status Qv2ApvDecoder::configure(const std::vector<Qv2Param*>& params) {
@@ -44,7 +49,7 @@ Qv2Status Qv2ApvDecoder::flush() {
 }
 
 void Qv2ApvDecoder::onStateChanged(State state) {
-    qDebug() << "Qv2ApvDecoder state changed to:" << state;
+
 }
 
 void Qv2ApvDecoder::onRelease() {

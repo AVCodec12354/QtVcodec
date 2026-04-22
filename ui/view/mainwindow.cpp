@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "QTLogger.h"
 
+#define LOG_TAG "MAIN_WINDOW"
+
 MainWindow::MainWindow(QWidget *parent)
         : QMainWindow(parent)
         , ui(std::make_unique<Ui::MainWindow>())
@@ -134,6 +136,13 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
     });
     connect(ui->btn_save_config, &QPushButton::clicked, window, [this](){
         QTDebug("Encoder", "btn_save_config clicked!");
+        QTInfo(LOG_TAG, "Saving configuration and creating encoder...");
+        mEncoder = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
+        if (!mEncoder) {
+            QTError(LOG_TAG, "Failed to create APV Encoder!");
+            return;
+        }
+        QTDebug(LOG_TAG, "APV Encoder version: "+mEncoder->getVersion());
     });
     connect(ui->btn_stop, &QPushButton::clicked, window, [this](){
         encoderViewModel->stop();

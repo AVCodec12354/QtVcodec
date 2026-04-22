@@ -10,7 +10,7 @@
 #include <QDebug>
 #include <QMutex>
 
-#include "../readers/oapv_app_y4m.h"
+#include "../codecs/apv/oapv_app_y4m.h"
 
 class VideoGLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
 public:

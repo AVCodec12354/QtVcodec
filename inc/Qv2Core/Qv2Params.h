@@ -20,7 +20,11 @@ struct Qv2Param {
         kIndexBitrate     = 0x02,
         kIndexFrameRate   = 0x03,
         kIndexBitDepth    = 0x04,
-        kIndexColorFormat = 0x05
+        kIndexColorFormat = 0x05,
+        kIndexProfile     = 0x06,
+        kIndexLevel       = 0x07,
+        kIndexBand        = 0x08,
+        kIndexQP          = 0x09
     };
 
     uint32_t mId;
@@ -52,7 +56,8 @@ struct Qv2VideoSizeStreamT : public Qv2Param {
     static constexpr uint32_t ID = makeId(S, SETTING, kIndexVideoSize);
     int mWidth;
     int mHeight;
-    Qv2VideoSizeStreamT() : Qv2Param(ID, sizeof(Qv2VideoSizeStreamT)), mWidth(0), mHeight(0) {}
+    Qv2VideoSizeStreamT() : Qv2Param(ID, sizeof(Qv2VideoSizeStreamT)), 
+                            mWidth(0), mHeight(0) {}
 };
 
 using Qv2VideoSizeInput  = Qv2VideoSizeStreamT<Qv2Param::INPUT>;
@@ -64,7 +69,8 @@ using Qv2VideoSizeOutput = Qv2VideoSizeStreamT<Qv2Param::OUTPUT>;
 struct Qv2BitrateSetting : public Qv2Param {
     static constexpr uint32_t ID = makeId(OUTPUT, SETTING, kIndexBitrate);
     uint32_t mBitrate; 
-    Qv2BitrateSetting() : Qv2Param(ID, sizeof(Qv2BitrateSetting)), mBitrate(0) {}
+    Qv2BitrateSetting() : Qv2Param(ID, sizeof(Qv2BitrateSetting)), 
+                          mBitrate(0) {}
 };
 
 /**
@@ -74,7 +80,8 @@ template<Qv2Param::Scope S>
 struct Qv2FrameRateSettingT : public Qv2Param {
     static constexpr uint32_t ID = makeId(S, SETTING, kIndexFrameRate);
     float mFps;
-    Qv2FrameRateSettingT() : Qv2Param(ID, sizeof(Qv2FrameRateSettingT)), mFps(0.0f) {}
+    Qv2FrameRateSettingT() : Qv2Param(ID, sizeof(Qv2FrameRateSettingT)), 
+                             mFps(0.0f) {}
 };
 
 using Qv2FrameRateInput  = Qv2FrameRateSettingT<Qv2Param::INPUT>;
@@ -87,7 +94,8 @@ template<Qv2Param::Scope S>
 struct Qv2BitDepthSettingT : public Qv2Param {
     static constexpr uint32_t ID = makeId(S, SETTING, kIndexBitDepth);
     int mBitDepth;
-    Qv2BitDepthSettingT() : Qv2Param(ID, sizeof(Qv2BitDepthSettingT)), mBitDepth(8) {}
+    Qv2BitDepthSettingT() : Qv2Param(ID, sizeof(Qv2BitDepthSettingT)), 
+                            mBitDepth(8) {}
 };
 
 using Qv2BitDepthInput  = Qv2BitDepthSettingT<Qv2Param::INPUT>;
@@ -100,10 +108,65 @@ template<Qv2Param::Scope S>
 struct Qv2ColorFormatSettingT : public Qv2Param {
     static constexpr uint32_t ID = makeId(S, SETTING, kIndexColorFormat);
     int mColorFormat; 
-    Qv2ColorFormatSettingT() : Qv2Param(ID, sizeof(Qv2ColorFormatSettingT)), mColorFormat(0) {}
+    Qv2ColorFormatSettingT() : Qv2Param(ID, sizeof(Qv2ColorFormatSettingT)), 
+                               mColorFormat(0) {}
 };
 
 using Qv2ColorFormatInput  = Qv2ColorFormatSettingT<Qv2Param::INPUT>;
 using Qv2ColorFormatOutput = Qv2ColorFormatSettingT<Qv2Param::OUTPUT>;
+
+/**
+ * @brief Profile IDC
+ */
+template<Qv2Param::Scope S>
+struct Qv2ProfileSettingT : public Qv2Param {
+    static constexpr uint32_t ID = makeId(S, SETTING, kIndexProfile);
+    int mProfile;
+    Qv2ProfileSettingT() : Qv2Param(ID, sizeof(Qv2ProfileSettingT)), 
+                           mProfile(0) {}
+};
+
+using Qv2ProfileInput  = Qv2ProfileSettingT<Qv2Param::INPUT>;
+using Qv2ProfileOutput = Qv2ProfileSettingT<Qv2Param::OUTPUT>;
+
+/**
+ * @brief Level IDC
+ */
+template<Qv2Param::Scope S>
+struct Qv2LevelSettingT : public Qv2Param {
+    static constexpr uint32_t ID = makeId(S, SETTING, kIndexLevel);
+    int mLevel;
+    Qv2LevelSettingT() : Qv2Param(ID, sizeof(Qv2LevelSettingT)), 
+                         mLevel(0) {}
+};
+
+using Qv2LevelInput  = Qv2LevelSettingT<Qv2Param::INPUT>;
+using Qv2LevelOutput = Qv2LevelSettingT<Qv2Param::OUTPUT>;
+
+/**
+ * @brief Band IDC
+ */
+template<Qv2Param::Scope S>
+struct Qv2BandSettingT : public Qv2Param {
+    static constexpr uint32_t ID = makeId(S, SETTING, kIndexBand);
+    int mBand;
+    Qv2BandSettingT() : Qv2Param(ID, sizeof(Qv2BandSettingT)), 
+                        mBand(0) {}
+};
+
+using Qv2BandInput  = Qv2BandSettingT<Qv2Param::INPUT>;
+using Qv2BandOutput = Qv2BandSettingT<Qv2Param::OUTPUT>;
+
+/**
+ * @brief Quantization Parameter (QP)
+ */
+template<Qv2Param::Scope S>
+struct Qv2QPSettingT : public Qv2Param {
+    static constexpr uint32_t ID = makeId(S, SETTING, kIndexQP);
+    int mQP;
+    Qv2QPSettingT() : Qv2Param(ID, sizeof(Qv2QPSettingT)), mQP(0) {}
+};
+
+using Qv2QPInput = Qv2QPSettingT<Qv2Param::INPUT>;
 
 #endif // QV2PARAMS_H
