@@ -3,7 +3,7 @@
 #define LOG_TAG "Qv2ApvEncoder"
 
 #include "Qv2Log.h"
-#include "../../../readers/oapv_app_util.h"
+#include "../oapv_app_util.h"
 #include <cstring>
 #include <limits>
 

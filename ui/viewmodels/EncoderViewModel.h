@@ -4,8 +4,8 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "Qv2Core/Qv2Component.h"
-#include "Qv2Core/Qv2ComponentFactory.h"
+#include "Qv2Component.h"
+#include "Qv2ComponentFactory.h"
 
 using namespace std;
 

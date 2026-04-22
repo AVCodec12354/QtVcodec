@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <string>
 #include "../ui/helpers/QTLogger.h"
-#include "oapv_app_y4m.h"
+#include "../codecs/apv/oapv_app_y4m.h"
 
 class Y4MExtractor {
 public:

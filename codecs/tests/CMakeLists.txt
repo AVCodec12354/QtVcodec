@@ -15,12 +15,14 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/codecs/apv/dec
     ${CMAKE_SOURCE_DIR}/codecs/hevc/enc
     ${CMAKE_SOURCE_DIR}/codecs/hevc/dec
+    ${CMAKE_SOURCE_DIR}/readers
+    ${CMAKE_SOURCE_DIR}/inc/Qv2Core
     ${CMAKE_SOURCE_DIR}/inc
 )
 
 
 set(CORE_SOURCES
-    ${CMAKE_SOURCE_DIR}/codecs/Qv2Core/Qv2ComponentFactory.cpp
+    ${CMAKE_SOURCE_DIR}/inc/Qv2Core/Qv2ComponentFactory.cpp
     ${CMAKE_SOURCE_DIR}/codecs/apv/enc/Qv2ApvEncoder.cpp
     ${CMAKE_SOURCE_DIR}/codecs/apv/dec/Qv2ApvDecoder.cpp
     ${CMAKE_SOURCE_DIR}/codecs/hevc/enc/Qv2HevcEncoder.cpp
