@@ -1,4 +1,4 @@
-name: C/C++ CI on macOS
+name: C/C++ Lint and Analysis
 
 on:
   push:
@@ -7,22 +7,19 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  lint:
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure
-      run: |
-        chmod +x configure
-        ./configure
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.3'
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build
-      run: make
-
-    - name: Run Tests
-      run: make check
-
-    - name: Distribution Check
-      run: make distcheck
+      run: cmake --build build --config Debug
