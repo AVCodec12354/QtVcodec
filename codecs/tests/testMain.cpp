@@ -1,4 +1,5 @@
 #include "Qv2ComponentFactory.h"
+#include "Qv2Buffer.h"
 #include "oapv.h"
 #include <cstdio>
 #include <vector>
@@ -7,15 +8,57 @@
 
 #define LOG_TAG "testMain"
 
+/**
+ * @brief Kiểm tra việc tạo Qv2Buffer theo kiến trúc mới (Block-based)
+ */
+void testBufferCreation() {
+    printf("--- Testing Qv2Buffer Creation ---\n");
+
+    // 1. Test Linear Buffer (dùng cho Bitstream)
+    printf("[1] Creating Linear Buffer...\n");
+    std::vector<uint8_t> rawData(1024, 0xAB);
+    auto block1d = std::make_shared<Qv2Block1D>(rawData.data(), 0, rawData.size());
+    auto linearBuf = Qv2Buffer::CreateLinearBuffer(block1d);
+    
+    assert(linearBuf->type() == Qv2Buffer::LINEAR);
+    assert(linearBuf->linearBlocks().size() == 1);
+    assert(linearBuf->linearBlocks()[0]->capacity() == 1024);
+    printf("    Linear Buffer created successfully. Capacity: %zu\n", linearBuf->linearBlocks()[0]->capacity());
+
+    // 2. Test Graphic Buffer (dùng cho YUV/Raw frames)
+    printf("[2] Creating Graphic Buffer (YUV422)...\n");
+    uint32_t w = 128, h = 128;
+    auto block2d = std::make_shared<Qv2Block2D>(w, h, OAPV_CF_YCBCR422, 10);
+    
+    // Giả lập cấp phát plane
+    std::vector<uint16_t> yPlane(w * h, 512);
+    block2d->setPlane(PLANE_Y, reinterpret_cast<uint8_t*>(yPlane.data()), w * 2, h);
+    
+    auto graphicBuf = Qv2Buffer::CreateGraphicBuffer(block2d);
+    
+    assert(graphicBuf->type() == Qv2Buffer::GRAPHIC);
+    assert(graphicBuf->graphicBlocks().size() == 1);
+    assert(graphicBuf->graphicBlocks()[0]->width() == 128);
+    assert(graphicBuf->graphicBlocks()[0]->numPlanes() == 1);
+    printf("    Graphic Buffer created successfully. Size: %dx%d, Planes: %d\n", 
+           graphicBuf->graphicBlocks()[0]->width(), 
+           graphicBuf->graphicBlocks()[0]->height(),
+           graphicBuf->graphicBlocks()[0]->numPlanes());
+
+    printf("--- Buffer Creation Test PASSED ---\n\n");
+}
+
 class TestListener : public Qv2Component::Listener {
 public:
     void onWorkDone(std::weak_ptr<Qv2Component> component,
                     std::vector<std::unique_ptr<Qv2Work>> workItems) override {
         printf("  [Listener] onWorkDone: processed %zu items\n", workItems.size());
         for (auto& item : workItems) {
-            if (item->result == 0 && item->output) {
-                auto out = static_cast<Qv2Buffer1D*>(item->output.get());
-                printf("    - Encoded bitstream size: %zu bytes\n", out->getSize());
+            if (item->result == 0 && item->output && item->output->type() == Qv2Buffer::LINEAR) {
+                if (!item->output->linearBlocks().empty()) {
+                    auto outBlock = item->output->linearBlocks()[0];
+                    printf("    - Encoded bitstream size: %zu bytes\n", outBlock->size());
+                }
             }
         }
     }
@@ -64,7 +107,7 @@ void testComponent(Qv2ComponentFactory::ComponentType type,
     // 2. Start
     component->start();
 
-    // 3. Queue Work (Simulate 1 frame encoding)
+    // 3. Queue Work
     if (type == Qv2ComponentFactory::ENCODER_APV) {
         constexpr uint32_t width = 1920;
         constexpr uint32_t height = 1080;
@@ -81,13 +124,16 @@ void testComponent(Qv2ComponentFactory::ComponentType type,
         std::vector<std::unique_ptr<Qv2Work>> items;
         auto item = std::make_unique<Qv2Work>();
 
-        auto input = std::make_shared<Qv2Buffer2D>(width, height, OAPV_CF_YCBCR422, bitDepth);
-        input->setPlane(PLANE_Y, reinterpret_cast<uint8_t*>(planeY.data()), yStride, height);
-        input->setPlane(PLANE_U, reinterpret_cast<uint8_t*>(planeU.data()), cStride, height);
-        input->setPlane(PLANE_V, reinterpret_cast<uint8_t*>(planeV.data()), cStride, height);
-        item->input = input;
+        // Cách tạo Input Buffer mới
+        auto inputBlock = std::make_shared<Qv2Block2D>(width, height, OAPV_CF_YCBCR422, bitDepth);
+        inputBlock->setPlane(PLANE_Y, reinterpret_cast<uint8_t*>(planeY.data()), yStride, height);
+        inputBlock->setPlane(PLANE_U, reinterpret_cast<uint8_t*>(planeU.data()), cStride, height);
+        inputBlock->setPlane(PLANE_V, reinterpret_cast<uint8_t*>(planeV.data()), cStride, height);
+        item->input = Qv2Buffer::CreateGraphicBuffer(inputBlock);
 
-        item->output = std::make_shared<Qv2Buffer1D>(outData.data(), 0, outData.size());
+        // Cách tạo Output Buffer mới
+        auto outputBlock = std::make_shared<Qv2Block1D>(outData.data(), 0, outData.size());
+        item->output = Qv2Buffer::CreateLinearBuffer(outputBlock);
 
         items.push_back(std::move(item));
         printf("  Queueing 1 frame for encoding...\n");
@@ -102,7 +148,13 @@ void testComponent(Qv2ComponentFactory::ComponentType type,
 
 int main() {
     printf("=== Qv2Component Integration Tests ===\n");
+    
+    // Chạy test tạo buffer trước
+    testBufferCreation();
+    
+    // Test tích hợp component
     testComponent(Qv2ComponentFactory::ENCODER_APV, "ENCODER_APV");
+    
     printf("All tests completed successfully!\n");
     return 0;
 }

@@ -3,39 +3,8 @@
 
 #include <cstdint>
 #include <cstddef>
-
-enum class Qv2BufferType {
-    BUFFER_1D,
-    BUFFER_2D
-};
-
-class Qv2Buffer {
-public:
-    virtual ~Qv2Buffer() = default;
-    virtual Qv2BufferType getType() const = 0;
-
-    uint64_t mTimestamp = 0;
-    uint32_t mFlags = 0;
-};
-
-class Qv2Buffer1D : public Qv2Buffer {
-public:
-    Qv2BufferType getType() const override { return Qv2BufferType::BUFFER_1D; }
-
-    Qv2Buffer1D(uint8_t* data, size_t size, size_t capacity)
-        : mData(data), mSize(size), mCapacity(capacity) {}
-
-    uint8_t* getData() { return mData; }
-    size_t getSize() const { return mSize; }
-    size_t getCapacity() const { return mCapacity; }
-    
-    void setSize(size_t size) { mSize = size; }
-
-private:
-    uint8_t* mData;
-    size_t mSize;
-    size_t mCapacity;
-};
+#include <memory>
+#include <vector>
 
 enum Qv2NumPlane : uint32_t {
     PLANE_Y = 0,
@@ -49,11 +18,28 @@ enum Qv2NumPlane : uint32_t {
     MAX_NUM_PLANES = 4,
 };
 
-class Qv2Buffer2D : public Qv2Buffer {
-public:
-    Qv2BufferType getType() const override { return Qv2BufferType::BUFFER_2D; }
 
-    Qv2Buffer2D(uint32_t width, uint32_t height, uint32_t format, uint32_t bitDepth)
+class Qv2Block1D {
+public:
+    Qv2Block1D(uint8_t* data, size_t size, size_t capacity)
+        : mData(data), mSize(size), mCapacity(capacity) {}
+
+    uint8_t* data() { return mData; }
+    const uint8_t* data() const { return mData; }
+    size_t size() const { return mSize; }
+    size_t capacity() const { return mCapacity; }
+    void setSize(size_t size) { mSize = size; }
+
+private:
+    uint8_t* mData;
+    size_t mSize;
+    size_t mCapacity;
+};
+
+
+class Qv2Block2D {
+public:
+    Qv2Block2D(uint32_t width, uint32_t height, uint32_t format, uint32_t bitDepth)
         : mWidth(width), mHeight(height), mFormat(format), mBitDepth(bitDepth), mNumPlanes(0) {
         for (uint32_t i = 0; i < MAX_NUM_PLANES; ++i) {
             mAddr[i] = nullptr;
@@ -62,36 +48,80 @@ public:
         }
     }
 
-    uint32_t getWidth() const { return mWidth; }
-    uint32_t getHeight() const { return mHeight; }
-    uint32_t getBitDepth() const { return mBitDepth; }
-    uint32_t getFormat() const { return mFormat; }
-    uint32_t getNumPlanes() const { return mNumPlanes; }
+    uint32_t width() const { return mWidth; }
+    uint32_t height() const { return mHeight; }
+    uint32_t format() const { return mFormat; }
+    uint32_t bitDepth() const { return mBitDepth; }
+    uint32_t numPlanes() const { return mNumPlanes; }
 
-    uint8_t* getAddr(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mAddr[index] : nullptr; }
-    uint32_t getStride(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mStride[index] : 0; }
-    uint32_t getElevation(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mElevation[index] : 0; }
+    uint8_t* addr(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mAddr[index] : nullptr; }
+    uint32_t stride(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mStride[index] : 0; }
+    uint32_t elevation(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mElevation[index] : 0; }
 
     void setPlane(uint32_t index, uint8_t* addr, uint32_t stride, uint32_t elevation) {
         if (index < MAX_NUM_PLANES) {
             mAddr[index] = addr;
             mStride[index] = stride;
             mElevation[index] = elevation;
-            if (index >= mNumPlanes) {
-                mNumPlanes = index + 1;
-            }
+            if (index >= mNumPlanes) mNumPlanes = index + 1;
         }
     }
 
 private:
     uint32_t mWidth;
     uint32_t mHeight;
-    uint32_t mBitDepth;
-    uint32_t mStride[MAX_NUM_PLANES];
-    uint32_t mElevation[MAX_NUM_PLANES];
     uint32_t mFormat;
+    uint32_t mBitDepth;
     uint32_t mNumPlanes;
     uint8_t* mAddr[MAX_NUM_PLANES];
+    uint32_t mStride[MAX_NUM_PLANES];
+    uint32_t mElevation[MAX_NUM_PLANES];
+};
+
+/**
+ * @brief Qv2Buffer: Lớp Container (giống C2Buffer).
+ * Kết hợp Blocks dữ liệu với Metadata.
+ */
+class Qv2Buffer {
+public:
+    enum Type {
+        EMPTY,
+        LINEAR,
+        GRAPHIC
+    };
+
+
+    static std::shared_ptr<Qv2Buffer> CreateLinearBuffer(std::shared_ptr<Qv2Block1D> block) {
+        auto buffer = std::make_shared<Qv2Buffer>(LINEAR);
+        buffer->mBlocks1D.push_back(block);
+        return buffer;
+    }
+
+    static std::shared_ptr<Qv2Buffer> CreateGraphicBuffer(std::shared_ptr<Qv2Block2D> block) {
+        auto buffer = std::make_shared<Qv2Buffer>(GRAPHIC);
+        buffer->mBlocks2D.push_back(block);
+        return buffer;
+    }
+
+    explicit Qv2Buffer(Type type) : mType(type), mTimestamp(0), mFlags(0) {}
+    virtual ~Qv2Buffer() = default;
+
+    Type type() const { return mType; }
+
+    const std::vector<std::shared_ptr<Qv2Block1D>>& linearBlocks() const { return mBlocks1D; }
+    const std::vector<std::shared_ptr<Qv2Block2D>>& graphicBlocks() const { return mBlocks2D; }
+
+    uint64_t timestamp() const { return mTimestamp; }
+    void setTimestamp(uint64_t timestamp) { mTimestamp = timestamp; }
+    uint32_t flags() const { return mFlags; }
+    void setFlags(uint32_t flags) { mFlags = flags; }
+
+private:
+    uint64_t mTimestamp;
+    uint32_t mFlags;
+    Type mType;
+    std::vector<std::shared_ptr<Qv2Block1D>> mBlocks1D;
+    std::vector<std::shared_ptr<Qv2Block2D>> mBlocks2D;
 };
 
 #endif // QV2BUFFER_H

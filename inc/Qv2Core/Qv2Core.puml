@@ -6,25 +6,29 @@ skinparam linetype ortho
 
 package "Qv2Core Interfaces" {
 
-    enum Qv2BufferType {
-        BUFFER_1D
-        BUFFER_2D
+    enum Qv2Buffer_Type {
+        EMPTY
+        LINEAR
+        GRAPHIC
     }
 
-    abstract class Qv2Buffer {
+    class Qv2Buffer {
         + mTimestamp: uint64_t
         + mFlags: uint32_t
-        + {abstract} getType(): Qv2BufferType
+        + type(): Qv2Buffer_Type
+        + linearBlocks(): vector<shared_ptr<Qv2Block1D>>
+        + graphicBlocks(): vector<shared_ptr<Qv2Block2D>>
+        {static} + CreateLinearBuffer(block): shared_ptr<Qv2Buffer>
+        {static} + CreateGraphicBuffer(block): shared_ptr<Qv2Buffer>
     }
 
-    class Qv2Buffer1D {
+    class Qv2Block1D {
         - mData: uint8_t*
         - mSize: size_t
         - mCapacity: size_t
-        + getType(): Qv2BufferType
-        + getData(): uint8_t*
-        + getSize(): size_t
-        + getCapacity(): size_t
+        + data(): uint8_t*
+        + size(): size_t
+        + capacity(): size_t
         + setSize(size: size_t): void
     }
 
@@ -40,7 +44,7 @@ package "Qv2Core Interfaces" {
         MAX_NUM_PLANES = 4
     }
 
-    class Qv2Buffer2D {
+    class Qv2Block2D {
         - mWidth: uint32_t
         - mHeight: uint32_t
         - mBitDepth: uint32_t
@@ -49,15 +53,14 @@ package "Qv2Core Interfaces" {
         - mAddr: uint8_t*[MAX_NUM_PLANES]
         - mStride: uint32_t[MAX_NUM_PLANES]
         - mElevation: uint32_t[MAX_NUM_PLANES]
-        + getType(): Qv2BufferType
-        + getWidth(): uint32_t
-        + getHeight(): uint32_t
-        + getBitDepth(): uint32_t
-        + getFormat(): uint32_t
-        + getNumPlanes(): uint32_t
-        + getAddr(index: uint32_t): uint8_t*
-        + getStride(index: uint32_t): uint32_t
-        + getElevation(index: uint32_t): uint32_t
+        + width(): uint32_t
+        + height(): uint32_t
+        + bitDepth(): uint32_t
+        + format(): uint32_t
+        + numPlanes(): uint32_t
+        + addr(index: uint32_t): uint8_t*
+        + stride(index: uint32_t): uint32_t
+        + elevation(index: uint32_t): uint32_t
         + setPlane(index, addr, stride, elevation): void
     }
 
@@ -158,10 +161,10 @@ package "Qv2Core Interfaces" {
 }
 
 ' Relationships
-Qv2Buffer <|-- Qv2Buffer1D
-Qv2Buffer <|-- Qv2Buffer2D
-Qv2Buffer .left.> Qv2BufferType
-Qv2Buffer2D ..> Qv2NumPlane : uses
+Qv2Buffer o-- Qv2Block1D
+Qv2Buffer o-- Qv2Block2D
+Qv2Buffer +-- Qv2Buffer_Type
+Qv2Block2D ..> Qv2NumPlane : uses
 
 Qv2Work o-- Qv2Buffer
 
