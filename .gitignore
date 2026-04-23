@@ -1,0 +1,24 @@
+gitignore
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+YUVSourceTest
+
+# Build directories
+build/
+bin/
+out/
+pkgconfig/
+
+# IDE folders
+.vscode/
+.idea/
