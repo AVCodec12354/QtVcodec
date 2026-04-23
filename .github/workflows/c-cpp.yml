@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: C/C++ CI on macOS
 
 on:
   push:
@@ -8,16 +8,21 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
-    - name: make
+
+    - name: Configure
+      run: |
+        chmod +x configure
+        ./configure
+
+    - name: Build
       run: make
-    - name: make check
+
+    - name: Run Tests
       run: make check
-    - name: make distcheck
+
+    - name: Distribution Check
       run: make distcheck
