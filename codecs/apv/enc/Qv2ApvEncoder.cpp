@@ -256,7 +256,7 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
             if (item->output && !item->output->linearBlocks().empty()) {
                 auto outBlock = item->output->linearBlocks()[0];
                 if (outBlock->capacity() >= (size_t)stat.write) {
-                    std::memcpy(outBlock->data(), bitb.addr, stat.write);
+                    std::memcpy(outBlock->data(), bitb->addr, stat.write);
                     outBlock->setSize(stat.write);
                     item->result = QV2_OK;
                 } else {
