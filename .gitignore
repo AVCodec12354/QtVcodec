@@ -18,7 +18,12 @@ build/
 bin/
 out/
 pkgconfig/
+outputs/
+outputs/tests/
 
 # IDE folders
 .vscode/
 .idea/
+
+# GTest specific (if downloaded locally)
+googletest/

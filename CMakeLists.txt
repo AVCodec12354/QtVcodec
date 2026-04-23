@@ -40,6 +40,15 @@ if(NOT openapv_lib_POPULATED)
     add_subdirectory(${openapv_lib_SOURCE_DIR} ${openapv_lib_BINARY_DIR})
 endif()
 
+# --- Fetch Google Test ---
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        main
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 
@@ -47,7 +56,6 @@ add_executable(${PROJECT_NAME}
         src/main.cpp
         renderers/VideoGLWidget.cpp
         renderers/VideoRenderer.cpp
-        readers/Y4MExtractor.cpp
         inc/Qv2Core/Qv2ComponentFactory.cpp
         codecs/apv/enc/Qv2ApvEncoder.cpp
         codecs/apv/dec/Qv2ApvDecoder.cpp
@@ -83,3 +91,4 @@ target_link_libraries(${PROJECT_NAME}
 
 # Thêm thư mục tests
 add_subdirectory(codecs/tests)
+add_subdirectory(readers/tests)
