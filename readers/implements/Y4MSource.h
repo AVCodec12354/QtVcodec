@@ -1,6 +1,6 @@
 #pragma once
 
-#include "YUVSource.h"
+#include <YUVSource.h>
 
 class Y4MSource : public YUVSource {
 public:
@@ -11,12 +11,11 @@ public:
             fseek(mFile.get(), 0, SEEK_SET);
         }
     };
-    ~Y4MSource() override = default;
 
-    std::unique_ptr<Qv2Buffer> getBuffer() override;
+    std::shared_ptr<Qv2Buffer> getBuffer() override;
 protected:
     int64_t calculateTotalFrame() override;
 private:
     bool isY4M();
     void skipFileHeader();
-}
+};

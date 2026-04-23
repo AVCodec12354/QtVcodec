@@ -34,8 +34,9 @@ public:
             int width,
             int height,
             int bitDepth = 8,
-            ColorFormat colorFormat = QV2FormatYUV420Planar
+            Qv2ColorFormat colorFormat = QV2FormatYUV420Planar
     ) {
+        std::cout << "Open file: " << filePath << std::endl;
         mFile.reset(fopen(filePath.c_str(), "rb"));
         mWidth = width;
         mHeight = height;
@@ -46,9 +47,11 @@ public:
         mTotalFrame = calculateTotalFrame();
     };
 
-    virtual std::unique_ptr<Qv2Buffer> getBuffer() = 0;
+    virtual std::shared_ptr<Qv2Buffer> getBuffer() = 0;
     int64_t getCurrentFrame() { return mCurrentFrame; }
     int64_t getTotalFrame() { return mTotalFrame; }
+    int getWidth() { return mWidth; }
+    int getHeight() { return mHeight; }
 
 protected:
     virtual int64_t calculateTotalFrame() = 0;
@@ -59,5 +62,5 @@ protected:
     int mWidth, mHeight, mBitDepth;
     int64_t mCurrentFrame, mTotalFrame;
     std::unique_ptr<FILE, decltype(&std::fclose)> mFile;
-    ColorFormat mColorFormat;
+    Qv2ColorFormat mColorFormat;
 };

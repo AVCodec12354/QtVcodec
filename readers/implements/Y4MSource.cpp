@@ -1,6 +1,6 @@
 #include "Y4MSource.h"
 
-std::unique_ptr<Qv2Buffer> Y4MSource::getBuffer() {
+std::shared_ptr<Qv2Buffer> Y4MSource::getBuffer() {
     char frameMarker[6];
     if (fread(frameMarker, 1, 6, mFile.get()) == 6) {
         if (strncmp(frameMarker, "FRAME", 5) != 0) {
@@ -31,7 +31,7 @@ int64_t Y4MSource::calculateTotalFrame() {
     if (mFile == nullptr) return 0;
     int bytesPerSample = (mBitDepth > 8) ? 2 : 1;
     int64_t frameSize =  0;
-    for (int planeSize : plane) { frameSize += planeSize; }
+    for (int i = 0; i < mNumOfPlane; i++) { frameSize += mPlaneInfo[i].getSize(); }
     // 6 mean FRAME in raw file
     int64_t frameDataSize = static_cast<int64_t>(frameSize * bytesPerSample) + 6;
 

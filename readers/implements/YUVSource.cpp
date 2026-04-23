@@ -1,14 +1,13 @@
 #include "YUVSource.h"
 
-std::unique_ptr<Qv2Buffer> YUVSource::getBuffer() {
+std::shared_ptr<Qv2Buffer> YUVSource::getBuffer() {
     int bytesPerSample = (mBitDepth > 8) ? 2 : 1;
-    auto block = std::make_shared<Qv2Block2D>(width, height, format, bitDepth);
+    auto block = std::make_shared<Qv2Block2D>(mWidth, mHeight, mColorFormat, mBitDepth);
     for (int i = 0; i < mNumOfPlane; ++i) {
         size_t planeSizeInBytes = mPlaneInfo[i].getSize() * bytesPerSample;
         uint8_t *planeData = new uint8_t[planeSizeInBytes];
         size_t bytesRead = fread(planeData, 1, planeSizeInBytes, mFile.get());
         if (bytesRead == planeSizeInBytes) {
-            // TODO: We need to care this point if it not true...
             int stride = mPlaneInfo[i].getWidth() * bytesPerSample;
             block->setPlane(i, planeData, stride, mPlaneInfo[i].getHeight());
         } else {
@@ -20,7 +19,7 @@ std::unique_ptr<Qv2Buffer> YUVSource::getBuffer() {
 }
 
 void YUVSource::calculatePlaneSize() {
-    if (mWidth <= 0 || mHeight <= 0) return 0;
+    if (mWidth <= 0 || mHeight <= 0) return;
     switch (mColorFormat) {
         case QV2FormatYUV420Flexible:
         case QV2FormatYUV420PackedPlanar:
@@ -72,10 +71,13 @@ void YUVSource::calculatePlaneSize() {
 }
 
 int64_t YUVSource::calculateTotalFrame() {
-    if (mFile == nullptr) return 0;
+    if (mFile == nullptr) {
+        std::cout << "mFile is nullptr" << std::endl;
+        return 0;
+    }
     int bytesPerSample = (mBitDepth > 8) ? 2 : 1;
     int64_t frameSize =  0;
-    for (int planeSize : plane) { frameSize += planeSize; }
+    for (int i = 0; i < mNumOfPlane; i++) { frameSize += mPlaneInfo[i].getSize(); }
     int64_t frameDataSize = static_cast<int64_t>(frameSize * bytesPerSample);
 // Lấy kích thước file (Hỗ trợ file > 2GB)
 #ifdef _WIN32
