@@ -34,17 +34,18 @@ protected:
 private:
     void showEncoderParams(oapve_cdesc_t *cdsc) const;
 
+    int getCodecBitDepth(int profile_idc) const;
+
     oapve_t mEncoderId = nullptr;
     oapvm_t mMetaDataId = nullptr;
     uint8_t *mBitstreamBuf = nullptr;
 
     std::unique_ptr <oapve_cdesc_t> mCodecDesc;
-    oapv_frms_t mInputFrames;
-    oapv_frms_t mReconFrames;
-    oapv_bitb_t mBitb;
-    oapve_stat_t mStat;
+    oapv_imgb_t *mInternalImgb = nullptr;
 
     bool mIsRec = false;
+    int mInputDepth = 10;
+    int mColorFmt = OAPV_CF_YCBCR422;
 };
 
 #endif // QV2APVENCODER_H
