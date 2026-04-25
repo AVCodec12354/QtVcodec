@@ -15,8 +15,9 @@ std::shared_ptr<Qv2Buffer> Y4MSource::getBuffer() {
 }
 
 bool Y4MSource::isY4M() {
-    char title[9];
-    if (fread(title, 1, 9, mFile.get()) == 9) {
+    char title[9] = {'0'};
+    if (fread((void *)title, 1, 9, mFile.get()) == 9) {
+        std::cout << "It's Y4M file!" << std::endl;
         return (strncmp(title, "YUV4MPEG2", 9) == 0);
     }
     return false;

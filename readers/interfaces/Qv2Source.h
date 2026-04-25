@@ -7,6 +7,8 @@
 #include <Qv2Buffer.h>
 #include <Qv2Constants.h>
 
+#define MAX_PLANE 4
+
 class PlaneInfo {
 private:
     int width;
@@ -29,7 +31,7 @@ public:
                   mFile(nullptr, &std::fclose) {};
     virtual ~Qv2Source() = default;
 
-    void setDataSource(
+    virtual void setDataSource(
             std::string filePath,
             int width,
             int height,
@@ -45,6 +47,9 @@ public:
         mCurrentFrame = 0;
         calculatePlaneSize();
         mTotalFrame = calculateTotalFrame();
+        if (!mFile) {
+            std::cout << "mFile is nullptr..." << std::endl;
+        }
     };
 
     virtual std::shared_ptr<Qv2Buffer> getBuffer() = 0;
@@ -58,7 +63,7 @@ protected:
     virtual void calculatePlaneSize() = 0;
 
     int mNumOfPlane = 0;
-    PlaneInfo mPlaneInfo[4];
+    PlaneInfo mPlaneInfo[MAX_PLANE];
     int mWidth, mHeight, mBitDepth;
     int64_t mCurrentFrame, mTotalFrame;
     std::unique_ptr<FILE, decltype(&std::fclose)> mFile;
