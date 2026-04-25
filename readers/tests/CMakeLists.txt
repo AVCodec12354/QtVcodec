@@ -7,25 +7,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/outputs/tests)
 
-add_executable(YUVSourceTest
+add_executable(RawSourceTest
         ${CMAKE_SOURCE_DIR}/readers/implements/Y4MSource.cpp
         ${CMAKE_SOURCE_DIR}/readers/implements/YUVSource.cpp
         YUVSourceTest.cpp
+        Y4MSourceTest.cpp
 )
 
-target_include_directories(YUVSourceTest PRIVATE
+target_include_directories(RawSourceTest PRIVATE
         ${CMAKE_SOURCE_DIR}/inc/Qv2Core
         ${CMAKE_SOURCE_DIR}/readers/implements
         ${CMAKE_SOURCE_DIR}/readers/interfaces
         ${CMAKE_SOURCE_DIR}/readers/tests
 )
 
-target_compile_definitions(YUVSourceTest PRIVATE
+target_compile_definitions(RawSourceTest PRIVATE
         TEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/raw/"
 )
 
 # Link với GTest
-target_link_libraries(YUVSourceTest
+target_link_libraries(RawSourceTest
         PRIVATE
         GTest::gtest_main
         GTest::gtest
@@ -33,4 +34,4 @@ target_link_libraries(YUVSourceTest
 
 # Tự động phát hiện các hàm TEST() trong code
 include(GoogleTest)
-gtest_discover_tests(YUVSourceTest)
+gtest_discover_tests(RawSourceTest)

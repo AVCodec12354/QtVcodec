@@ -1,47 +1,39 @@
 #include <gtest/gtest.h>
 #include <YUVSource.h>
-#include <Y4MSource.h>
 
-class RawTest : public ::testing::Test {
+using YUVTestParam = std::tuple<std::string, int, int, int, int, Qv2ColorFormat>;
+
+class YUVSourceTest : public ::testing::TestWithParam<YUVTestParam> {
 public:
     void SetUp() override {}
     void TearDown() override {}
+    YUVSource yuvSource;
 };
 
-TEST_F(RawTest, input_480x856_yuv420p) {
-    /*
-    $ ffprobe -v error -f rawvideo -video_size 480x856 -pixel_format yuv420p -count_frames -show_entries stream=nb_read_frames,pix_fmt,width,height -of default=noprint_wrappers=1 input_480x856_yuv420p.yuv
-    * width=480
-    * height=856
-    * pix_fmt=yuv420p
-    * nb_read_frames=10
-    */
-    std::string filePath = std::string(TEST_DATA_PATH) + "input_480x856_yuv420p.yuv";
+TEST_P(YUVSourceTest, yuvSource) {
+    auto[fileName, w, h, bitDepth, expectedFrame, colorFormat] = GetParam();
+    std::string filePath = std::string(TEST_DATA_PATH) + fileName;
     std::cout << "Testing: " << filePath << std::endl;
-    YUVSource yuvSource;
-    int w = 480, h = 856, bitDepth = 8, expectedFrame = 10;
-    yuvSource.setDataSource(filePath.c_str(),w,h, bitDepth, QV2FormatYUV420Planar);
+    yuvSource.setDataSource(filePath.c_str(),w,h, bitDepth, colorFormat);
 
     EXPECT_EQ(yuvSource.getWidth(), w) << "Wrong width, expected is: " << w;
     EXPECT_EQ(yuvSource.getHeight(), h) << "Wrong height, expected is: " << h;
     EXPECT_EQ(yuvSource.getTotalFrame(), expectedFrame) << "Wrong totalFrame, expected is: " << expectedFrame;
 }
 
-TEST_F(RawTest, pattern1_yuv422p10le_320x240_25fps) {
-    /*
-    $ ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=nb_read_frames,width,height,pix_fmt -of default=noprint_wrappers=1 pattern1_yuv422p10le_320x240_25fps.y4m
-    * width=320
-    * height=240
-    * pix_fmt=yuv422p10le
-    * nb_read_frames=125
-    */
-    std::string filePath = std::string(TEST_DATA_PATH) + "pattern1_yuv422p10le_320x240_25fps.y4m";
-    std::cout << "Testing: " << filePath << std::endl;
-    Y4MSource y4mSource;
-    int w = 320, h = 240, bitDepth = 10, expectedFrame = 125;
-    y4mSource.setDataSource(filePath.c_str(),w,h, bitDepth, QV2FormatYUV422Planar);
-
-    EXPECT_EQ(y4mSource.getWidth(), w) << "Wrong width, expected is: " << w;
-    EXPECT_EQ(y4mSource.getHeight(), h) << "Wrong height, expected is: " << h;
-    EXPECT_EQ(y4mSource.getTotalFrame(), expectedFrame) << "Wrong totalFrame, expected is: " << expectedFrame;
-}
+INSTANTIATE_TEST_SUITE_P(
+        YUV_AllFormats,
+        YUVSourceTest,
+        ::testing::Values(
+            std::make_tuple("input_480x856_yuv420p.yuv", 480, 856, 8, 10, QV2FormatYUV420Planar),
+            // 10-bit Semi-Planar & Packed
+            std::make_tuple("pattern1_480x360_p010_10b.yuv", 480, 360, 10, 10, QV2FormatYUV420SemiPlanar),
+            std::make_tuple("pattern1_320x240_y210_10b.yuv", 320, 240, 10, 5,  QV2FormatYUV422PackedPlanar),
+            // 8-bit Semi-Planar (NV12, NV21)
+            std::make_tuple("input_176x144_nv12_8b.yuv",     176, 144, 8,  3,  QV2FormatYUV420SemiPlanar),
+            std::make_tuple("input_176x144_nv21_8b.yuv",     176, 144, 8,  3,  QV2FormatYUV420SemiPlanar),
+            // 8-bit Packed (YUYV, UYVY)
+            std::make_tuple("input_320x240_yuyv_8b.yuv",     320, 240, 8,  5,  QV2FormatYUV422PackedPlanar),
+            std::make_tuple("input_320x240_uyvy_8b.yuv",     320, 240, 8,  5,  QV2FormatYUV422PackedPlanar)
+        )
+);
