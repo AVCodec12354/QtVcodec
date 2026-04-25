@@ -229,7 +229,18 @@ INSTANTIATE_TEST_SUITE_P(
     APV_YUV_Tests,
     Qv2EncoderTestP,
     ::testing::Values(
-        TestParam{"HDR_4k.yuv", "output_hdr.apv", 2160, 3840, QV2FormatYUV422Planar, 10}
+        TestParam{"YUVTests/input/qp_A_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/qp_B_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/qp_C_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_C_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/qp_D_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/qp_E_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/syn_A_yuv422p10le_1920x1080_60fps_2.yuv", "YUVTests/output/syn_A_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/syn_B_yuv422p10le_1920x1080_60fps_2.yuv", "YUVTests/output/syn_B_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/tile_A_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/tile_B_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/tile_C_yuv422p10le_7680x4320_30fps_3.yuv", "YUVTests/output/tile_C_yuv422p10le_7680x4320_30fps_3.apv", 7680, 4320, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/tile_D_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
+        TestParam{"YUVTests/input/tile_E_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10}
     )
 );
 
