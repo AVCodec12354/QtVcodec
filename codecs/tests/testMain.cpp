@@ -11,7 +11,11 @@
 #include <string>
 #include <cstring>
 #include "Qv2Constants.h"
+#include "Qv2Log.h"
 
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif
 #define LOG_TAG "testMain"
 
 /**
@@ -19,12 +23,13 @@
  */
 struct TestParam {
     std::string inputPath;
-    std::string outputPath = "output.apv";
-    // For Raw YUV, these are defaults. For Y4M, these will be overwritten by header info.
-    int width = 3840;
-    int height = 2160;
-    int format = QV2FormatYUV422Planar;
-    int depth = 10;
+    std::string outputPath;
+    int width;
+    int height;
+    int format;
+    int fps;
+    int depth;
+    int numOfFrame;
 };
 
 /**
@@ -93,7 +98,7 @@ public:
                         double psnr[4];
                         measure_psnr(&org, &rec, psnr, item->input->graphicBlocks()[0]->bitDepth());
 
-                        std::cout << "    [Frame " << mFrameCount << "] PSNR Y: " << psnr[0] << " dB" << std::endl;
+                        QV2_LOGI("    [Frame %d] PSNR Y: %.2f dB", mFrameCount, psnr[0]);
                         EXPECT_GT(psnr[0], 20.0) << "PSNR Y too low on frame " << mFrameCount;
                     }
                 }
@@ -104,6 +109,7 @@ public:
     }
 
     void onError(std::weak_ptr<Qv2Component> component, Qv2Status error) override {
+        QV2_LOGE("Component error received: %d", static_cast<int>(error));
         ADD_FAILURE() << "Component error received: " << static_cast<int>(error);
     }
 
@@ -127,16 +133,15 @@ protected:
     }
 
     void TearDown() override {
-
     }
 
     std::shared_ptr<Qv2Component> mComponent;
 };
 
-TEST_P(Qv2EncoderTestP, RunEncode) {
+TEST_P(Qv2EncoderTestP, RunYuvEncode) {
     const TestParam& p = GetParam();
 
-    std::cout << "[ TEST ] Running encode for: " << p.inputPath << std::endl;
+    QV2_LOGI("Running encode for: %s", p.inputPath.c_str());
 
     FILE* fpIn = fopen(p.inputPath.c_str(), "rb");
     ASSERT_NE(fpIn, nullptr) << "Failed to open input file: " << p.inputPath;
@@ -146,7 +151,7 @@ TEST_P(Qv2EncoderTestP, RunEncode) {
     mComponent->setListener(&listener);
 
     int w = p.width, h = p.height, colorFormat = p.format, bitDepth = p.depth;
-    float fpsValue = 30.0f;
+    float fpsValue = static_cast<float>(p.fps);
     bool isY4M = (p.inputPath.find(".y4m") != std::string::npos);
 
     if (isY4M) {
@@ -176,7 +181,7 @@ TEST_P(Qv2EncoderTestP, RunEncode) {
     int cs = OAPV_CS_SET(toOapvFmt(colorFormat), bitDepth, 0);
     uint64_t frameDurationUs = static_cast<uint64_t>(1000000.0f / fpsValue);
     uint64_t currentTimestamp = 0;
-    int maxFrames = isY4M ? 1000000 : 1; // Process all for Y4M, 5 for Raw YUV
+    int maxFrames = isY4M ? 1000000 : p.numOfFrame;
 
     for (int i = 0; i < maxFrames; ++i) {
         oapv_imgb_t* imgb = imgb_create(w, h, cs);
@@ -214,9 +219,6 @@ TEST_P(Qv2EncoderTestP, RunEncode) {
         imgb->release(imgb);
     }
 
-    mComponent->stop();
-    mComponent->release();
-
     EXPECT_GT(listener.getFrameCount(), 0);
     fclose(fpIn);
     if (fpOut) fclose(fpOut);
@@ -229,18 +231,18 @@ INSTANTIATE_TEST_SUITE_P(
     APV_YUV_Tests,
     Qv2EncoderTestP,
     ::testing::Values(
-        TestParam{"YUVTests/input/qp_A_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/qp_B_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/qp_C_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_C_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/qp_D_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/qp_E_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/syn_A_yuv422p10le_1920x1080_60fps_2.yuv", "YUVTests/output/syn_A_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/syn_B_yuv422p10le_1920x1080_60fps_2.yuv", "YUVTests/output/syn_B_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/tile_A_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/tile_B_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/tile_C_yuv422p10le_7680x4320_30fps_3.yuv", "YUVTests/output/tile_C_yuv422p10le_7680x4320_30fps_3.apv", 7680, 4320, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/tile_D_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10},
-        TestParam{"YUVTests/input/tile_E_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 10}
+        TestParam{"YUVTests/input/qp_A_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/qp_B_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/qp_C_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_C_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/qp_D_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/qp_E_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/qp_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/syn_A_yuv422p10le_1920x1080_60fps_2.yuv", "YUVTests/output/syn_A_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 60, 10, 2},
+        TestParam{"YUVTests/input/syn_B_yuv422p10le_1920x1080_60fps_2.yuv", "YUVTests/output/syn_B_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 60, 10, 2},
+        TestParam{"YUVTests/input/tile_A_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/tile_B_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/tile_C_yuv422p10le_7680x4320_30fps_3.yuv", "YUVTests/output/tile_C_yuv422p10le_7680x4320_30fps_3.apv", 7680, 4320, QV2FormatYUV422Planar, 30, 10, 3},
+        TestParam{"YUVTests/input/tile_D_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
+        TestParam{"YUVTests/input/tile_E_yuv422p10le_3840x2160_60fps_3.yuv", "YUVTests/output/tile_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3}
     )
 );
 
