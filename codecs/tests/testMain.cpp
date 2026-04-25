@@ -10,12 +10,27 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <map>
 
 #define LOG_TAG "testMain"
 
 /**
- * @brief Test listener to handle encoded output.
+ * @brief Helper to wrap Qv2Block2D into oapv_imgb_t for legacy API usage.
+ */
+void mapBlockToImgb(std::shared_ptr<Qv2Block2D> block, oapv_imgb_t* imgb) {
+    std::memset(imgb, 0, sizeof(oapv_imgb_t));
+    imgb->cs = OAPV_CS_SET(block->format(), block->bitDepth(), 0);
+    imgb->np = block->numPlanes();
+    for (uint32_t i = 0; i < (uint32_t)imgb->np; ++i) {
+        imgb->w[i] = (i == 0) ? block->width() : (block->width() >> 1);
+        imgb->h[i] = block->height();
+        imgb->a[i] = block->addr(i);
+        imgb->s[i] = block->stride(i);
+        imgb->e[i] = block->elevation(i);
+    }
+}
+
+/**
+ * @brief Test listener to handle encoded output and calculate PSNR.
  */
 class TestListener : public Qv2Component::Listener {
 public:
@@ -28,12 +43,30 @@ public:
                 item->output->type() == Qv2Buffer::LINEAR) {
                 if (!item->output->linearBlocks().empty()) {
                     auto outBlock = item->output->linearBlocks()[0];
+                    size_t frameSize = outBlock->size();
                     if (mOutFile) {
-                        fwrite(outBlock->data(), 1, outBlock->size(), mOutFile);
+                        fwrite(outBlock->data(), 1, frameSize, mOutFile);
                     }
                     mFrameCount++;
-                    printf("  [Listener] Encoded frame %d. Size: %zu bytes, TS: %llu\n",
-                           mFrameCount, outBlock->size(), (unsigned long long)item->timestamp);
+
+                    std::string psnrLog = "";
+                    if (item->recon && !item->recon->graphicBlocks().empty() &&
+                        item->input && !item->input->graphicBlocks().empty()) {
+
+                        oapv_imgb_t org, rec;
+                        mapBlockToImgb(item->input->graphicBlocks()[0], &org);
+                        mapBlockToImgb(item->recon->graphicBlocks()[0], &rec);
+
+                        double psnr[4];
+                        measure_psnr(&org, &rec, psnr, item->input->graphicBlocks()[0]->bitDepth());
+
+                        char buf[128];
+                        snprintf(buf, sizeof(buf), " PSNR: [Y:%.2f, U:%.2f, V:%.2f]", psnr[0], psnr[1], psnr[2]);
+                        psnrLog = buf;
+                    }
+
+                    printf("  [Listener] Encoded frame %d. Size: %zu bytes, TS: %llu%s\n",
+                           mFrameCount, frameSize, (unsigned long long)item->timestamp, psnrLog.c_str());
                 }
             } else if (item->result != 0) {
                 printf("  [Listener] Error processing item: %d\n", item->result);
@@ -42,9 +75,6 @@ public:
             if (item->flags & QV2_WORK_FLAG_EOS) {
                 printf("  [Listener] EOS reached!\n");
             }
-
-            // Giải phóng tài nguyên liên quan đến work item này
-            mResources.erase(item.get());
         }
     }
 
@@ -59,16 +89,11 @@ public:
                Qv2Component::stateToString(newState).c_str());
     }
 
-    void keepAlive(Qv2Work* item, std::shared_ptr<void> res) {
-        mResources[item].push_back(res);
-    }
-
     int getFrameCount() const { return mFrameCount; }
 
 private:
     FILE* mOutFile;
     int mFrameCount = 0;
-    std::map<Qv2Work*, std::vector<std::shared_ptr<void>>> mResources;
 };
 
 /**
@@ -94,11 +119,12 @@ void testEncodeRawYUV(const std::string& inputPath, const std::string& outputPat
     Qv2BitrateSetting bitrate; bitrate.mBitrate = 200000000;
     Qv2BitDepthInput depth; depth.mBitDepth = bitDepth;
     Qv2ColorFormatInput color; color.mColorFormat = colorFormat;
-    Qv2QPInput qp; qp.mQP = 25;
+    Qv2QPInput qp; qp.mQP = 51;
 
     params.push_back(&size); params.push_back(&fps); params.push_back(&bitrate);
     params.push_back(&depth); params.push_back(&color); params.push_back(&qp);
     component->configure(params);
+    component->enableRecon(true);
     component->start();
 
     int cs = OAPV_CS_SET(colorFormat, bitDepth, 0);
@@ -114,24 +140,32 @@ void testEncodeRawYUV(const std::string& inputPath, const std::string& outputPat
         currentTimestamp += frameDurationUs;
 
         auto inputBlock = std::make_shared<Qv2Block2D>(w, h, colorFormat, bitDepth);
-        for (int p = 0; p < imgb->np; ++p) inputBlock->setPlane(p, (uint8_t*)imgb->a[p], imgb->s[p], imgb->h[p]);
+        for (int p = 0; p < imgb->np; ++p)
+            inputBlock->setPlane(p, (uint8_t*)imgb->a[p], imgb->s[p], imgb->h[p]);
         item->input = Qv2Buffer::CreateGraphicBuffer(inputBlock);
 
-        auto outData = std::make_shared<std::vector<uint8_t>>(w * h * 4);
-        item->output = Qv2Buffer::CreateLinearBuffer(std::make_shared<Qv2Block1D>(outData->data(), 0, outData->size()));
+        // Setup Recon Buffer
+        auto reconBlock = std::make_shared<Qv2Block2D>(w, h, colorFormat, bitDepth);
+        std::vector<std::vector<uint8_t>> reconPlanes(imgb->np);
+        for (int p = 0; p < imgb->np; ++p) {
+            reconPlanes[p].resize(imgb->s[p] * imgb->h[p]);
+            reconBlock->setPlane(p, reconPlanes[p].data(), imgb->s[p], imgb->h[p]);
+        }
+        item->recon = Qv2Buffer::CreateGraphicBuffer(reconBlock);
 
-        // Quản lý lifetime tài nguyên thông qua listener
-        listener.keepAlive(item.get(), std::shared_ptr<oapv_imgb_t>(imgb, [](oapv_imgb_t* p){ if(p) p->release(p); }));
-        listener.keepAlive(item.get(), outData);
+        std::vector<uint8_t> outData(w * h * 4);
+        item->output = Qv2Buffer::CreateLinearBuffer(std::make_shared<Qv2Block1D>(outData.data(), 0, outData.size()));
 
         if (i == maxFrames - 1) item->flags |= QV2_WORK_FLAG_EOS;
 
         std::vector<std::unique_ptr<Qv2Work>> items;
         items.push_back(std::move(item));
+
         component->queue(std::move(items));
+
+        imgb->release(imgb);
     }
 
-    printf("  Waiting for completion...\n");
     component->stop(); component->release();
     fclose(fpIn); fclose(outFile);
 }
@@ -191,18 +225,24 @@ void testEncodeY4M(const std::string& inputPath, const std::string& outputPath) 
         for (int p = 0; p < imgb->np; ++p) inputBlock->setPlane(p, (uint8_t*)imgb->a[p], imgb->s[p], imgb->h[p]);
         item->input = Qv2Buffer::CreateGraphicBuffer(inputBlock);
 
-        auto outData = std::make_shared<std::vector<uint8_t>>(y4mParams.w * y4mParams.h * 2);
-        item->output = Qv2Buffer::CreateLinearBuffer(std::make_shared<Qv2Block1D>(outData->data(), 0, outData->size()));
+        // Setup Recon Buffer
+        auto reconBlock = std::make_shared<Qv2Block2D>(y4mParams.w, y4mParams.h, y4mParams.color_format, y4mParams.bit_depth);
+        std::vector<std::vector<uint8_t>> reconPlanes(imgb->np);
+        for (int p = 0; p < imgb->np; ++p) {
+            reconPlanes[p].resize(imgb->s[p] * imgb->h[p]);
+            reconBlock->setPlane(p, reconPlanes[p].data(), imgb->s[p], imgb->h[p]);
+        }
+        item->recon = Qv2Buffer::CreateGraphicBuffer(reconBlock);
 
-        // Quản lý lifetime tài nguyên thông qua listener
-        listener.keepAlive(item.get(), std::shared_ptr<oapv_imgb_t>(imgb, [](oapv_imgb_t* p){ if(p) p->release(p); }));
-        listener.keepAlive(item.get(), outData);
+        std::vector<uint8_t> outData(y4mParams.w * y4mParams.h * 2);
+        item->output = Qv2Buffer::CreateLinearBuffer(std::make_shared<Qv2Block1D>(outData.data(), 0, outData.size()));
 
         std::vector<std::unique_ptr<Qv2Work>> items; items.push_back(std::move(item));
         component->queue(std::move(items));
+
+        imgb->release(imgb);
     }
 
-    printf("  Waiting for completion...\n");
     component->stop(); component->release();
     fclose(fpIn); fclose(outFile);
 }
@@ -218,8 +258,8 @@ int main(int argc, char** argv) {
 
     try {
         if (inputPath.find(".yuv") != std::string::npos) {
-            // Encode 5 frames of HDR_4k.yuv (3840x2160, YUV422, 10-bit)
-            testEncodeRawYUV(inputPath, outputPath, 3840, 2160, OAPV_CF_YCBCR422, 10, 5);
+            // Encode 5 frames of HDR_4k.yuv (2160x3840, YUV422, 10-bit)
+            testEncodeRawYUV(inputPath, outputPath, 2160, 3840, OAPV_CF_YCBCR422, 10, 5);
         } else {
             testEncodeY4M(inputPath, outputPath);
         }

@@ -3,7 +3,6 @@
 
 #include "Qv2Buffer.h"
 #include <memory>
-#include <vector>
 
 enum Qv2WorkFlags : uint32_t {
     QV2_WORK_FLAG_NONE = 0,
@@ -16,6 +15,7 @@ enum Qv2WorkFlags : uint32_t {
 struct Qv2Work {
     std::shared_ptr<Qv2Buffer> input;
     std::shared_ptr<Qv2Buffer> output;
+    std::shared_ptr<Qv2Buffer> recon;
     uint64_t timestamp = 0;
     uint32_t flags = QV2_WORK_FLAG_NONE;
     int result = 0;

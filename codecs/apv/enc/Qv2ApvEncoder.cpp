@@ -8,8 +8,8 @@
 #include <limits>
 
 #define MAX_BS_BUF   (128 * 1024 * 1024)
-#define MAX_NUM_FRMS (1)           // supports only 1-frame in an access unit
-#define FRM_IDX      (0)           // supports only 1-frame in an access unit
+#define MAX_NUM_FRMS (1)
+#define FRM_IDX      (0)
 constexpr char COMPONENT_NAME[] = "qv2.apv.encoder";
 
 
@@ -99,9 +99,8 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
             }
             case Qv2ColorFormatInput::ID: {
                 auto v = static_cast<Qv2ColorFormatInput *>(param);
-                // chroma_format_idc is inferred from profile in OpenAPV
                 mColorFmt = v->mColorFormat;
-                QV2_LOGD("ColorFormat (IDC) requested: %d", mColorFmt);
+                QV2_LOGD("ColorFormat requested: %d", mColorFmt);
                 break;
             }
             case Qv2ProfileOutput::ID: {
@@ -129,18 +128,15 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
                 break;
             }
             default:
-                QV2_LOGW("Unknown param ID: 0x%08X", param->mId);
                 break;
         }
     }
-    QV2_LOGI("APV Encoder Configuration after setting parameters:");
     showEncoderParams(mCodecDesc.get());
     setState(CONFIGURED);
     return QV2_OK;
 }
 
 Qv2Status Qv2ApvEncoder::query(std::vector<Qv2Param *> &params) const {
-    QV2_LOGD("query() entry.");
     return QV2_OK;
 }
 
@@ -168,12 +164,12 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
 
     if (codecDepth != mInputDepth && !mInternalImgb) {
         mInternalImgb = imgb_create(
-            mCodecDesc->param[FRM_IDX].w, mCodecDesc->param[FRM_IDX].h,
-            OAPV_CS_SET(mColorFmt, codecDepth, 0));
+                mCodecDesc->param[FRM_IDX].w, mCodecDesc->param[FRM_IDX].h,
+                OAPV_CS_SET(mColorFmt, codecDepth, 0));
     }
 
     Qv2Status status = QV2_OK;
-    for (auto& item : items) {
+    for (auto &item: items) {
         if (!item || !item->input) continue;
 
         if (item->input->graphicBlocks().empty()) {
@@ -184,43 +180,11 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
 
         auto block = item->input->graphicBlocks()[0];
 
-        // Map Qv2Block2D to a temporary oapv_imgb_t
-        oapv_imgb_t srcImgb;
-        std::memset(&srcImgb, 0, sizeof(oapv_imgb_t));
-        srcImgb.cs = OAPV_CS_SET(mColorFmt, mInputDepth, 0);
-        srcImgb.np = block->numPlanes();
-        srcImgb.addref = imgb_addref;
-        srcImgb.release = imgb_release;
-        srcImgb.refcnt = 1;
-
-        int w = block->width();
-        int h = block->height();
-        srcImgb.w[0] = w;
-        srcImgb.h[0] = h;
-
-        if (srcImgb.np > 1) {
-            int wShift = (mColorFmt == OAPV_CF_YCBCR420 ||
-                          mColorFmt == OAPV_CF_YCBCR422 ||
-                          mColorFmt == OAPV_CF_PLANAR2)
-                             ? 1
-                             : 0;
-            int hShift = (mColorFmt == OAPV_CF_YCBCR420) ? 1 : 0;
-
-            for (int i = 1; i < srcImgb.np; i++) {
-                srcImgb.w[i] = (w + wShift) >> wShift;
-                srcImgb.h[i] = (h + hShift) >> hShift;
-            }
-        }
-
-        for (uint32_t i = 0; i < (uint32_t)srcImgb.np; i++) {
-            srcImgb.a[i] = block->addr(i);
-            srcImgb.s[i] = block->stride(i);
-            srcImgb.e[i] = block->elevation(i);
-            srcImgb.aw[i] = ALIGN_VAL(srcImgb.w[i], OAPV_MB_W);
-            srcImgb.ah[i] = ALIGN_VAL(srcImgb.h[i], OAPV_MB_H);
-        }
-
         oapv_frms_t inputFrames;
+        oapv_imgb_t srcImgb;
+
+        mapBlockToImgb(block, &srcImgb, mInputDepth);
+
         std::memset(&inputFrames, 0, sizeof(oapv_frms_t));
         inputFrames.num_frms = 1;
         inputFrames.frm[FRM_IDX].group_id = 1;
@@ -233,39 +197,43 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
             inputFrames.frm[FRM_IDX].imgb = &srcImgb;
         }
 
-        std::shared_ptr<oapv_bitb_t> bitb = std::make_shared<oapv_bitb_t>();
+        oapv_frms_t reconFrames;
+        oapv_imgb_t reconImgb;
+        std::memset(&reconFrames, 0, sizeof(oapv_frms_t));
 
-        bitb->addr = mBitstreamBuf;
-        bitb->bsize = MAX_BS_BUF;
-        bitb->err = QV2_OK;
+        if (mIsRec && item->recon && !item->recon->graphicBlocks().empty()) {
+            auto rBlock = item->recon->graphicBlocks()[0];
+            mapBlockToImgb(rBlock, &reconImgb, codecDepth);
+
+            reconFrames.num_frms = 1;
+            reconFrames.frm[FRM_IDX].imgb = &reconImgb;
+        }
+
+        oapv_bitb_t bitb;
+        std::memset(&bitb, 0, sizeof(oapv_bitb_t));
+        bitb.addr = mBitstreamBuf;
+        bitb.bsize = MAX_BS_BUF;
 
         oapve_stat_t stat;
         std::memset(&stat, 0, sizeof(oapve_stat_t));
 
-        oapv_frms_t reconFrames;
-        std::memset(&reconFrames, 0, sizeof(oapv_frms_t));
-
-        int ret = oapve_encode(mEncoderId, &inputFrames, mMetaDataId, bitb.get(),
+        int ret = oapve_encode(mEncoderId, &inputFrames, mMetaDataId, &bitb,
                                &stat, mIsRec ? &reconFrames : nullptr);
 
         if (OAPV_FAILED(ret)) {
             QV2_LOGE("oapve_encode failed: %d", ret);
             item->result = QV2_ERR_INTERNAL;
         } else {
-            QV2_LOGD("Encoded frame size: %d bytes", stat.write);
             if (item->output && !item->output->linearBlocks().empty()) {
                 auto outBlock = item->output->linearBlocks()[0];
-                if (outBlock->capacity() >= (size_t)stat.write) {
-                    std::memcpy(outBlock->data(), bitb->addr, stat.write);
+                if (outBlock->capacity() >= (size_t) stat.write) {
+                    std::memcpy(outBlock->data(), bitb.addr, stat.write);
                     outBlock->setSize(stat.write);
                     item->result = QV2_OK;
                 } else {
-                    QV2_LOGE("Output buffer too small: cap=%zu, need=%d",
-                             outBlock->capacity(), stat.write);
                     item->result = QV2_ERR_BUFFER_OVERFLOW;
                 }
             } else {
-                QV2_LOGW("Output buffer missing or empty");
                 item->result = QV2_ERR_INVALID_ARG;
             }
         }
@@ -350,7 +318,7 @@ void Qv2ApvEncoder::showEncoderParams(oapve_cdesc_t *cdsc) const {
 }
 
 int Qv2ApvEncoder::getCodecBitDepth(int profile_idc) const {
-    switch(profile_idc){
+    switch (profile_idc) {
         case OAPV_PROFILE_422_10:
         case OAPV_PROFILE_400_10:
         case OAPV_PROFILE_444_10:
@@ -387,5 +355,38 @@ void Qv2ApvEncoder::onRelease() {
     if (mInternalImgb) {
         mInternalImgb->release(mInternalImgb);
         mInternalImgb = nullptr;
+    }
+    mIsRec = false;
+}
+
+void Qv2ApvEncoder::mapBlockToImgb(const std::shared_ptr <Qv2Block2D> &block, oapv_imgb_t *imgb,
+                                   int bitDepth) const {
+    std::memset(imgb, 0, sizeof(oapv_imgb_t));
+    imgb->cs = OAPV_CS_SET(mColorFmt, bitDepth, 0);
+    imgb->np = block->numPlanes();
+
+    int w = block->width();
+    int h = block->height();
+    imgb->w[0] = w;
+    imgb->h[0] = h;
+
+    if (imgb->np > 1) {
+        int wShift = (mColorFmt == OAPV_CF_YCBCR420 ||
+                      mColorFmt == OAPV_CF_YCBCR422 ||
+                      mColorFmt == OAPV_CF_PLANAR2) ? 1 : 0;
+        int hShift = (mColorFmt == OAPV_CF_YCBCR420) ? 1 : 0;
+
+        for (int i = 1; i < imgb->np; i++) {
+            imgb->w[i] = (w + wShift) >> wShift;
+            imgb->h[i] = (h + hShift) >> hShift;
+        }
+    }
+
+    for (uint32_t i = 0; i < (uint32_t) imgb->np; i++) {
+        imgb->a[i] = block->addr(i);
+        imgb->s[i] = block->stride(i);
+        imgb->e[i] = block->elevation(i);
+        imgb->aw[i] = ALIGN_VAL(imgb->w[i], OAPV_MB_W);
+        imgb->ah[i] = ALIGN_VAL(imgb->h[i], OAPV_MB_H);
     }
 }
