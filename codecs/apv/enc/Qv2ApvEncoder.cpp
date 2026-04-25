@@ -162,12 +162,6 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
     QV2_LOGI("Codec depth: %d, Input depth: %d, Color Format: %d",
              codecDepth, mInputDepth, mColorFmt);
 
-    if (codecDepth != mInputDepth && !mInternalImgb) {
-        mInternalImgb = imgb_create(
-                mCodecDesc->param[FRM_IDX].w, mCodecDesc->param[FRM_IDX].h,
-                OAPV_CS_SET(mColorFmt, codecDepth, 0));
-    }
-
     Qv2Status status = QV2_OK;
     for (auto &item: items) {
         if (!item || !item->input) continue;
@@ -191,8 +185,8 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
         inputFrames.frm[FRM_IDX].pbu_type = OAPV_PBU_TYPE_PRIMARY_FRAME;
 
         if (codecDepth != mInputDepth) {
-            imgb_cpy(mInternalImgb, &srcImgb);
-            inputFrames.frm[FRM_IDX].imgb = mInternalImgb;
+            QV2_LOGE("can not support if codecDepth != mInputDepth");
+            return QV2_ERR_UNSUPPORTED;
         } else {
             inputFrames.frm[FRM_IDX].imgb = &srcImgb;
         }
@@ -351,10 +345,6 @@ void Qv2ApvEncoder::onRelease() {
     if (mMetaDataId) {
         oapvm_delete(mMetaDataId);
         mMetaDataId = nullptr;
-    }
-    if (mInternalImgb) {
-        mInternalImgb->release(mInternalImgb);
-        mInternalImgb = nullptr;
     }
     mIsRec = false;
 }

@@ -46,7 +46,6 @@ private:
     uint8_t *mBitstreamBuf = nullptr;
 
     std::unique_ptr <oapve_cdesc_t> mCodecDesc;
-    oapv_imgb_t *mInternalImgb = nullptr;
 
     int mInputDepth = 10;
     int mColorFmt = OAPV_CF_YCBCR422;
