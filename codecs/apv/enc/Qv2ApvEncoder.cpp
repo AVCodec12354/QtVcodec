@@ -1,4 +1,4 @@
-#define LOG_DEBUG 0
+#define LOG_DEBUG 1
 #include "Qv2ApvEncoder.h"
 #define LOG_TAG "Qv2ApvEncoder"
 
