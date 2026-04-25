@@ -13,8 +13,6 @@ package "Qv2Core Interfaces" {
     }
 
     class Qv2Buffer {
-        + mTimestamp: uint64_t
-        + mFlags: uint32_t
         + type(): Qv2Buffer_Type
         + linearBlocks(): vector<shared_ptr<Qv2Block1D>>
         + graphicBlocks(): vector<shared_ptr<Qv2Block2D>>
@@ -67,17 +65,27 @@ package "Qv2Core Interfaces" {
     struct Qv2Work {
         + input: shared_ptr<Qv2Buffer>
         + output: shared_ptr<Qv2Buffer>
+        + recon: shared_ptr<Qv2Buffer>
+        + timestamp: uint64_t
+        + flags: uint32_t
         + result: int
+    }
+
+    enum Qv2WorkFlags {
+        QV2_WORK_FLAG_NONE = 0
+        QV2_WORK_FLAG_EOS = 1
     }
 
     abstract class Qv2Component {
         # mName: string
         # mListener: Listener*
         # mState: atomic<State>
+        # mIsRec: bool
         + getName(): string
         + getState(): State
         + setState(state: State): void
         + setListener(listener: Listener*): void
+        + enableRecon(enable: bool): void
         + {abstract} getVersion(): string
         + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
         + {abstract} query(params: vector<Qv2Param*>): Qv2Status
@@ -133,6 +141,10 @@ package "Qv2Core Interfaces" {
         kIndexFrameRate
         kIndexBitDepth
         kIndexColorFormat
+        kIndexProfile
+        kIndexLevel
+        kIndexBand
+        kIndexQP
     }
 
     package "Specific Parameters (Examples)" {
@@ -167,6 +179,7 @@ Qv2Buffer +-- Qv2Buffer_Type
 Qv2Block2D ..> Qv2NumPlane : uses
 
 Qv2Work o-- Qv2Buffer
+Qv2Work +-- Qv2WorkFlags
 
 Qv2ComponentFactory ..> Qv2Component : creates
 Qv2ComponentFactory +-down- ComponentType

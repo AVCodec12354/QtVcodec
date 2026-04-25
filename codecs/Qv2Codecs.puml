@@ -2,7 +2,6 @@
 'https://plantuml.com/class-diagram
 
 skinparam packageStyle rectangle
-' Sử dụng splines để tạo các đường cong mềm mại thay vì đường thẳng hay gấp khúc
 skinparam linetype splines
 skinparam nodesep 120
 skinparam ranksep 150
@@ -22,6 +21,7 @@ package "Qv2Core" {
         + getState(): State
         + setState(state: State): void
         + setListener(listener: Listener*): void
+        + enableRecon(enable: bool): void
         + {abstract} getVersion(): string
         + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
         + {abstract} query(params: vector<Qv2Param*>): Qv2Status
@@ -48,6 +48,7 @@ package "Codec Implementations" {
             + flush(): Qv2Status
             # onStateChanged(state): void
             # onRelease(): void
+            - mapBlockToImgb(block, imgb, depth): void
         }
 
         class Qv2ApvDecoder {
@@ -90,8 +91,6 @@ package "Codec Implementations" {
     }
 }
 
-' Sử dụng các đường nối kế thừa dạng đường cong (splines)
-' Graphviz sẽ tự động tính toán các đường lượn mềm mại từ các lớp con lên lớp cha
 Qv2Component <|-- Qv2ApvEncoder
 Qv2Component <|-- Qv2ApvDecoder
 Qv2Component <|-- Qv2HevcEncoder
