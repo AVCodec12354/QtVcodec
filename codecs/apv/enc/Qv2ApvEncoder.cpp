@@ -1,4 +1,4 @@
-#define LOG_DEBUG 1
+#define LOG_DEBUG 0
 #include "Qv2ApvEncoder.h"
 #define LOG_TAG "Qv2ApvEncoder"
 
@@ -12,7 +12,6 @@
 #define MAX_NUM_FRMS (1)
 #define FRM_IDX      (0)
 constexpr char COMPONENT_NAME[] = "qv2.apv.encoder";
-
 
 Qv2ApvEncoder::Qv2ApvEncoder()
         : mEncoderId(nullptr), mMetaDataId(nullptr), mBitstreamBuf(nullptr) {
@@ -394,7 +393,7 @@ int Qv2ApvEncoder::toOapvFmt(int qv2Format) const {
         case QV2FormatYUVP010:
             return OAPV_CF_PLANAR2;
         default:
-            QV2_LOGW("Unknown Qv2ColorFormat %d, defaulting to YUV422", qv2Format);
+            QV2_LOGW("Unknown Qv2ColorFormat %d, defaulting to YUV422(%d)", qv2Format, OAPV_CF_YCBCR422);
             return OAPV_CF_YCBCR422;
     }
 }
