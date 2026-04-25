@@ -1,3 +1,4 @@
+#define LOG_DEBUG 0
 #include <gtest/gtest.h>
 #include "Qv2ComponentFactory.h"
 #include "Qv2Buffer.h"
@@ -98,7 +99,8 @@ public:
                         double psnr[4];
                         measure_psnr(&org, &rec, psnr, item->input->graphicBlocks()[0]->bitDepth());
 
-                        QV2_LOGI("    [Frame %d] PSNR Y: %.2f dB", mFrameCount, psnr[0]);
+                        // Using QV2_LOGD for per-frame noisy logs
+                        QV2_LOGD("    [Frame %d] PSNR Y: %.2f dB", mFrameCount, psnr[0]);
                         EXPECT_GT(psnr[0], 20.0) << "PSNR Y too low on frame " << mFrameCount;
                     }
                 }
