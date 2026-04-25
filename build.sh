@@ -1,3 +1,4 @@
+clear
 rm -rf build
 #rm -rf outputs
 mkdir build

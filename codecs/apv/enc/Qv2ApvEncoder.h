@@ -36,6 +36,8 @@ private:
 
     int getCodecBitDepth(int profile_idc) const;
 
+    int toOapvFmt(int qv2Format) const;
+
     void mapBlockToImgb(const std::shared_ptr <Qv2Block2D> &block, oapv_imgb_t *imgb,
                         int bitDepth) const;
 

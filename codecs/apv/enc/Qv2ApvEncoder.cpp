@@ -6,6 +6,7 @@
 #include "../oapv_app_util.h"
 #include <cstring>
 #include <limits>
+#include "Qv2Constants.h"
 
 #define MAX_BS_BUF   (128 * 1024 * 1024)
 #define MAX_NUM_FRMS (1)
@@ -43,7 +44,6 @@ Qv2ApvEncoder::Qv2ApvEncoder()
 
 Qv2ApvEncoder::~Qv2ApvEncoder() {
     QV2_LOGI("Destructor called.");
-    release();
 }
 
 std::string Qv2ApvEncoder::getVersion() const {
@@ -99,8 +99,8 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
             }
             case Qv2ColorFormatInput::ID: {
                 auto v = static_cast<Qv2ColorFormatInput *>(param);
-                mColorFmt = v->mColorFormat;
-                QV2_LOGD("ColorFormat requested: %d", mColorFmt);
+                mColorFmt = toOapvFmt(v->mColorFormat);
+                QV2_LOGD("ColorFormat translated from %d to OAPV IDC: %d", v->mColorFormat, mColorFmt);
                 break;
             }
             case Qv2ProfileOutput::ID: {
@@ -388,5 +388,23 @@ void Qv2ApvEncoder::mapBlockToImgb(const std::shared_ptr <Qv2Block2D> &block, oa
         imgb->e[i] = block->elevation(i);
         imgb->aw[i] = ALIGN_VAL(imgb->w[i], OAPV_MB_W);
         imgb->ah[i] = ALIGN_VAL(imgb->h[i], OAPV_MB_H);
+    }
+}
+
+int Qv2ApvEncoder::toOapvFmt(int qv2Format) const {
+    switch (qv2Format) {
+        case QV2FormatYUV420Planar:
+        case QV2FormatYUV420Flexible:
+            return OAPV_CF_YCBCR420;
+        case QV2FormatYUV422Planar:
+        case QV2FormatYUV422Flexible:
+            return OAPV_CF_YCBCR422;
+        case QV2FormatYUV444Flexible:
+            return OAPV_CF_YCBCR444;
+        case QV2FormatYUVP010:
+            return OAPV_CF_PLANAR2;
+        default:
+            QV2_LOGW("Unknown Qv2ColorFormat %d, defaulting to YUV422", qv2Format);
+            return OAPV_CF_YCBCR422;
     }
 }

@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Qv2ComponentTests LANGUAGES CXX)
 
+find_package(GTest REQUIRED)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -34,4 +36,6 @@ add_executable(Qv2ComponentTests
 target_link_libraries(Qv2ComponentTests 
     PRIVATE 
     oapv
+    GTest::gtest
+    GTest::gtest_main
 )

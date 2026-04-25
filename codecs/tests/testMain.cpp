@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 #include "Qv2ComponentFactory.h"
 #include "Qv2Buffer.h"
 #include "oapv.h"
@@ -6,15 +7,28 @@
 #include <cstdio>
 #include <vector>
 #include <memory>
-#include <cassert>
 #include <iostream>
 #include <string>
 #include <cstring>
+#include "Qv2Constants.h"
 
 #define LOG_TAG "testMain"
 
 /**
- * @brief Helper to wrap Qv2Block2D into oapv_imgb_t for legacy API usage.
+ * @brief Structure to hold test parameters for TEST_P
+ */
+struct TestParam {
+    std::string inputPath;
+    std::string outputPath = "output.apv";
+    // For Raw YUV, these are defaults. For Y4M, these will be overwritten by header info.
+    int width = 3840;
+    int height = 2160;
+    int format = QV2FormatYUV422Planar;
+    int depth = 10;
+};
+
+/**
+ * @brief Helper to wrap Qv2Block2D into oapv_imgb_t for PSNR measurement.
  */
 void mapBlockToImgb(std::shared_ptr<Qv2Block2D> block, oapv_imgb_t* imgb) {
     std::memset(imgb, 0, sizeof(oapv_imgb_t));
@@ -30,7 +44,27 @@ void mapBlockToImgb(std::shared_ptr<Qv2Block2D> block, oapv_imgb_t* imgb) {
 }
 
 /**
- * @brief Test listener to handle encoded output and calculate PSNR.
+ * @brief Helper to convert Qv2 format to OAPV IDC.
+ */
+int toOapvFmt(int qv2Format) {
+    switch (qv2Format) {
+        case QV2FormatYUV420Planar:
+        case QV2FormatYUV420Flexible:
+            return OAPV_CF_YCBCR420;
+        case QV2FormatYUV422Planar:
+        case QV2FormatYUV422Flexible:
+            return OAPV_CF_YCBCR422;
+        case QV2FormatYUV444Flexible:
+            return OAPV_CF_YCBCR444;
+        case QV2FormatYUVP010:
+            return OAPV_CF_PLANAR2;
+        default:
+            return OAPV_CF_YCBCR422;
+    }
+}
+
+/**
+ * @brief Test listener to handle encoded output and verify results.
  */
 class TestListener : public Qv2Component::Listener {
 public:
@@ -49,7 +83,6 @@ public:
                     }
                     mFrameCount++;
 
-                    std::string psnrLog = "";
                     if (item->recon && !item->recon->graphicBlocks().empty() &&
                         item->input && !item->input->graphicBlocks().empty()) {
 
@@ -60,34 +93,21 @@ public:
                         double psnr[4];
                         measure_psnr(&org, &rec, psnr, item->input->graphicBlocks()[0]->bitDepth());
 
-                        char buf[128];
-                        snprintf(buf, sizeof(buf), " PSNR: [Y:%.2f, U:%.2f, V:%.2f]", psnr[0], psnr[1], psnr[2]);
-                        psnrLog = buf;
+                        std::cout << "    [Frame " << mFrameCount << "] PSNR Y: " << psnr[0] << " dB" << std::endl;
+                        EXPECT_GT(psnr[0], 20.0) << "PSNR Y too low on frame " << mFrameCount;
                     }
-
-                    printf("  [Listener] Encoded frame %d. Size: %zu bytes, TS: %llu%s\n",
-                           mFrameCount, frameSize, (unsigned long long)item->timestamp, psnrLog.c_str());
                 }
             } else if (item->result != 0) {
-                printf("  [Listener] Error processing item: %d\n", item->result);
-            }
-
-            if (item->flags & QV2_WORK_FLAG_EOS) {
-                printf("  [Listener] EOS reached!\n");
+                ADD_FAILURE() << "Work item failed with result: " << item->result;
             }
         }
     }
 
-    void onError(std::weak_ptr<Qv2Component> component,
-                 Qv2Status error) override {
-        printf("  [Listener] onError: %d\n", static_cast<int>(error));
+    void onError(std::weak_ptr<Qv2Component> component, Qv2Status error) override {
+        ADD_FAILURE() << "Component error received: " << static_cast<int>(error);
     }
 
-    void onStateChanged(std::weak_ptr<Qv2Component> component,
-                        Qv2Component::State newState) override {
-        printf("  [Listener] onStateChanged to: %s\n",
-               Qv2Component::stateToString(newState).c_str());
-    }
+    void onStateChanged(std::weak_ptr<Qv2Component> component, Qv2Component::State newState) override {}
 
     int getFrameCount() const { return mFrameCount; }
 
@@ -97,59 +117,88 @@ private:
 };
 
 /**
- * @brief Encode a specific number of frames from a raw YUV file.
+ * @brief Parameterized Test Fixture
  */
-void testEncodeRawYUV(const std::string& inputPath, const std::string& outputPath,
-                      int w, int h, int colorFormat, int bitDepth, int maxFrames) {
-    printf("=== Starting Raw YUV to APV Encoding ===\n");
-    printf("Input File:  %s (%dx%d, %d-bit)\n", inputPath.c_str(), w, h, bitDepth);
+class Qv2EncoderTestP : public ::testing::TestWithParam<TestParam> {
+protected:
+    void SetUp() override {
+        mComponent = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
+        ASSERT_NE(mComponent, nullptr);
+    }
 
-    FILE* fpIn = fopen(inputPath.c_str(), "rb");
-    if (!fpIn) return;
+    void TearDown() override {
 
-    auto component = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
-    FILE* outFile = fopen(outputPath.c_str(), "wb");
-    TestListener listener(outFile);
-    component->setListener(&listener);
+    }
 
+    std::shared_ptr<Qv2Component> mComponent;
+};
+
+TEST_P(Qv2EncoderTestP, RunEncode) {
+    const TestParam& p = GetParam();
+
+    std::cout << "[ TEST ] Running encode for: " << p.inputPath << std::endl;
+
+    FILE* fpIn = fopen(p.inputPath.c_str(), "rb");
+    ASSERT_NE(fpIn, nullptr) << "Failed to open input file: " << p.inputPath;
+
+    FILE* fpOut = fopen(p.outputPath.c_str(), "wb");
+    TestListener listener(fpOut);
+    mComponent->setListener(&listener);
+
+    int w = p.width, h = p.height, colorFormat = p.format, bitDepth = p.depth;
     float fpsValue = 30.0f;
+    bool isY4M = (p.inputPath.find(".y4m") != std::string::npos);
+
+    if (isY4M) {
+        y4m_params_t y4mParams;
+        ASSERT_GE(y4m_header_parser(fpIn, &y4mParams), 0) << "Failed to parse Y4M header";
+        w = y4mParams.w; h = y4mParams.h;
+        colorFormat = y4mParams.color_format;
+        bitDepth = y4mParams.bit_depth;
+        fpsValue = (float)y4mParams.fps_num / y4mParams.fps_den;
+    }
+
     std::vector<Qv2Param*> params;
-    Qv2VideoSizeInput size; size.mWidth = w; size.mHeight = h;
-    Qv2FrameRateInput fps; fps.mFps = fpsValue;
-    Qv2BitrateSetting bitrate; bitrate.mBitrate = 200000000;
-    Qv2BitDepthInput depth; depth.mBitDepth = bitDepth;
-    Qv2ColorFormatInput color; color.mColorFormat = colorFormat;
-    Qv2QPInput qp; qp.mQP = 51;
+    Qv2VideoSizeInput sizeParam; sizeParam.mWidth = w; sizeParam.mHeight = h;
+    Qv2FrameRateInput fpsParam; fpsParam.mFps = fpsValue;
+    Qv2BitrateSetting brParam; brParam.mBitrate = 100000000;
+    Qv2BitDepthInput depthParam; depthParam.mBitDepth = bitDepth;
+    Qv2ColorFormatInput colorParam; colorParam.mColorFormat = colorFormat;
+    Qv2QPInput qpParam; qpParam.mQP = 25;
 
-    params.push_back(&size); params.push_back(&fps); params.push_back(&bitrate);
-    params.push_back(&depth); params.push_back(&color); params.push_back(&qp);
-    component->configure(params);
-    component->enableRecon(true);
-    component->start();
+    params.push_back(&sizeParam); params.push_back(&fpsParam); params.push_back(&brParam);
+    params.push_back(&depthParam); params.push_back(&colorParam); params.push_back(&qpParam);
 
-    int cs = OAPV_CS_SET(colorFormat, bitDepth, 0);
+    ASSERT_EQ(mComponent->configure(params), QV2_OK);
+    mComponent->enableRecon(true);
+    ASSERT_EQ(mComponent->start(), QV2_OK);
+
+    int cs = OAPV_CS_SET(toOapvFmt(colorFormat), bitDepth, 0);
     uint64_t frameDurationUs = static_cast<uint64_t>(1000000.0f / fpsValue);
     uint64_t currentTimestamp = 0;
+    int maxFrames = isY4M ? 1000000 : 1; // Process all for Y4M, 5 for Raw YUV
 
     for (int i = 0; i < maxFrames; ++i) {
         oapv_imgb_t* imgb = imgb_create(w, h, cs);
-        if (imgb_read(fpIn, imgb, w, h, 0) < 0) { imgb->release(imgb); break; }
+        if (imgb_read(fpIn, imgb, w, h, isY4M ? 1 : 0) < 0) {
+            imgb->release(imgb);
+            break;
+        }
 
         auto item = std::make_unique<Qv2Work>();
         item->timestamp = currentTimestamp;
         currentTimestamp += frameDurationUs;
 
         auto inputBlock = std::make_shared<Qv2Block2D>(w, h, colorFormat, bitDepth);
-        for (int p = 0; p < imgb->np; ++p)
-            inputBlock->setPlane(p, (uint8_t*)imgb->a[p], imgb->s[p], imgb->h[p]);
+        for (int plane = 0; plane < imgb->np; ++plane)
+            inputBlock->setPlane(plane, (uint8_t*)imgb->a[plane], imgb->s[plane], imgb->h[plane]);
         item->input = Qv2Buffer::CreateGraphicBuffer(inputBlock);
 
-        // Setup Recon Buffer
         auto reconBlock = std::make_shared<Qv2Block2D>(w, h, colorFormat, bitDepth);
         std::vector<std::vector<uint8_t>> reconPlanes(imgb->np);
-        for (int p = 0; p < imgb->np; ++p) {
-            reconPlanes[p].resize(imgb->s[p] * imgb->h[p]);
-            reconBlock->setPlane(p, reconPlanes[p].data(), imgb->s[p], imgb->h[p]);
+        for (int plane = 0; plane < imgb->np; ++plane) {
+            reconPlanes[plane].resize(imgb->s[plane] * imgb->h[plane]);
+            reconBlock->setPlane(plane, reconPlanes[plane].data(), imgb->s[plane], imgb->h[plane]);
         }
         item->recon = Qv2Buffer::CreateGraphicBuffer(reconBlock);
 
@@ -160,112 +209,31 @@ void testEncodeRawYUV(const std::string& inputPath, const std::string& outputPat
 
         std::vector<std::unique_ptr<Qv2Work>> items;
         items.push_back(std::move(item));
-
-        component->queue(std::move(items));
+        mComponent->queue(std::move(items));
 
         imgb->release(imgb);
     }
 
-    component->stop(); component->release();
-    fclose(fpIn); fclose(outFile);
+    mComponent->stop();
+    mComponent->release();
+
+    EXPECT_GT(listener.getFrameCount(), 0);
+    fclose(fpIn);
+    if (fpOut) fclose(fpOut);
 }
 
 /**
- * @brief Main encoding test function for Y4M.
+ * @brief List of Raw YUV files to test.
  */
-void testEncodeY4M(const std::string& inputPath, const std::string& outputPath) {
-    printf("=== Starting Y4M to APV Encoding ===\n");
-    FILE* fpIn = fopen(inputPath.c_str(), "rb");
-    if (!fpIn) return;
-
-    y4m_params_t y4mParams;
-    memset(&y4mParams, 0, sizeof(y4mParams));
-    if (y4m_header_parser(fpIn, &y4mParams) < 0) { fclose(fpIn); return; }
-
-    auto component = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
-    FILE* outFile = fopen(outputPath.c_str(), "wb");
-    TestListener listener(outFile);
-    component->setListener(&listener);
-
-    float fpsValue = (float)y4mParams.fps_num / y4mParams.fps_den;
-    std::vector<Qv2Param*> params;
-    Qv2VideoSizeInput size; size.mWidth = y4mParams.w; size.mHeight = y4mParams.h;
-    Qv2FrameRateInput fps; fps.mFps = fpsValue;
-    Qv2BitrateSetting bitrate; bitrate.mBitrate = 100000000;
-    Qv2BitDepthInput depth; depth.mBitDepth = y4mParams.bit_depth;
-    Qv2ColorFormatInput color; color.mColorFormat = y4mParams.color_format;
-    Qv2QPInput qp; qp.mQP = 25;
-    params.push_back(&size); params.push_back(&fps); params.push_back(&bitrate);
-    params.push_back(&depth); params.push_back(&color); params.push_back(&qp);
-
-    component->configure(params);
-    component->start();
-
-    int cs = OAPV_CS_SET(y4mParams.color_format, y4mParams.bit_depth, 0);
-    uint64_t frameDurationUs = static_cast<uint64_t>(1000000.0f / fpsValue);
-    uint64_t currentTimestamp = 0;
-
-    while (true) {
-        oapv_imgb_t* imgb = imgb_create(y4mParams.w, y4mParams.h, cs);
-        if (imgb_read(fpIn, imgb, y4mParams.w, y4mParams.h, 1) < 0) {
-            imgb->release(imgb);
-            auto item = std::make_unique<Qv2Work>();
-            item->flags |= QV2_WORK_FLAG_EOS;
-            item->timestamp = currentTimestamp;
-            std::vector<std::unique_ptr<Qv2Work>> items;
-            items.push_back(std::move(item));
-            component->queue(std::move(items));
-            break;
-        }
-        auto item = std::make_unique<Qv2Work>();
-        item->timestamp = currentTimestamp;
-        currentTimestamp += frameDurationUs;
-
-        auto inputBlock = std::make_shared<Qv2Block2D>(y4mParams.w, y4mParams.h, y4mParams.color_format, y4mParams.bit_depth);
-        for (int p = 0; p < imgb->np; ++p) inputBlock->setPlane(p, (uint8_t*)imgb->a[p], imgb->s[p], imgb->h[p]);
-        item->input = Qv2Buffer::CreateGraphicBuffer(inputBlock);
-
-        // Setup Recon Buffer
-        auto reconBlock = std::make_shared<Qv2Block2D>(y4mParams.w, y4mParams.h, y4mParams.color_format, y4mParams.bit_depth);
-        std::vector<std::vector<uint8_t>> reconPlanes(imgb->np);
-        for (int p = 0; p < imgb->np; ++p) {
-            reconPlanes[p].resize(imgb->s[p] * imgb->h[p]);
-            reconBlock->setPlane(p, reconPlanes[p].data(), imgb->s[p], imgb->h[p]);
-        }
-        item->recon = Qv2Buffer::CreateGraphicBuffer(reconBlock);
-
-        std::vector<uint8_t> outData(y4mParams.w * y4mParams.h * 2);
-        item->output = Qv2Buffer::CreateLinearBuffer(std::make_shared<Qv2Block1D>(outData.data(), 0, outData.size()));
-
-        std::vector<std::unique_ptr<Qv2Work>> items; items.push_back(std::move(item));
-        component->queue(std::move(items));
-
-        imgb->release(imgb);
-    }
-
-    component->stop(); component->release();
-    fclose(fpIn); fclose(outFile);
-}
+INSTANTIATE_TEST_SUITE_P(
+    APV_YUV_Tests,
+    Qv2EncoderTestP,
+    ::testing::Values(
+        TestParam{"HDR_4k.yuv", "output_hdr.apv", 2160, 3840, QV2FormatYUV422Planar, 10}
+    )
+);
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
-        printf("Usage: %s <input.y4m/yuv> [output.apv]\n", argv[0]);
-        return 1;
-    }
-
-    std::string inputPath = argv[1];
-    std::string outputPath = (argc > 2) ? argv[2] : "output.apv";
-
-    try {
-        if (inputPath.find(".yuv") != std::string::npos) {
-            // Encode 5 frames of HDR_4k.yuv (2160x3840, YUV422, 10-bit)
-            testEncodeRawYUV(inputPath, outputPath, 2160, 3840, OAPV_CF_YCBCR422, 10, 5);
-        } else {
-            testEncodeY4M(inputPath, outputPath);
-        }
-    } catch (const std::exception& e) {
-        printf("Unhandled exception: %s\n", e.what());
-        return 1;
-    }
-    return 0;
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
