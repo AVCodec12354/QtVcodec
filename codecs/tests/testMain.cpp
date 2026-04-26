@@ -410,6 +410,295 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
+/**
+ * @brief Test fixture for Qv2Component base class functionality
+ */
+class Qv2ComponentTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        mComponent = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
+        ASSERT_NE(mComponent, nullptr);
+    }
+
+    void TearDown() override {
+        // Component should be properly released in tests
+    }
+
+    std::shared_ptr<Qv2Component> mComponent;
+};
+
+/**
+ * @brief Test component creation and initial state
+ */
+TEST_F(Qv2ComponentTest, InitialState) {
+    EXPECT_EQ(mComponent->getState(), Qv2Component::INITIALIZED);
+    EXPECT_FALSE(mComponent->getName().empty());
+    EXPECT_FALSE(mComponent->getVersion().empty());
+}
+
+/**
+ * @brief Test component state transitions
+ */
+TEST_F(Qv2ComponentTest, StateTransitions) {
+    // Start with UNINITIALIZED
+    EXPECT_EQ(mComponent->getState(), Qv2Component::INITIALIZED);
+
+    // Configure component
+    std::vector<Qv2Param*> params;
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam = std::make_shared<Qv2VideoSizeInput>();
+    sizeParam->mWidth = 1920;
+    sizeParam->mHeight = 1080;
+    params.push_back(sizeParam.get());
+
+    std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
+    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    params.push_back(colorParam.get());
+
+    std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
+    fpsParam->mFps = 30.0f;
+    params.push_back(fpsParam.get());
+
+    std::shared_ptr<Qv2BitDepthInput> depthParam = std::make_shared<Qv2BitDepthInput>();
+    depthParam->mBitDepth = 10;
+    params.push_back(depthParam.get());
+
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam = std::make_shared<Qv2BitrateSetting>();
+    bitrateParam->mBitrate = 10000000;
+    params.push_back(bitrateParam.get());
+
+    std::shared_ptr<Qv2QPInput> qpParam = std::make_shared<Qv2QPInput>();
+    qpParam->mQP = 25;
+    params.push_back(qpParam.get());
+
+    EXPECT_EQ(mComponent->configure(params), QV2_OK);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
+
+    // Start component
+    EXPECT_EQ(mComponent->start(), QV2_OK);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::RUNNING);
+
+    // Stop component
+    EXPECT_EQ(mComponent->stop(), QV2_OK);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::STOPPED);
+
+    // Release component
+    mComponent->release();
+    EXPECT_EQ(mComponent->getState(), Qv2Component::UNINITIALIZED);
+}
+
+/**
+ * @brief Test component parameter querying
+ */
+TEST_F(Qv2ComponentTest, ParameterQuery) {
+    std::vector<Qv2Param*> queryParams;
+
+    // Query should work even before configuration
+    Qv2Status status = mComponent->query(queryParams);
+    EXPECT_EQ(status, QV2_OK);
+}
+
+/**
+ * @brief Test component flush operation
+ */
+TEST_F(Qv2ComponentTest, FlushOperation) {
+    // Configure and start component first
+    std::vector<Qv2Param*> params;
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam = std::make_shared<Qv2VideoSizeInput>();
+    sizeParam->mWidth = 1920;
+    sizeParam->mHeight = 1080;
+    params.push_back(sizeParam.get());
+
+    std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
+    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    params.push_back(colorParam.get());
+
+    std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
+    fpsParam->mFps = 30.0f;
+    params.push_back(fpsParam.get());
+
+    std::shared_ptr<Qv2BitDepthInput> depthParam = std::make_shared<Qv2BitDepthInput>();
+    depthParam->mBitDepth = 10;
+    params.push_back(depthParam.get());
+
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam = std::make_shared<Qv2BitrateSetting>();
+    bitrateParam->mBitrate = 10000000;
+    params.push_back(bitrateParam.get());
+
+    std::shared_ptr<Qv2QPInput> qpParam = std::make_shared<Qv2QPInput>();
+    qpParam->mQP = 25;
+    params.push_back(qpParam.get());
+
+    ASSERT_EQ(mComponent->configure(params), QV2_OK);
+    ASSERT_EQ(mComponent->start(), QV2_OK);
+
+    // Test flush
+    EXPECT_EQ(mComponent->flush(), QV2_OK);
+
+    // Stop and release
+    EXPECT_EQ(mComponent->stop(), QV2_OK);
+    mComponent->release();
+}
+
+/**
+ * @brief Test component listener functionality
+ */
+class TestComponentListener : public Qv2Component::Listener {
+public:
+    void onWorkDone(std::weak_ptr<Qv2Component> component,
+                    std::vector<std::unique_ptr<Qv2Work>> workItems) override {
+        workDoneCalled = true;
+        receivedWorkItems = workItems.size();
+    }
+
+    void onError(std::weak_ptr<Qv2Component> component, Qv2Status error) override {
+        errorCalled = true;
+        lastError = error;
+    }
+
+    void onStateChanged(std::weak_ptr<Qv2Component> component, Qv2Component::State newState) override {
+        stateChangedCalled = true;
+        lastState = newState;
+    }
+
+    bool workDoneCalled = false;
+    bool errorCalled = false;
+    bool stateChangedCalled = false;
+    size_t receivedWorkItems = 0;
+    Qv2Status lastError = QV2_OK;
+    Qv2Component::State lastState = Qv2Component::UNINITIALIZED;
+};
+
+TEST_F(Qv2ComponentTest, ListenerCallbacks) {
+    TestComponentListener listener;
+    mComponent->setListener(&listener);
+
+    // Configure component - should trigger state change
+    std::vector<Qv2Param*> params;
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam = std::make_shared<Qv2VideoSizeInput>();
+    sizeParam->mWidth = 1920;
+    sizeParam->mHeight = 1080;
+    params.push_back(sizeParam.get());
+
+    std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
+    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    params.push_back(colorParam.get());
+
+    std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
+    fpsParam->mFps = 30.0f;
+    params.push_back(fpsParam.get());
+
+    std::shared_ptr<Qv2BitDepthInput> depthParam = std::make_shared<Qv2BitDepthInput>();
+    depthParam->mBitDepth = 10;
+    params.push_back(depthParam.get());
+
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam = std::make_shared<Qv2BitrateSetting>();
+    bitrateParam->mBitrate = 10000000;
+    params.push_back(bitrateParam.get());
+
+    std::shared_ptr<Qv2QPInput> qpParam = std::make_shared<Qv2QPInput>();
+    qpParam->mQP = 25;
+    params.push_back(qpParam.get());
+
+    ASSERT_EQ(mComponent->configure(params), QV2_OK);
+    EXPECT_TRUE(listener.stateChangedCalled);
+    EXPECT_EQ(listener.lastState, Qv2Component::CONFIGURED);
+
+    // Start component
+    listener.stateChangedCalled = false; // Reset flag
+    ASSERT_EQ(mComponent->start(), QV2_OK);
+    EXPECT_TRUE(listener.stateChangedCalled);
+    EXPECT_EQ(listener.lastState, Qv2Component::RUNNING);
+
+    // Stop component
+    listener.stateChangedCalled = false;
+    ASSERT_EQ(mComponent->stop(), QV2_OK);
+    EXPECT_TRUE(listener.stateChangedCalled);
+    EXPECT_EQ(listener.lastState, Qv2Component::STOPPED);
+
+    // Release component
+    listener.stateChangedCalled = false;
+    mComponent->release();
+    EXPECT_TRUE(listener.stateChangedCalled);
+    EXPECT_EQ(listener.lastState, Qv2Component::UNINITIALIZED);
+}
+
+/**
+ * @brief Test invalid operations in wrong states
+ */
+TEST_F(Qv2ComponentTest, InvalidStateOperations) {
+    // Try to start without configuring
+    EXPECT_NE(mComponent->start(), QV2_OK);
+
+    // Try to stop without starting
+    EXPECT_NE(mComponent->stop(), QV2_OK);
+
+    // Configure first
+    std::vector<Qv2Param*> params;
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam = std::make_shared<Qv2VideoSizeInput>();
+    sizeParam->mWidth = 1920;
+    sizeParam->mHeight = 1080;
+    params.push_back(sizeParam.get());
+
+    std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
+    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    params.push_back(colorParam.get());
+
+    std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
+    fpsParam->mFps = 30.0f;
+    params.push_back(fpsParam.get());
+
+    std::shared_ptr<Qv2BitDepthInput> depthParam = std::make_shared<Qv2BitDepthInput>();
+    depthParam->mBitDepth = 10;
+    params.push_back(depthParam.get());
+
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam = std::make_shared<Qv2BitrateSetting>();
+    bitrateParam->mBitrate = 10000000;
+    params.push_back(bitrateParam.get());
+
+    std::shared_ptr<Qv2QPInput> qpParam = std::make_shared<Qv2QPInput>();
+    qpParam->mQP = 25;
+    params.push_back(qpParam.get());
+
+    ASSERT_EQ(mComponent->configure(params), QV2_OK);
+
+    // Try to configure again while configured
+    EXPECT_NE(mComponent->configure(params), QV2_OK);
+
+    // Start component
+    ASSERT_EQ(mComponent->start(), QV2_OK);
+
+    // Try to configure while running
+    EXPECT_NE(mComponent->configure(params), QV2_OK);
+
+    // Stop and release
+    EXPECT_EQ(mComponent->stop(), QV2_OK);
+    mComponent->release();
+}
+
+/**
+ * @brief Test component factory functionality
+ */
+TEST(ComponentFactoryTest, CreateByType) {
+    auto encoder = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
+    EXPECT_NE(encoder, nullptr);
+    EXPECT_EQ(encoder->getState(), Qv2Component::INITIALIZED);
+
+//    auto decoder = Qv2ComponentFactory::createByType(Qv2ComponentFactory::DECODER_APV);
+//    EXPECT_NE(decoder, nullptr);
+//    EXPECT_EQ(decoder->getState(), Qv2Component::INITIALIZED);
+}
+
+TEST(ComponentFactoryTest, CreateByName) {
+    auto encoder = Qv2ComponentFactory::createByName("qv2.apv.encoder");
+    EXPECT_NE(encoder, nullptr);
+
+    auto decoder = Qv2ComponentFactory::createByName("qv2.apv.decoder");
+    EXPECT_NE(decoder, nullptr);
+
+    auto invalid = Qv2ComponentFactory::createByName("invalid.name");
+    EXPECT_EQ(invalid, nullptr);
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

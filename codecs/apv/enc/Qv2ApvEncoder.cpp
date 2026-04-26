@@ -242,6 +242,12 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
 Qv2Status Qv2ApvEncoder::start() {
     QV2_LOGV("start() entry.");
 
+    if (mState != CONFIGURED) {
+        QV2_LOGW("start() failed: Invalid state %s, expected CONFIGURED",
+                 Qv2Component::stateToString(mState).c_str());
+        return QV2_ERR_INTERNAL;
+    }
+
     if (mBitstreamBuf) {
         delete[] mBitstreamBuf;
     }
@@ -272,6 +278,13 @@ Qv2Status Qv2ApvEncoder::start() {
 
 Qv2Status Qv2ApvEncoder::stop() {
     QV2_LOGV("stop() entry.");
+
+    if (mState != RUNNING) {
+        QV2_LOGW("stop() failed: Invalid state %s, expected RUNNING",
+                 Qv2Component::stateToString(mState).c_str());
+        return QV2_ERR_INTERNAL;
+    }
+
     setState(STOPPED);
     return QV2_OK;
 }
