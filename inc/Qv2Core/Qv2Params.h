@@ -42,10 +42,7 @@ struct Qv2Param {
         kIndexColorPrimaries = 0x1C,
         kIndexColorTransfer  = 0x1D,
         kIndexColorMatrix    = 0x1E,
-        kIndexColorRange     = 0x1F,
-        kIndexHash           = 0x20,
-        kIndexMasterDisplay  = 0x21,
-        kIndexMaxCLL         = 0x22
+        kIndexColorRange     = 0x1F
     };
 
     uint32_t mId;
@@ -353,31 +350,6 @@ struct Qv2ColorRangeSetting : public Qv2Param {
     Qv2ColorRangeSetting() : Qv2Param(ID, sizeof(Qv2ColorRangeSetting)), mColorRange(-1) {}
 };
 
-/**
- * @brief Hash Flag
- */
-struct Qv2HashSetting : public Qv2Param {
-    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexHash);
-    bool mHash;
-    Qv2HashSetting() : Qv2Param(ID, sizeof(Qv2HashSetting)), mHash(false) {}
-};
 
-/**
- * @brief Master Display Metadata
- */
-struct Qv2MasterDisplaySetting : public Qv2Param {
-    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexMasterDisplay);
-    std::string mMasterDisplay;
-    Qv2MasterDisplaySetting() : Qv2Param(ID, sizeof(Qv2MasterDisplaySetting)) {}
-};
-
-/**
- * @brief Max CLL Metadata
- */
-struct Qv2MaxCLLSetting : public Qv2Param {
-    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexMaxCLL);
-    std::string mMaxCLL;
-    Qv2MaxCLLSetting() : Qv2Param(ID, sizeof(Qv2MaxCLLSetting)) {}
-};
 
 #endif // QV2PARAMS_H
