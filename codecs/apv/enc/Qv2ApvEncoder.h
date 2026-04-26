@@ -49,6 +49,16 @@ private:
 
     int mInputDepth = 10;
     int mColorFmt = OAPV_CF_YCBCR422;
+
+    // Metadata settings
+    bool mUseHash = false;
+    std::string mMasterDisplay;
+    std::string mMaxCLL;
+
+    // Helper methods for metadata handling
+    int parseMasterDisplay(const char* data_string, oapvm_payload_mdcv_t *mdcv) const;
+    int parseMaxCLL(const char* data_string, oapvm_payload_cll_t *cll) const;
+    Qv2Status updateMetadata() const;
 };
 
 #endif // QV2APVENCODER_H

@@ -5,6 +5,7 @@
 #include "Qv2Log.h"
 #include "../oapv_app_util.h"
 #include <cstring>
+#include <cstdio>
 #include <limits>
 #include "Qv2Constants.h"
 
@@ -298,22 +299,40 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
             }
             case Qv2HashSetting::ID: {
                 auto v = static_cast<Qv2HashSetting *>(param);
-                // Hash is global
-                QV2_LOGV("Set Hash: %d", v->mHash);
+                mUseHash = v->mHash;
+                QV2_LOGV("Set Hash: %d", mUseHash);
                 break;
             }
-            case Qv2MasterDisplaySetting::ID: {
-                auto v = static_cast<Qv2MasterDisplaySetting *>(param);
-                // Master display metadata
-                QV2_LOGV("Set Master Display: %s", v->mMasterDisplay.c_str());
-                break;
-            }
-            case Qv2MaxCLLSetting::ID: {
-                auto v = static_cast<Qv2MaxCLLSetting *>(param);
-                // Max CLL metadata
-                QV2_LOGV("Set Max CLL: %s", v->mMaxCLL.c_str());
-                break;
-            }
+             case Qv2MasterDisplaySetting::ID: {
+                 auto v = static_cast<Qv2MasterDisplaySetting *>(param);
+                 // Validate master display format: G(x,y)B(x,y)R(x,y)WP(x,y)L(max,min)
+                 if (!v->mMasterDisplay.empty()) {
+                     oapvm_payload_mdcv_t mdcv;
+                     std::memset(&mdcv, 0, sizeof(oapvm_payload_mdcv_t));
+                     if (parseMasterDisplay(v->mMasterDisplay.c_str(), &mdcv) != 0) {
+                         QV2_LOGE("Invalid master display format: %s", v->mMasterDisplay.c_str());
+                         return QV2_ERR_INVALID_ARG;
+                     }
+                 }
+                 mMasterDisplay = v->mMasterDisplay;
+                 QV2_LOGV("Set Master Display: %s", mMasterDisplay.c_str());
+                 break;
+             }
+             case Qv2MaxCLLSetting::ID: {
+                 auto v = static_cast<Qv2MaxCLLSetting *>(param);
+                 // Validate max CLL format: max_cll,max_fall
+                 if (!v->mMaxCLL.empty()) {
+                     oapvm_payload_cll_t cll;
+                     std::memset(&cll, 0, sizeof(oapvm_payload_cll_t));
+                     if (parseMaxCLL(v->mMaxCLL.c_str(), &cll) != 0) {
+                         QV2_LOGE("Invalid max CLL format: %s", v->mMaxCLL.c_str());
+                         return QV2_ERR_INVALID_ARG;
+                     }
+                 }
+                 mMaxCLL = v->mMaxCLL;
+                 QV2_LOGV("Set Max CLL: %s", mMaxCLL.c_str());
+                 break;
+             }
             default:
                 break;
         }
@@ -324,6 +343,134 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
 }
 
 Qv2Status Qv2ApvEncoder::query(std::vector<Qv2Param *> &params) const {
+    return QV2_OK;
+}
+
+int Qv2ApvEncoder::parseMasterDisplay(const char* data_string, oapvm_payload_mdcv_t *mdcv) const {
+    double gx, gy, bx, by, rx, ry, wpx, wpy, max_l, min_l;
+    int assigned_fields = std::sscanf(data_string,
+        "G(%lf,%lf)B(%lf,%lf)R(%lf,%lf)WP(%lf,%lf)L(%lf,%lf)",
+        &gx, &gy, &bx, &by, &rx, &ry, &wpx, &wpy, &max_l, &min_l
+    );
+
+    const int expected_fields = 10;
+    if (assigned_fields != expected_fields) {
+        QV2_LOGE("Parsing error: master display color volume information (parsed %d fields, expected %d)",
+                 assigned_fields, expected_fields);
+        return -1;
+    }
+
+    mdcv->primary_chromaticity_x[1] = (int)(gx * 50000.0 + 0.5);
+    mdcv->primary_chromaticity_y[1] = (int)(gy * 50000.0 + 0.5);
+    mdcv->primary_chromaticity_x[2] = (int)(bx * 50000.0 + 0.5);
+    mdcv->primary_chromaticity_y[2] = (int)(by * 50000.0 + 0.5);
+    mdcv->primary_chromaticity_x[0] = (int)(rx * 50000.0 + 0.5);
+    mdcv->primary_chromaticity_y[0] = (int)(ry * 50000.0 + 0.5);
+    mdcv->white_point_chromaticity_x = (int)(wpx * 50000.0 + 0.5);
+    mdcv->white_point_chromaticity_y = (int)(wpy * 50000.0 + 0.5);
+    mdcv->max_mastering_luminance = (unsigned long)(max_l * 10000.0 + 0.5);
+    mdcv->min_mastering_luminance = (unsigned long)(min_l * 10000.0 + 0.5);
+
+    // Validate chromaticity coordinates are within 0-50000 range
+    // (these represent x * 50000 and y * 50000 for 0-1 range)
+    if (mdcv->primary_chromaticity_x[0] > 50000 || mdcv->primary_chromaticity_y[0] > 50000 ||
+        mdcv->primary_chromaticity_x[1] > 50000 || mdcv->primary_chromaticity_y[1] > 50000 ||
+        mdcv->primary_chromaticity_x[2] > 50000 || mdcv->primary_chromaticity_y[2] > 50000 ||
+        mdcv->white_point_chromaticity_x > 50000 || mdcv->white_point_chromaticity_y > 50000) {
+        QV2_LOGE("Master display chromaticity values out of range (max 50000)");
+        return -1;
+    }
+
+    // Validate luminance: max must be >= min
+    if (mdcv->max_mastering_luminance < mdcv->min_mastering_luminance) {
+        QV2_LOGE("Master display max luminance (%lu) must be >= min luminance (%lu)",
+                 mdcv->max_mastering_luminance, mdcv->min_mastering_luminance);
+        return -1;
+    }
+
+    return 0;
+}
+
+int Qv2ApvEncoder::parseMaxCLL(const char* data_string, oapvm_payload_cll_t *cll) const {
+    double max_cll, max_fall;
+    int assigned_fields = std::sscanf(data_string,
+        "%lf,%lf",
+        &max_cll, &max_fall
+    );
+
+    const int expected_fields = 2;
+    if (assigned_fields != expected_fields) {
+        QV2_LOGE("Parsing error: content light level information (parsed %d fields, expected %d)",
+                 assigned_fields, expected_fields);
+        return -1;
+    }
+
+    cll->max_cll = (int)(max_cll + 0.5);
+    cll->max_fall = (int)(max_fall + 0.5);
+
+    // Validate max_cll >= max_fall (max_cll should be at least as large)
+    if (cll->max_cll < cll->max_fall) {
+        QV2_LOGE("Invalid max CLL: max_cll (%d) should be >= max_fall (%d)",
+                 cll->max_cll, cll->max_fall);
+        return -1;
+    }
+
+    return 0;
+}
+
+Qv2Status Qv2ApvEncoder::updateMetadata() const {
+    if (!mMetaDataId) {
+        return QV2_ERR_NOT_INITIALIZED;
+    }
+
+    int ret = 0, size;
+    oapvm_payload_mdcv_t mdcv;
+    oapvm_payload_cll_t cll;
+    int is_mdcv, is_cll;
+    unsigned char payload[64];
+
+    is_mdcv = (mMasterDisplay.length() > 0) ? 1 : 0;
+    is_cll = (mMaxCLL.length() > 0) ? 1 : 0;
+
+    if (!is_mdcv && !is_cll) {
+        // no need to add metadata payload
+        return QV2_OK;
+    }
+
+    if (is_mdcv) {
+        std::memset(&mdcv, 0, sizeof(oapvm_payload_mdcv_t));
+        if (parseMasterDisplay(mMasterDisplay.c_str(), &mdcv)) {
+            QV2_LOGE("cannot parse master display information");
+            return QV2_ERR_INVALID_ARG;
+        }
+        if (OAPV_FAILED(oapvm_write_mdcv(&mdcv, payload, &size))) {
+            QV2_LOGE("cannot get master display information bitstream");
+            return QV2_ERR_INTERNAL;
+        }
+        if (OAPV_FAILED(oapvm_set(mMetaDataId, 1, OAPV_METADATA_MDCV, payload, size))) {
+            QV2_LOGE("cannot set master display information to handler");
+            return QV2_ERR_INTERNAL;
+        }
+        QV2_LOGV("Master Display metadata set successfully. Payload size: %d", size);
+    }
+
+    if (is_cll) {
+        std::memset(&cll, 0, sizeof(oapvm_payload_cll_t));
+        if (parseMaxCLL(mMaxCLL.c_str(), &cll)) {
+            QV2_LOGE("cannot parse content light level information");
+            return QV2_ERR_INVALID_ARG;
+        }
+        if (OAPV_FAILED(oapvm_write_cll(&cll, payload, &size))) {
+            QV2_LOGE("cannot get content light level information bitstream");
+            return QV2_ERR_INTERNAL;
+        }
+        if (OAPV_FAILED(oapvm_set(mMetaDataId, 1, OAPV_METADATA_CLL, payload, size))) {
+            QV2_LOGE("cannot set content light level information to handler");
+            return QV2_ERR_INTERNAL;
+        }
+        QV2_LOGV("Max CLL metadata set successfully. Payload size: %d", size);
+    }
+
     return QV2_OK;
 }
 
@@ -398,6 +545,12 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
         oapve_stat_t stat;
         std::memset(&stat, 0, sizeof(oapve_stat_t));
 
+        /* Update metadata for this frame if needed */
+        Qv2Status metaStatus = updateMetadata();
+        if (metaStatus != QV2_OK) {
+            QV2_LOGW("Failed to update metadata: %d", metaStatus);
+        }
+
         int ret = oapve_encode(mEncoderId, &inputFrames, mMetaDataId, &bitb,
                                &stat, mIsRec ? &reconFrames : nullptr);
 
@@ -417,6 +570,10 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
             } else {
                 item->result = QV2_ERR_INVALID_ARG;
             }
+        }
+
+        if (mMetaDataId) {
+            oapvm_rem_all(mMetaDataId);
         }
     }
 
@@ -458,6 +615,17 @@ Qv2Status Qv2ApvEncoder::start() {
     if (mMetaDataId == nullptr) {
         QV2_LOGE("cannot create APV metadata, ret=%d", ret);
         return QV2_ERR_INTERNAL;
+    }
+
+    /* set encoder extra config (e.g., hash flag) */
+    if (mUseHash) {
+        int value = 1;
+        int size = 4;
+        ret = oapve_config(mEncoderId, OAPV_CFG_SET_USE_FRM_HASH, &value, &size);
+        if (OAPV_FAILED(ret)) {
+            QV2_LOGE("failed to set config for using frame hash, ret=%d", ret);
+            return QV2_ERR_INTERNAL;
+        }
     }
 
     setState(RUNNING);

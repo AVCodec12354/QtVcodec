@@ -699,6 +699,281 @@ TEST(ComponentFactoryTest, CreateByName) {
     EXPECT_EQ(invalid, nullptr);
 }
 
+/**
+ * @brief Test fixture for metadata configuration
+ */
+class Qv2MetadataTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        mComponent = Qv2ComponentFactory::createByType(Qv2ComponentFactory::ENCODER_APV);
+        ASSERT_NE(mComponent, nullptr);
+    }
+
+    void TearDown() override {
+        // Component cleanup
+    }
+
+    std::shared_ptr<Qv2Component> mComponent;
+
+    /**
+     * @brief Helper to create base configuration parameters
+     */
+    std::vector<Qv2Param*> createBaseParams(
+        std::shared_ptr<Qv2VideoSizeInput>& sizeParam,
+        std::shared_ptr<Qv2ColorFormatInput>& colorParam,
+        std::shared_ptr<Qv2FrameRateInput>& fpsParam,
+        std::shared_ptr<Qv2BitDepthInput>& depthParam,
+        std::shared_ptr<Qv2BitrateSetting>& bitrateParam,
+        std::shared_ptr<Qv2QPInput>& qpParam) {
+
+        sizeParam = std::make_shared<Qv2VideoSizeInput>();
+        sizeParam->mWidth = 1920;
+        sizeParam->mHeight = 1080;
+
+        colorParam = std::make_shared<Qv2ColorFormatInput>();
+        colorParam->mColorFormat = QV2FormatYUV422Planar;
+
+        fpsParam = std::make_shared<Qv2FrameRateInput>();
+        fpsParam->mFps = 30.0f;
+
+        depthParam = std::make_shared<Qv2BitDepthInput>();
+        depthParam->mBitDepth = 10;
+
+        bitrateParam = std::make_shared<Qv2BitrateSetting>();
+        bitrateParam->mBitrate = 10000000;
+
+        qpParam = std::make_shared<Qv2QPInput>();
+        qpParam->mQP = 25;
+
+        std::vector<Qv2Param*> params;
+        params.push_back(sizeParam.get());
+        params.push_back(colorParam.get());
+        params.push_back(fpsParam.get());
+        params.push_back(depthParam.get());
+        params.push_back(bitrateParam.get());
+        params.push_back(qpParam.get());
+
+        return params;
+    }
+};
+
+/**
+ * @brief Test setting hash metadata parameter
+ */
+TEST_F(Qv2MetadataTest, SetHashMetadata) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add hash metadata parameter
+    std::shared_ptr<Qv2HashSetting> hashParam = std::make_shared<Qv2HashSetting>();
+    hashParam->mHash = true;
+    params.push_back(hashParam.get());
+
+    // Configure should succeed with hash parameter
+    EXPECT_EQ(mComponent->configure(params), QV2_OK);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
+
+    // Cleanup
+    mComponent->stop();
+    mComponent->release();
+}
+
+/**
+ * @brief Test setting master display metadata parameter with valid format
+ */
+TEST_F(Qv2MetadataTest, SetValidMasterDisplay) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add master display metadata parameter with valid format
+    // Format: G(x,y)B(x,y)R(x,y)WP(x,y)L(max,min)
+    std::shared_ptr<Qv2MasterDisplaySetting> masterDisplayParam = std::make_shared<Qv2MasterDisplaySetting>();
+    masterDisplayParam->mMasterDisplay = "G(0.3,0.6)B(0.15,0.06)R(0.64,0.33)WP(0.3127,0.329)L(1000,0.001)";
+    params.push_back(masterDisplayParam.get());
+
+    // Configure should succeed with valid master display format
+    EXPECT_EQ(mComponent->configure(params), QV2_OK);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
+
+    // Cleanup
+    mComponent->stop();
+    mComponent->release();
+}
+
+/**
+ * @brief Test setting max CLL metadata parameter with valid format
+ */
+TEST_F(Qv2MetadataTest, SetValidMaxCLL) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add max CLL metadata parameter with valid format
+    // Format: max_cll,max_fall
+    std::shared_ptr<Qv2MaxCLLSetting> maxCLLParam = std::make_shared<Qv2MaxCLLSetting>();
+    maxCLLParam->mMaxCLL = "1000,200";
+    params.push_back(maxCLLParam.get());
+
+    // Configure should succeed with valid max CLL format
+    EXPECT_EQ(mComponent->configure(params), QV2_OK);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
+
+    // Cleanup
+    mComponent->stop();
+    mComponent->release();
+}
+
+/**
+ * @brief Test setting all metadata parameters together
+ */
+TEST_F(Qv2MetadataTest, SetAllMetadataParameters) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add all metadata parameters
+    std::shared_ptr<Qv2HashSetting> hashParam = std::make_shared<Qv2HashSetting>();
+    hashParam->mHash = true;
+    params.push_back(hashParam.get());
+
+    std::shared_ptr<Qv2MasterDisplaySetting> masterDisplayParam = std::make_shared<Qv2MasterDisplaySetting>();
+    masterDisplayParam->mMasterDisplay = "G(0.3,0.6)B(0.15,0.06)R(0.64,0.33)WP(0.3127,0.329)L(1000,0.001)";
+    params.push_back(masterDisplayParam.get());
+
+    std::shared_ptr<Qv2MaxCLLSetting> maxCLLParam = std::make_shared<Qv2MaxCLLSetting>();
+    maxCLLParam->mMaxCLL = "1000,200";
+    params.push_back(maxCLLParam.get());
+
+    // Configure should succeed with all metadata parameters
+    EXPECT_EQ(mComponent->configure(params), QV2_OK);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
+
+    // Cleanup
+    mComponent->stop();
+    mComponent->release();
+}
+
+/**
+ * @brief Test setting invalid master display format
+ */
+TEST_F(Qv2MetadataTest, SetInvalidMasterDisplay) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add master display metadata parameter with INVALID format
+    std::shared_ptr<Qv2MasterDisplaySetting> masterDisplayParam = std::make_shared<Qv2MasterDisplaySetting>();
+    masterDisplayParam->mMasterDisplay = "invalid_format_without_proper_structure";
+    params.push_back(masterDisplayParam.get());
+
+    // Configure should fail or reject invalid master display format
+    Qv2Status status = mComponent->configure(params);
+    EXPECT_NE(status, QV2_OK) << "Invalid master display format should be rejected";
+
+    mComponent->release();
+}
+
+/**
+ * @brief Test setting invalid max CLL format
+ */
+TEST_F(Qv2MetadataTest, SetInvalidMaxCLL) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add max CLL metadata parameter with INVALID format
+    // Valid format is "max_cll,max_fall" but we provide only one value
+    std::shared_ptr<Qv2MaxCLLSetting> maxCLLParam = std::make_shared<Qv2MaxCLLSetting>();
+    maxCLLParam->mMaxCLL = "1000";  // Missing max_fall value
+    params.push_back(maxCLLParam.get());
+
+    // Configure should fail or reject invalid max CLL format
+    Qv2Status status = mComponent->configure(params);
+    EXPECT_NE(status, QV2_OK) << "Invalid max CLL format should be rejected";
+
+    mComponent->release();
+}
+
+/**
+ * @brief Test master display with numeric out of range values
+ */
+TEST_F(Qv2MetadataTest, SetMasterDisplayOutOfRange) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add master display with out-of-range color coordinates (should be 0-1)
+    std::shared_ptr<Qv2MasterDisplaySetting> masterDisplayParam = std::make_shared<Qv2MasterDisplaySetting>();
+    masterDisplayParam->mMasterDisplay = "G(1.5,0.6)B(0.15,0.06)R(0.64,0.33)WP(0.3127,0.329)L(1000,0.001)";
+    params.push_back(masterDisplayParam.get());
+
+    // Configure may fail due to out-of-range coordinates
+    mComponent->configure(params);
+
+    mComponent->release();
+}
+
+/**
+ * @brief Test max CLL with negative values
+ */
+TEST_F(Qv2MetadataTest, SetMaxCLLNegativeValues) {
+    std::shared_ptr<Qv2VideoSizeInput> sizeParam;
+    std::shared_ptr<Qv2ColorFormatInput> colorParam;
+    std::shared_ptr<Qv2FrameRateInput> fpsParam;
+    std::shared_ptr<Qv2BitDepthInput> depthParam;
+    std::shared_ptr<Qv2BitrateSetting> bitrateParam;
+    std::shared_ptr<Qv2QPInput> qpParam;
+
+    auto params = createBaseParams(sizeParam, colorParam, fpsParam, depthParam, bitrateParam, qpParam);
+
+    // Add max CLL with negative values (should be non-negative)
+    std::shared_ptr<Qv2MaxCLLSetting> maxCLLParam = std::make_shared<Qv2MaxCLLSetting>();
+    maxCLLParam->mMaxCLL = "-100,200";
+    params.push_back(maxCLLParam.get());
+
+    // Configure may fail or handle negative values
+    mComponent->configure(params);
+
+    mComponent->release();
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
