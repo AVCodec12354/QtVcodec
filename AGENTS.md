@@ -29,7 +29,7 @@ lldb ./build/QtVCodec
 ### Buffer Handling
 - **Graphic buffers**: Qv2Block2D for YUV frames, use setPlane() for each plane
 - **Linear buffers**: Qv2Block1D for encoded bitstreams
-- Convert QV2Format* constants to OAPV_CF_* using toOapvFmt() helper
+- Convert QV2_CF_* constants to OAPV_CF_* using toOapvFmt() helper
 
 ### Testing
 - Use Google Test with parameterized fixtures (Qv2EncoderTestP)

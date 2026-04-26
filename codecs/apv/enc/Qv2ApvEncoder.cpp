@@ -751,28 +751,15 @@ void Qv2ApvEncoder::mapBlockToImgb(const std::shared_ptr <Qv2Block2D> &block, oa
 
 int Qv2ApvEncoder::toOapvFmt(int qv2Format) const {
     switch (qv2Format) {
-        case 0: // 400 (monochrome)
-            return OAPV_CF_YCBCR400;
-        case 2: // 422
-            return OAPV_CF_YCBCR422;
-        case 3: // 444
-            return OAPV_CF_YCBCR444;
-        case 4: // 4444
-            return OAPV_CF_YCBCR4444;
-        case 5: // P2 (Planar Y, Combined CbCr, 422)
-            return OAPV_CF_PLANAR2;
-        case QV2FormatYUV420Planar:
-        case QV2FormatYUV420Flexible:
+        case QV2_CF_YCBCR420:
             return OAPV_CF_YCBCR420;
-        case QV2FormatYUV422Planar:
-        case QV2FormatYUV422Flexible:
+        case QV2_CF_YCBCR422:
             return OAPV_CF_YCBCR422;
-        case QV2FormatYUV444Flexible:
+        case QV2_CF_YCBCR444:
             return OAPV_CF_YCBCR444;
-        case QV2FormatYUVP010:
+        case QV2_CF_P210:
             return OAPV_CF_PLANAR2;
         default:
-            QV2_LOGW("Unknown Qv2ColorFormat %d, defaulting to YUV422(%d)", qv2Format, OAPV_CF_YCBCR422);
-            return OAPV_CF_YCBCR422;
+            return OAPV_CS_GET_FORMAT(qv2Format);
     }
 }

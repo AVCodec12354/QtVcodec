@@ -60,18 +60,17 @@ void mapBlockToImgb(std::shared_ptr<Qv2Block2D> block, oapv_imgb_t* imgb) {
  */
 int toOapvFmt(int qv2Format) {
     switch (qv2Format) {
-        case QV2FormatYUV420Planar:
-        case QV2FormatYUV420Flexible:
+        case QV2_CF_YCBCR420:
             return OAPV_CF_YCBCR420;
-        case QV2FormatYUV422Planar:
-        case QV2FormatYUV422Flexible:
+        case QV2_CF_YCBCR422:
+        case QV2_CF_YCBCR422_10LE:
             return OAPV_CF_YCBCR422;
-        case QV2FormatYUV444Flexible:
+        case QV2_CF_YCBCR444:
             return OAPV_CF_YCBCR444;
-        case QV2FormatYUVP010:
+        case QV2_CF_P210:
             return OAPV_CF_PLANAR2;
         default:
-            return OAPV_CF_YCBCR422;
+            return OAPV_CS_GET_FORMAT(qv2Format);
     }
 }
 
@@ -375,18 +374,18 @@ INSTANTIATE_TEST_SUITE_P(
     APV_YUV_Tests,
     Qv2EncoderTestP,
     ::testing::Values(
-        TestParam{"/qp_A_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/qp_B_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/qp_C_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_C_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/qp_D_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/qp_E_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/syn_A_yuv422p10le_1920x1080_60fps_2.yuv", "/syn_A_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 60, 10, 2},
-        TestParam{"/syn_B_yuv422p10le_1920x1080_60fps_2.yuv", "/syn_B_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2FormatYUV422Planar, 60, 10, 2},
-        TestParam{"/tile_A_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/tile_B_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/tile_C_yuv422p10le_7680x4320_30fps_3.yuv", "/tile_C_yuv422p10le_7680x4320_30fps_3.apv", 7680, 4320, QV2FormatYUV422Planar, 30, 10, 3},
-        TestParam{"/tile_D_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3},
-        TestParam{"/tile_E_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2FormatYUV422Planar, 60, 10, 3}
+        TestParam{"/qp_A_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/qp_B_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/qp_C_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_C_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/qp_D_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/qp_E_yuv422p10le_3840x2160_60fps_3.yuv", "/qp_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/syn_A_yuv422p10le_1920x1080_60fps_2.yuv", "/syn_A_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2_CF_YCBCR422_10LE, 60, 10, 2},
+        TestParam{"/syn_B_yuv422p10le_1920x1080_60fps_2.yuv", "/syn_B_yuv422p10le_1920x1080_60fps_2.apv", 1920, 1080, QV2_CF_YCBCR422_10LE, 60, 10, 2},
+        TestParam{"/tile_A_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_A_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/tile_B_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_B_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/tile_C_yuv422p10le_7680x4320_30fps_3.yuv", "/tile_C_yuv422p10le_7680x4320_30fps_3.apv", 7680, 4320, QV2_CF_YCBCR422_10LE, 30, 10, 3},
+        TestParam{"/tile_D_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_D_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3},
+        TestParam{"/tile_E_yuv422p10le_3840x2160_60fps_3.yuv", "/tile_E_yuv422p10le_3840x2160_60fps_3.apv", 3840, 2160, QV2_CF_YCBCR422_10LE, 60, 10, 3}
     )
 );
 
@@ -453,7 +452,7 @@ TEST_F(Qv2ComponentTest, StateTransitions) {
     params.push_back(sizeParam.get());
 
     std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
-    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    colorParam->mColorFormat = QV2_CF_YCBCR422_10LE;
     params.push_back(colorParam.get());
 
     std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
@@ -511,7 +510,7 @@ TEST_F(Qv2ComponentTest, FlushOperation) {
     params.push_back(sizeParam.get());
 
     std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
-    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    colorParam->mColorFormat = QV2_CF_YCBCR422_10LE;
     params.push_back(colorParam.get());
 
     std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
@@ -582,7 +581,7 @@ TEST_F(Qv2ComponentTest, ListenerCallbacks) {
     params.push_back(sizeParam.get());
 
     std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
-    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    colorParam->mColorFormat = QV2_CF_YCBCR422_10LE;
     params.push_back(colorParam.get());
 
     std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
@@ -642,7 +641,7 @@ TEST_F(Qv2ComponentTest, InvalidStateOperations) {
     params.push_back(sizeParam.get());
 
     std::shared_ptr<Qv2ColorFormatInput> colorParam = std::make_shared<Qv2ColorFormatInput>();
-    colorParam->mColorFormat = QV2FormatYUV422Planar;
+    colorParam->mColorFormat = QV2_CF_YCBCR422_10LE;
     params.push_back(colorParam.get());
 
     std::shared_ptr<Qv2FrameRateInput> fpsParam = std::make_shared<Qv2FrameRateInput>();
@@ -733,7 +732,7 @@ protected:
         sizeParam->mHeight = 1080;
 
         colorParam = std::make_shared<Qv2ColorFormatInput>();
-        colorParam->mColorFormat = QV2FormatYUV422Planar;
+        colorParam->mColorFormat = QV2_CF_YCBCR422_10LE;
 
         fpsParam = std::make_shared<Qv2FrameRateInput>();
         fpsParam->mFps = 30.0f;
