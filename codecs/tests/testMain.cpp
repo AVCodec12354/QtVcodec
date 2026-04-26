@@ -129,6 +129,8 @@ public:
     void onError(std::weak_ptr<Qv2Component> component, Qv2Status error) override {
         QV2_LOGE("Component error received: %d", static_cast<int>(error));
         ADD_FAILURE() << "Component error received: " << static_cast<int>(error);
+        if (mOutFile)
+            fclose(mOutFile);
     }
 
     void onStateChanged(std::weak_ptr<Qv2Component> component, Qv2Component::State newState) override {}
