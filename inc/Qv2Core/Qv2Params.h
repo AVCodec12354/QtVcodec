@@ -24,7 +24,28 @@ struct Qv2Param {
         kIndexProfile     = 0x06,
         kIndexLevel       = 0x07,
         kIndexBand        = 0x08,
-        kIndexQP          = 0x09
+        kIndexQP          = 0x09,
+        kIndexThreads     = 0x0E,
+        kIndexPreset      = 0x0F,
+        kIndexFamily      = 0x10,
+        kIndexMaxAU       = 0x11,
+        kIndexSeek        = 0x12,
+        kIndexQPOffsetC1  = 0x13,
+        kIndexQPOffsetC2  = 0x14,
+        kIndexQPOffsetC3  = 0x15,
+        kIndexTileWidth   = 0x16,
+        kIndexTileHeight  = 0x17,
+        kIndexQMatrixC0   = 0x18,
+        kIndexQMatrixC1   = 0x19,
+        kIndexQMatrixC2   = 0x1A,
+        kIndexQMatrixC3   = 0x1B,
+        kIndexColorPrimaries = 0x1C,
+        kIndexColorTransfer  = 0x1D,
+        kIndexColorMatrix    = 0x1E,
+        kIndexColorRange     = 0x1F,
+        kIndexHash           = 0x20,
+        kIndexMasterDisplay  = 0x21,
+        kIndexMaxCLL         = 0x22
     };
 
     uint32_t mId;
@@ -168,5 +189,195 @@ struct Qv2QPSettingT : public Qv2Param {
 };
 
 using Qv2QPInput = Qv2QPSettingT<Qv2Param::INPUT>;
+
+
+/**
+ * @brief Threads Setting
+ */
+struct Qv2ThreadsSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexThreads);
+    std::string mThreads;
+    Qv2ThreadsSetting() : Qv2Param(ID, sizeof(Qv2ThreadsSetting)), mThreads("auto") {}
+};
+
+/**
+ * @brief Preset Setting
+ */
+struct Qv2PresetSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexPreset);
+    std::string mPreset;
+    Qv2PresetSetting() : Qv2Param(ID, sizeof(Qv2PresetSetting)) {}
+};
+
+/**
+ * @brief Family Setting
+ */
+struct Qv2FamilySetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexFamily);
+    std::string mFamily;
+    Qv2FamilySetting() : Qv2Param(ID, sizeof(Qv2FamilySetting)) {}
+};
+
+/**
+ * @brief Max Access Units
+ */
+struct Qv2MaxAUSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexMaxAU);
+    int mMaxAU;
+    Qv2MaxAUSetting() : Qv2Param(ID, sizeof(Qv2MaxAUSetting)), mMaxAU(0) {}
+};
+
+/**
+ * @brief Seek Setting
+ */
+struct Qv2SeekSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexSeek);
+    int mSeek;
+    Qv2SeekSetting() : Qv2Param(ID, sizeof(Qv2SeekSetting)), mSeek(0) {}
+};
+
+/**
+ * @brief QP Offset for Component 1
+ */
+struct Qv2QPOffsetC1Setting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexQPOffsetC1);
+    std::string mQPOffsetC1;
+    Qv2QPOffsetC1Setting() : Qv2Param(ID, sizeof(Qv2QPOffsetC1Setting)) {}
+};
+
+/**
+ * @brief QP Offset for Component 2
+ */
+struct Qv2QPOffsetC2Setting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexQPOffsetC2);
+    std::string mQPOffsetC2;
+    Qv2QPOffsetC2Setting() : Qv2Param(ID, sizeof(Qv2QPOffsetC2Setting)) {}
+};
+
+/**
+ * @brief QP Offset for Component 3
+ */
+struct Qv2QPOffsetC3Setting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexQPOffsetC3);
+    std::string mQPOffsetC3;
+    Qv2QPOffsetC3Setting() : Qv2Param(ID, sizeof(Qv2QPOffsetC3Setting)) {}
+};
+
+/**
+ * @brief Tile Width
+ */
+struct Qv2TileWidthSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexTileWidth);
+    std::string mTileWidth;
+    Qv2TileWidthSetting() : Qv2Param(ID, sizeof(Qv2TileWidthSetting)) {}
+};
+
+/**
+ * @brief Tile Height
+ */
+struct Qv2TileHeightSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexTileHeight);
+    std::string mTileHeight;
+    Qv2TileHeightSetting() : Qv2Param(ID, sizeof(Qv2TileHeightSetting)) {}
+};
+
+/**
+ * @brief Q Matrix for Component 0
+ */
+struct Qv2QMatrixC0Setting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexQMatrixC0);
+    std::string mQMatrixC0;
+    Qv2QMatrixC0Setting() : Qv2Param(ID, sizeof(Qv2QMatrixC0Setting)) {}
+};
+
+/**
+ * @brief Q Matrix for Component 1
+ */
+struct Qv2QMatrixC1Setting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexQMatrixC1);
+    std::string mQMatrixC1;
+    Qv2QMatrixC1Setting() : Qv2Param(ID, sizeof(Qv2QMatrixC1Setting)) {}
+};
+
+/**
+ * @brief Q Matrix for Component 2
+ */
+struct Qv2QMatrixC2Setting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexQMatrixC2);
+    std::string mQMatrixC2;
+    Qv2QMatrixC2Setting() : Qv2Param(ID, sizeof(Qv2QMatrixC2Setting)) {}
+};
+
+/**
+ * @brief Q Matrix for Component 3
+ */
+struct Qv2QMatrixC3Setting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexQMatrixC3);
+    std::string mQMatrixC3;
+    Qv2QMatrixC3Setting() : Qv2Param(ID, sizeof(Qv2QMatrixC3Setting)) {}
+};
+
+/**
+ * @brief Color Primaries
+ */
+struct Qv2ColorPrimariesSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexColorPrimaries);
+    int mColorPrimaries;
+    Qv2ColorPrimariesSetting() : Qv2Param(ID, sizeof(Qv2ColorPrimariesSetting)), mColorPrimaries(-1) {}
+};
+
+/**
+ * @brief Color Transfer
+ */
+struct Qv2ColorTransferSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexColorTransfer);
+    int mColorTransfer;
+    Qv2ColorTransferSetting() : Qv2Param(ID, sizeof(Qv2ColorTransferSetting)), mColorTransfer(-1) {}
+};
+
+/**
+ * @brief Color Matrix
+ */
+struct Qv2ColorMatrixSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexColorMatrix);
+    int mColorMatrix;
+    Qv2ColorMatrixSetting() : Qv2Param(ID, sizeof(Qv2ColorMatrixSetting)), mColorMatrix(-1) {}
+};
+
+/**
+ * @brief Color Range
+ */
+struct Qv2ColorRangeSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexColorRange);
+    int mColorRange;
+    Qv2ColorRangeSetting() : Qv2Param(ID, sizeof(Qv2ColorRangeSetting)), mColorRange(-1) {}
+};
+
+/**
+ * @brief Hash Flag
+ */
+struct Qv2HashSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexHash);
+    bool mHash;
+    Qv2HashSetting() : Qv2Param(ID, sizeof(Qv2HashSetting)), mHash(false) {}
+};
+
+/**
+ * @brief Master Display Metadata
+ */
+struct Qv2MasterDisplaySetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexMasterDisplay);
+    std::string mMasterDisplay;
+    Qv2MasterDisplaySetting() : Qv2Param(ID, sizeof(Qv2MasterDisplaySetting)) {}
+};
+
+/**
+ * @brief Max CLL Metadata
+ */
+struct Qv2MaxCLLSetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(GLOBAL, SETTING, kIndexMaxCLL);
+    std::string mMaxCLL;
+    Qv2MaxCLLSetting() : Qv2Param(ID, sizeof(Qv2MaxCLLSetting)) {}
+};
 
 #endif // QV2PARAMS_H

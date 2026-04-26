@@ -92,6 +92,10 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
             }
             case Qv2BitDepthInput::ID: {
                 auto v = static_cast<Qv2BitDepthInput *>(param);
+                if (v->mBitDepth != 8 && v->mBitDepth != 10 && v->mBitDepth != 12) {
+                    QV2_LOGE("Invalid input bit depth: %d, must be 8, 10, or 12", v->mBitDepth);
+                    return QV2_ERR_INVALID_ARG;
+                }
                 mInputDepth = v->mBitDepth;
                 QV2_LOGV("Set BitDepth: %d", mInputDepth);
                 break;
@@ -122,8 +126,192 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
             }
             case Qv2QPInput::ID: {
                 auto v = static_cast<Qv2QPInput *>(param);
+                int maxQP = 63 + (mInputDepth - 10) * 6;
+                if (v->mQP < 0 || v->mQP > maxQP) {
+                    QV2_LOGE("Invalid QP: %d, must be 0 to %d for bitdepth %d", v->mQP, maxQP, mInputDepth);
+                    return QV2_ERR_INVALID_ARG;
+                }
                 p->qp = static_cast<unsigned char>(v->mQP);
                 QV2_LOGV("Set QP: %d", (int) p->qp);
+                break;
+            }
+            case Qv2ThreadsSetting::ID: {
+                auto v = static_cast<Qv2ThreadsSetting *>(param);
+                if (v->mThreads == "auto") {
+                    mCodecDesc->threads = OAPV_CDESC_THREADS_AUTO;
+                } else {
+                    int threads = std::stoi(v->mThreads);
+                    if (threads < 1) {
+                        QV2_LOGE("Invalid threads: %d, must be > 0 or 'auto'", threads);
+                        return QV2_ERR_INVALID_ARG;
+                    }
+                    mCodecDesc->threads = threads;
+                }
+                QV2_LOGV("Set Threads: %s", v->mThreads.c_str());
+                break;
+            }
+            case Qv2PresetSetting::ID: {
+                auto v = static_cast<Qv2PresetSetting *>(param);
+                if (v->mPreset == "fastest") {
+                    p->preset = 0;
+                } else if (v->mPreset == "fast") {
+                    p->preset = 1;
+                } else if (v->mPreset == "medium") {
+                    p->preset = 2;
+                } else if (v->mPreset == "slow") {
+                    p->preset = 3;
+                } else if (v->mPreset == "placebo") {
+                    p->preset = 4;
+                } else {
+                    QV2_LOGE("Invalid preset: %s", v->mPreset.c_str());
+                    return QV2_ERR_INVALID_ARG;
+                }
+                QV2_LOGV("Set Preset: %s (%d)", v->mPreset.c_str(), p->preset);
+                break;
+            }
+            case Qv2FamilySetting::ID: {
+                auto v = static_cast<Qv2FamilySetting *>(param);
+                // Family is string, but may need mapping or validation
+                QV2_LOGV("Set Family: %s", v->mFamily.c_str());
+                // Note: Family and bitrate cannot be set together, but validation later
+                break;
+            }
+            case Qv2MaxAUSetting::ID: {
+                auto v = static_cast<Qv2MaxAUSetting *>(param);
+                if (v->mMaxAU < 0) {
+                    QV2_LOGE("Invalid max-au: %d, must be >= 0", v->mMaxAU);
+                    return QV2_ERR_INVALID_ARG;
+                }
+                // Max AU is global, not in oapve_param_t
+                QV2_LOGV("Set Max AU: %d", v->mMaxAU);
+                break;
+            }
+            case Qv2SeekSetting::ID: {
+                auto v = static_cast<Qv2SeekSetting *>(param);
+                if (v->mSeek < 0) {
+                    QV2_LOGE("Invalid seek: %d, must be >= 0", v->mSeek);
+                    return QV2_ERR_INVALID_ARG;
+                }
+                // Seek is global
+                QV2_LOGV("Set Seek: %d", v->mSeek);
+                break;
+            }
+            case Qv2QPOffsetC1Setting::ID: {
+                auto v = static_cast<Qv2QPOffsetC1Setting *>(param);
+                p->qp_offset_c1 = std::stoi(v->mQPOffsetC1);
+                QV2_LOGV("Set QP Offset C1: %d", p->qp_offset_c1);
+                break;
+            }
+            case Qv2QPOffsetC2Setting::ID: {
+                auto v = static_cast<Qv2QPOffsetC2Setting *>(param);
+                p->qp_offset_c2 = std::stoi(v->mQPOffsetC2);
+                QV2_LOGV("Set QP Offset C2: %d", p->qp_offset_c2);
+                break;
+            }
+            case Qv2QPOffsetC3Setting::ID: {
+                auto v = static_cast<Qv2QPOffsetC3Setting *>(param);
+                p->qp_offset_c3 = std::stoi(v->mQPOffsetC3);
+                QV2_LOGV("Set QP Offset C3: %d", p->qp_offset_c3);
+                break;
+            }
+            case Qv2TileWidthSetting::ID: {
+                auto v = static_cast<Qv2TileWidthSetting *>(param);
+                p->tile_w = std::stoi(v->mTileWidth);
+                QV2_LOGV("Set Tile Width: %d", p->tile_w);
+                break;
+            }
+            case Qv2TileHeightSetting::ID: {
+                auto v = static_cast<Qv2TileHeightSetting *>(param);
+                p->tile_h = std::stoi(v->mTileHeight);
+                QV2_LOGV("Set Tile Height: %d", p->tile_h);
+                break;
+            }
+            case Qv2QMatrixC0Setting::ID: {
+                auto v = static_cast<Qv2QMatrixC0Setting *>(param);
+                // Parse q matrix string
+                p->use_q_matrix = 1;
+                // Assume parsing logic here
+                QV2_LOGV("Set Q Matrix C0: %s", v->mQMatrixC0.c_str());
+                break;
+            }
+            case Qv2QMatrixC1Setting::ID: {
+                auto v = static_cast<Qv2QMatrixC1Setting *>(param);
+                p->use_q_matrix = 1;
+                QV2_LOGV("Set Q Matrix C1: %s", v->mQMatrixC1.c_str());
+                break;
+            }
+            case Qv2QMatrixC2Setting::ID: {
+                auto v = static_cast<Qv2QMatrixC2Setting *>(param);
+                p->use_q_matrix = 1;
+                QV2_LOGV("Set Q Matrix C2: %s", v->mQMatrixC2.c_str());
+                break;
+            }
+            case Qv2QMatrixC3Setting::ID: {
+                auto v = static_cast<Qv2QMatrixC3Setting *>(param);
+                p->use_q_matrix = 1;
+                QV2_LOGV("Set Q Matrix C3: %s", v->mQMatrixC3.c_str());
+                break;
+            }
+            case Qv2ColorPrimariesSetting::ID: {
+                auto v = static_cast<Qv2ColorPrimariesSetting *>(param);
+                if (v->mColorPrimaries < 1 || v->mColorPrimaries > 12) {
+                    QV2_LOGE("Invalid color primaries: %d", v->mColorPrimaries);
+                    return QV2_ERR_INVALID_ARG;
+                }
+                p->color_primaries = v->mColorPrimaries;
+                p->color_description_present_flag = 1;
+                QV2_LOGV("Set Color Primaries: %d", p->color_primaries);
+                break;
+            }
+            case Qv2ColorTransferSetting::ID: {
+                auto v = static_cast<Qv2ColorTransferSetting *>(param);
+                if (v->mColorTransfer < 1 || v->mColorTransfer > 18) {
+                    QV2_LOGE("Invalid color transfer: %d", v->mColorTransfer);
+                    return QV2_ERR_INVALID_ARG;
+                }
+                p->transfer_characteristics = v->mColorTransfer;
+                p->color_description_present_flag = 1;
+                QV2_LOGV("Set Color Transfer: %d", p->transfer_characteristics);
+                break;
+            }
+            case Qv2ColorMatrixSetting::ID: {
+                auto v = static_cast<Qv2ColorMatrixSetting *>(param);
+                if (v->mColorMatrix < 0 || v->mColorMatrix > 14) {
+                    QV2_LOGE("Invalid color matrix: %d", v->mColorMatrix);
+                    return QV2_ERR_INVALID_ARG;
+                }
+                p->matrix_coefficients = v->mColorMatrix;
+                p->color_description_present_flag = 1;
+                QV2_LOGV("Set Color Matrix: %d", p->matrix_coefficients);
+                break;
+            }
+            case Qv2ColorRangeSetting::ID: {
+                auto v = static_cast<Qv2ColorRangeSetting *>(param);
+                if (v->mColorRange != 0 && v->mColorRange != 1) {
+                    QV2_LOGE("Invalid color range: %d, must be 0 or 1", v->mColorRange);
+                    return QV2_ERR_INVALID_ARG;
+                }
+                p->full_range_flag = v->mColorRange;
+                p->color_description_present_flag = 1;
+                QV2_LOGV("Set Color Range: %d", p->full_range_flag);
+                break;
+            }
+            case Qv2HashSetting::ID: {
+                auto v = static_cast<Qv2HashSetting *>(param);
+                // Hash is global
+                QV2_LOGV("Set Hash: %d", v->mHash);
+                break;
+            }
+            case Qv2MasterDisplaySetting::ID: {
+                auto v = static_cast<Qv2MasterDisplaySetting *>(param);
+                // Master display metadata
+                QV2_LOGV("Set Master Display: %s", v->mMasterDisplay.c_str());
+                break;
+            }
+            case Qv2MaxCLLSetting::ID: {
+                auto v = static_cast<Qv2MaxCLLSetting *>(param);
+                // Max CLL metadata
+                QV2_LOGV("Set Max CLL: %s", v->mMaxCLL.c_str());
                 break;
             }
             default:
@@ -395,6 +583,16 @@ void Qv2ApvEncoder::mapBlockToImgb(const std::shared_ptr <Qv2Block2D> &block, oa
 
 int Qv2ApvEncoder::toOapvFmt(int qv2Format) const {
     switch (qv2Format) {
+        case 0: // 400 (monochrome)
+            return OAPV_CF_YCBCR400;
+        case 2: // 422
+            return OAPV_CF_YCBCR422;
+        case 3: // 444
+            return OAPV_CF_YCBCR444;
+        case 4: // 4444
+            return OAPV_CF_YCBCR4444;
+        case 5: // P2 (Planar Y, Combined CbCr, 422)
+            return OAPV_CF_PLANAR2;
         case QV2FormatYUV420Planar:
         case QV2FormatYUV420Flexible:
             return OAPV_CF_YCBCR420;
