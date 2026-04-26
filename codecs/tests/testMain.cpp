@@ -17,7 +17,7 @@
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
-#define LOG_TAG "testMain"
+#define LOG_TAG "Qv2CodecTest"
 
 static const std::string YuvInputFolder = "YUVTests/input";
 static const std::string YuvOutputFolder = "YUVTests/output";
