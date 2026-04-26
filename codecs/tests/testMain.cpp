@@ -323,6 +323,13 @@ TEST_P(Qv2EncoderY4mTestP, RunY4mEncode) {
         oapv_imgb_t* imgBuf = imgb_create(w, h, cs);
         if (imgb_read(fpIn, imgBuf, w, h, 1) < 0) {
             imgb_release(imgBuf);
+
+            auto item = std::make_unique<Qv2Work>();
+            item->flags = QV2_WORK_FLAG_EOS;
+            item->timestamp = 0;
+            std::vector<std::unique_ptr<Qv2Work>> items;
+            items.push_back(std::move(item));
+            mComponent->queue(std::move(items));
             break;
         }
 
@@ -352,13 +359,6 @@ TEST_P(Qv2EncoderY4mTestP, RunY4mEncode) {
 
         imgb_release(imgBuf);
     }
-
-    auto item = std::make_unique<Qv2Work>();
-    item->flags = QV2_WORK_FLAG_EOS;
-    item->timestamp = 0;
-    std::vector<std::unique_ptr<Qv2Work>> items;
-    items.push_back(std::move(item));
-    mComponent->queue(std::move(items));
 
     EXPECT_GT(listener.getFrameCount(), 0);
     fclose(fpIn);
