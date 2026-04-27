@@ -107,24 +107,6 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
                 QV2_LOGV("ColorFormat translated from %d to OAPV IDC: %d", v->mColorFormat, mColorFmt);
                 break;
             }
-            case Qv2ProfileOutput::ID: {
-                auto v = static_cast<Qv2ProfileOutput *>(param);
-                p->profile_idc = v->mProfile;
-                QV2_LOGV("Set Profile: %d", p->profile_idc);
-                break;
-            }
-            case Qv2LevelOutput::ID: {
-                auto v = static_cast<Qv2LevelOutput *>(param);
-                p->level_idc = v->mLevel;
-                QV2_LOGV("Set Level: %d", p->level_idc);
-                break;
-            }
-            case Qv2BandOutput::ID: {
-                auto v = static_cast<Qv2BandOutput *>(param);
-                p->band_idc = v->mBand;
-                QV2_LOGV("Set Band: %d", p->band_idc);
-                break;
-            }
             case Qv2QPInput::ID: {
                 auto v = static_cast<Qv2QPInput *>(param);
                 int maxQP = 63 + (mInputDepth - 10) * 6;
@@ -134,67 +116,6 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
                 }
                 p->qp = static_cast<unsigned char>(v->mQP);
                 QV2_LOGV("Set QP: %d", (int) p->qp);
-                break;
-            }
-            case Qv2ThreadsSetting::ID: {
-                auto v = static_cast<Qv2ThreadsSetting *>(param);
-                if (v->mThreads == "auto") {
-                    mCodecDesc->threads = OAPV_CDESC_THREADS_AUTO;
-                } else {
-                    int threads = std::stoi(v->mThreads);
-                    if (threads < 1) {
-                        QV2_LOGE("Invalid threads: %d, must be > 0 or 'auto'", threads);
-                        return QV2_ERR_INVALID_ARG;
-                    }
-                    mCodecDesc->threads = threads;
-                }
-                QV2_LOGV("Set Threads: %s", v->mThreads.c_str());
-                break;
-            }
-            case Qv2PresetSetting::ID: {
-                auto v = static_cast<Qv2PresetSetting *>(param);
-                if (v->mPreset == "fastest") {
-                    p->preset = 0;
-                } else if (v->mPreset == "fast") {
-                    p->preset = 1;
-                } else if (v->mPreset == "medium") {
-                    p->preset = 2;
-                } else if (v->mPreset == "slow") {
-                    p->preset = 3;
-                } else if (v->mPreset == "placebo") {
-                    p->preset = 4;
-                } else {
-                    QV2_LOGE("Invalid preset: %s", v->mPreset.c_str());
-                    return QV2_ERR_INVALID_ARG;
-                }
-                QV2_LOGV("Set Preset: %s (%d)", v->mPreset.c_str(), p->preset);
-                break;
-            }
-            case Qv2FamilySetting::ID: {
-                auto v = static_cast<Qv2FamilySetting *>(param);
-                // Family is string, but may need mapping or validation
-                QV2_LOGV("Set Family: %s", v->mFamily.c_str());
-                // Note: Family and bitrate cannot be set together, but validation later
-                break;
-            }
-            case Qv2MaxAUSetting::ID: {
-                auto v = static_cast<Qv2MaxAUSetting *>(param);
-                if (v->mMaxAU < 0) {
-                    QV2_LOGE("Invalid max-au: %d, must be >= 0", v->mMaxAU);
-                    return QV2_ERR_INVALID_ARG;
-                }
-                // Max AU is global, not in oapve_param_t
-                QV2_LOGV("Set Max AU: %d", v->mMaxAU);
-                break;
-            }
-            case Qv2SeekSetting::ID: {
-                auto v = static_cast<Qv2SeekSetting *>(param);
-                if (v->mSeek < 0) {
-                    QV2_LOGE("Invalid seek: %d, must be >= 0", v->mSeek);
-                    return QV2_ERR_INVALID_ARG;
-                }
-                // Seek is global
-                QV2_LOGV("Set Seek: %d", v->mSeek);
                 break;
             }
              default:
