@@ -138,6 +138,18 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
                 }
                 break;
             }
+            case Qv2ColorAspectsInput::ID: {
+                auto v = static_cast<Qv2ColorAspectsInput *>(param);
+                p->color_description_present_flag = 1;
+                p->color_primaries = static_cast<unsigned char>(v->mAspects.primaries);
+                p->transfer_characteristics = static_cast<unsigned char>(v->mAspects.transfer);
+                p->matrix_coefficients = static_cast<unsigned char>(v->mAspects.matrix);
+                p->full_range_flag = (v->mAspects.range == QV2_CR_FULL) ? 1 : 0;
+                QV2_LOGV("Set ColorAspects: P:%d, T:%d, M:%d, R:%d",
+                         p->color_primaries, p->transfer_characteristics,
+                         p->matrix_coefficients, p->full_range_flag);
+                break;
+            }
             case Qv2QPInput::ID: {
                 auto v = static_cast<Qv2QPInput *>(param);
                 int maxQP = 63 + (mInputDepth - 10) * 6;

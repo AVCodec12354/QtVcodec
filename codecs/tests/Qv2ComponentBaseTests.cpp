@@ -53,6 +53,13 @@ TEST_F(Qv2ComponentTest, StateTransitions) {
     familyParam->mFamily = QV2_APV_FAMILY_422_HQ;
     params.push_back(familyParam.get());
 
+    auto colorAspectsParam = std::make_shared<Qv2ColorAspectsInput>();
+    colorAspectsParam->mAspects.primaries = QV2_CP_BT709;
+    colorAspectsParam->mAspects.transfer = QV2_CT_BT709;
+    colorAspectsParam->mAspects.matrix = QV2_CM_BT709;
+    colorAspectsParam->mAspects.range = QV2_CR_LIMITED;
+    params.push_back(colorAspectsParam.get());
+
     EXPECT_EQ(mComponent->configure(params), QV2_OK);
     EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
 

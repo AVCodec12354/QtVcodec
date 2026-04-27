@@ -28,6 +28,7 @@ struct Qv2Param {
         kIndexColorFormat = 0x05,
         kIndexProfileLevel = 0x06,
         kIndexFamily = 0x07,
+        kIndexColorAspect = 0x08,
         kIndexQP = 0x09
     };
 
@@ -133,6 +134,20 @@ struct Qv2ColorFormatSettingT : public Qv2Param {
 
 using Qv2ColorFormatInput = Qv2ColorFormatSettingT<Qv2Param::INPUT>;
 using Qv2ColorFormatOutput = Qv2ColorFormatSettingT<Qv2Param::OUTPUT>;
+
+/**
+ * @brief Color Aspects (Range, Primaries, Transfer, Matrix)
+ */
+template<Qv2Param::Scope S>
+struct Qv2ColorAspectsSettingT : public Qv2Param {
+    static constexpr uint32_t ID = makeId(S, SETTING, kIndexColorAspect);
+    Qv2ColorAspect mAspects;
+
+    Qv2ColorAspectsSettingT() : Qv2Param(ID, sizeof(Qv2ColorAspectsSettingT)) {}
+};
+
+using Qv2ColorAspectsInput = Qv2ColorAspectsSettingT<Qv2Param::INPUT>;
+using Qv2ColorAspectsOutput = Qv2ColorAspectsSettingT<Qv2Param::OUTPUT>;
 
 /**
  * @brief Quantization Parameter (QP)

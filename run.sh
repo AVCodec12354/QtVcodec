@@ -1,5 +1,29 @@
-#pattern1_yuv422p10le_320x240_25fps.y4m HDR_4k.yuv
+#!/bin/bash
+
 clear
-cd outputs/tests/
+
+# Path to tests directory
+TEST_DIR="outputs/tests"
+cd "$TEST_DIR" || { echo "Error: Directory $TEST_DIR not found"; exit 1; }
+
+# List of target folders to process
+TARGET_FOLDERS=("Y4MTests/output" "YUVTests/output")
+
+for FOLDER in "${TARGET_FOLDERS[@]}"; do
+    if [ -d "$FOLDER" ]; then
+        # If directory exists, delete all contents inside
+        echo "Cleaning directory: $FOLDER"
+        rm -rf "${FOLDER:?}"/*
+    else
+        # If directory does not exist, create it (including parents if needed)
+        echo "Creating new directory: $FOLDER"
+        mkdir -p "$FOLDER"
+    fi
+done
+
+echo "------------------------------------------"
+echo "Starting Qv2ComponentTests..."
+echo "------------------------------------------"
+
+# Execute test binary
 ./Qv2ComponentTests
-#ffplay -framerate 5 output_hdr.apv
