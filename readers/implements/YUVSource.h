@@ -2,6 +2,7 @@
 
 #include <Qv2Source.h>
 #include <fstream>
+#include <memory>
 
 class YUVSource : public Qv2Source {
 public:

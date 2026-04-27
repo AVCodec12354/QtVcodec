@@ -16,9 +16,9 @@ private:
     int width;
     int height;
 public:
-    void config(int w, int h) {
-        width = w;
-        height = h;
+    void config(int width, int height) {
+        this->width = width;
+        this->height = height;
     }
 
     int getWidth() { return width; }

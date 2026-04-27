@@ -40,11 +40,20 @@ private:
 class Qv2Block2D {
 public:
     Qv2Block2D(uint32_t width, uint32_t height, uint32_t format, uint32_t bitDepth)
-        : mWidth(width), mHeight(height), mFormat(format), mBitDepth(bitDepth), mNumPlanes(0) {
+            : mWidth(width), mHeight(height), mFormat(format), mBitDepth(bitDepth), mNumPlanes(0) {
         for (uint32_t i = 0; i < MAX_NUM_PLANES; ++i) {
             mAddr[i] = nullptr;
             mStride[i] = 0;
             mElevation[i] = 0;
+        }
+    }
+
+    virtual ~Qv2Block2D() {
+        for (uint32_t i = 0; i < mNumPlanes; ++i) {
+            if (mAddr[i]) {
+                delete[] mAddr[i];
+                mAddr[i] = nullptr;
+            }
         }
     }
 

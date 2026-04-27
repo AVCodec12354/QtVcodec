@@ -1,14 +1,9 @@
 # 📘 CHUẨN MỰC LẬP TRÌNH (CODING STANDARDS)
 
 > **AI INSTRUCTION (HƯỚNG DẪN CHO AI):**
-```agsl
-Ví dụ:
-CodingRules.md
-/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/interfaces/Qv2Source.h
-/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/YUVSource.h
-/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/YUVSource.cpp
-/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/Y4MSource.h
-/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/Y4MSource.cpp
+```File phải đang mở thì Gemini mới đọc được:
+readers/interfaces/Qv2Source.h
+=> Dựa vào CodingRules.md để phân tích lỗi
 ```
 > Khi nhận được yêu cầu phân tích code của các file và thực hiện:
 > 1. **Rất quan trọng** ĐỌC file hoặc tất cả file trong folder (`folderA/file`) được chỉ định
