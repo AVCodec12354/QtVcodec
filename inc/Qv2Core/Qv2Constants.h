@@ -1,28 +1,26 @@
 #ifndef QV2CONSTANTS_H
 #define QV2CONSTANTS_H
 
-#include "oapv.h"
-
 #pragma once
 
 enum Qv2ColorFormat: int32_t {
-    QV2_CF_UNKNOWN                   = OAPV_CS_UNKNOWN,
-    QV2_CF_YCBCR400                  = OAPV_CS_YCBCR400,
-    QV2_CF_YCBCR420                  = OAPV_CS_YCBCR420,
-    QV2_CF_YCBCR422                  = OAPV_CS_YCBCR422,
-    QV2_CF_YCBCR444                  = OAPV_CS_YCBCR444,
-    QV2_CF_YCBCR4444                 = OAPV_CS_YCBCR4444,
-    QV2_CF_YCBCR400_10LE             = OAPV_CS_YCBCR400_10LE,
-    QV2_CF_YCBCR420_10LE             = OAPV_CS_YCBCR420_10LE,
-    QV2_CF_YCBCR422_10LE             = OAPV_CS_YCBCR422_10LE,
-    QV2_CF_YCBCR444_10LE             = OAPV_CS_YCBCR444_10LE,
-    QV2_CF_YCBCR4444_10LE            = OAPV_CS_YCBCR4444_10LE,
-    QV2_CF_YCBCR400_12LE             = OAPV_CS_YCBCR400_12LE,
-    QV2_CF_YCBCR420_12LE             = OAPV_CS_YCBCR420_12LE,
-    QV2_CF_YCBCR422_12LE             = OAPV_CS_YCBCR422_12LE,
-    QV2_CF_YCBCR444_12LE             = OAPV_CS_YCBCR444_12LE,
-    QV2_CF_YCBCR4444_12LE            = OAPV_CS_YCBCR4444_12LE,
-    QV2_CF_P210                      = OAPV_CS_P210
+    QV2_CF_UNKNOWN                   = 0x0000,
+    QV2_CF_YCBCR400                  = 0x080A,
+    QV2_CF_YCBCR420                  = 0x080B,
+    QV2_CF_YCBCR422                  = 0x080C,
+    QV2_CF_YCBCR444                  = 0x080D,
+    QV2_CF_YCBCR4444                 = 0x080E,
+    QV2_CF_YCBCR400_10LE             = 0x0A0A,
+    QV2_CF_YCBCR420_10LE             = 0x0A0B,
+    QV2_CF_YCBCR422_10LE             = 0x0A0C,
+    QV2_CF_YCBCR444_10LE             = 0x0A0D,
+    QV2_CF_YCBCR4444_10LE            = 0x0A0E,
+    QV2_CF_YCBCR400_12LE             = 0x0C0A,
+    QV2_CF_YCBCR420_12LE             = 0x0C0B,
+    QV2_CF_YCBCR422_12LE             = 0x0C0C,
+    QV2_CF_YCBCR444_12LE             = 0x0C0D,
+    QV2_CF_YCBCR4444_12LE            = 0x0C0E,
+    QV2_CF_P210                      = 0x0A14
 };
 
 enum Qv2ColorRange: int32_t {
