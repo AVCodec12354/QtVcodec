@@ -18,9 +18,9 @@
 #endif
 
 inline const char* get_timestamp() {
-    static char buf[20];
+    static char buf[32];
     time_t now = time(nullptr);
-    strftime(buf, sizeof(buf), "%H:%M:%S", localtime(&now));
+    strftime(buf, sizeof(buf), "%d-%m-%Y %H:%M:%S", localtime(&now));
     return buf;
 }
 
