@@ -112,6 +112,9 @@ TEST_P(Qv2EncoderTestP, RunYuvEncode) {
 
     EXPECT_GT(listener.getFrameCount(), 0);
     fclose(fpIn);
+    if(fpOut) {
+        fclose(fpOut);
+    }
 }
 
 class Qv2EncoderY4mTestP : public Qv2EncoderTestP {};
@@ -209,6 +212,9 @@ TEST_P(Qv2EncoderY4mTestP, RunY4mEncode) {
 
     EXPECT_GT(listener.getFrameCount(), 0);
     fclose(fpIn);
+    if(fpOut) {
+        fclose(fpOut);
+    }
 }
 
 INSTANTIATE_TEST_SUITE_P(
