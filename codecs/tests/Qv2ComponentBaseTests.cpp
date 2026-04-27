@@ -60,6 +60,15 @@ TEST_F(Qv2ComponentTest, StateTransitions) {
     colorAspectsParam->mAspects.range = QV2_CR_LIMITED;
     params.push_back(colorAspectsParam.get());
 
+    auto hdrParam = std::make_shared<Qv2HdrStaticMetadataInput>();
+    hdrParam->mHdrStaticMetadata.mastering.maxLuminance = 1000.0f;
+    hdrParam->mHdrStaticMetadata.mastering.minLuminance = 0.005f;
+    hdrParam->mHdrStaticMetadata.mastering.red.x = 0.680f;
+    hdrParam->mHdrStaticMetadata.mastering.red.y = 0.320f;
+    hdrParam->mHdrStaticMetadata.maxCll = 1000.0f;
+    hdrParam->mHdrStaticMetadata.maxFall = 400.0f;
+    params.push_back(hdrParam.get());
+
     EXPECT_EQ(mComponent->configure(params), QV2_OK);
     EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
 

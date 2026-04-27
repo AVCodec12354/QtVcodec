@@ -48,6 +48,10 @@ private:
 
     int mInputDepth = 10;
     int mColorFmt = OAPV_CF_YCBCR422;
+
+    oapvm_t mMetadataId = nullptr;
+    bool mHdrMetadataPresent = false;
+    Qv2HdrStaticMetadata mHdrStaticMetadata;
 };
 
 #endif // QV2APVENCODER_H

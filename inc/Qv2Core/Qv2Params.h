@@ -1,6 +1,7 @@
 #ifndef QV2PARAMS_H
 #define QV2PARAMS_H
 
+#include "Qv2Metadata.h"
 #include <cstdint>
 #include <vector>
 #include <memory>
@@ -29,7 +30,8 @@ struct Qv2Param {
         kIndexProfileLevel = 0x06,
         kIndexFamily = 0x07,
         kIndexColorAspect = 0x08,
-        kIndexQP = 0x09
+        kIndexQP = 0x09,
+        kIndexHdrStaticMetadata = 0x0A
     };
 
     uint32_t mId;
@@ -148,6 +150,20 @@ struct Qv2ColorAspectsSettingT : public Qv2Param {
 
 using Qv2ColorAspectsInput = Qv2ColorAspectsSettingT<Qv2Param::INPUT>;
 using Qv2ColorAspectsOutput = Qv2ColorAspectsSettingT<Qv2Param::OUTPUT>;
+
+/**
+ * @brief HDR Static Metadata
+ */
+template<Qv2Param::Scope S>
+struct Qv2HdrStaticMetadataSettingT : public Qv2Param {
+    static constexpr uint32_t ID = makeId(S, SETTING, kIndexHdrStaticMetadata);
+    Qv2HdrStaticMetadata mHdrStaticMetadata;
+
+    Qv2HdrStaticMetadataSettingT() : Qv2Param(ID, sizeof(Qv2HdrStaticMetadataSettingT)) {}
+};
+
+using Qv2HdrStaticMetadataInput = Qv2HdrStaticMetadataSettingT<Qv2Param::INPUT>;
+using Qv2HdrStaticMetadataOutput = Qv2HdrStaticMetadataSettingT<Qv2Param::OUTPUT>;
 
 /**
  * @brief Quantization Parameter (QP)

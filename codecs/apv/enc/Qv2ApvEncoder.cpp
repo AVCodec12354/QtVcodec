@@ -150,6 +150,13 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
                          p->matrix_coefficients, p->full_range_flag);
                 break;
             }
+            case Qv2HdrStaticMetadataInput::ID: {
+                auto v = static_cast<Qv2HdrStaticMetadataInput *>(param);
+                mHdrStaticMetadata = v->mHdrStaticMetadata;
+                mHdrMetadataPresent = true;
+                QV2_LOGV("Set HdrStaticMetadata received.");
+                break;
+            }
             case Qv2QPInput::ID: {
                 auto v = static_cast<Qv2QPInput *>(param);
                 int maxQP = 63 + (mInputDepth - 10) * 6;
@@ -245,8 +252,36 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
         oapve_stat_t stat;
         std::memset(&stat, 0, sizeof(oapve_stat_t));
 
+        if (mHdrMetadataPresent) {
+            if (mMetadataId) {
+                oapvm_delete(mMetadataId);
+            }
+            int err = 0;
+            mMetadataId = oapvm_create(&err);
+            if (mMetadataId) {
+                oapvm_payload_mdcv_t mdcv;
+                std::memset(&mdcv, 0, sizeof(oapvm_payload_mdcv_t));
+                mdcv.primary_chromaticity_x[0] = (int)(mHdrStaticMetadata.mastering.red.x * 50000.0f + 0.5f);
+                mdcv.primary_chromaticity_y[0] = (int)(mHdrStaticMetadata.mastering.red.y * 50000.0f + 0.5f);
+                mdcv.primary_chromaticity_x[1] = (int)(mHdrStaticMetadata.mastering.green.x * 50000.0f + 0.5f);
+                mdcv.primary_chromaticity_y[1] = (int)(mHdrStaticMetadata.mastering.green.y * 50000.0f + 0.5f);
+                mdcv.primary_chromaticity_x[2] = (int)(mHdrStaticMetadata.mastering.blue.x * 50000.0f + 0.5f);
+                mdcv.primary_chromaticity_y[2] = (int)(mHdrStaticMetadata.mastering.blue.y * 50000.0f + 0.5f);
+                mdcv.white_point_chromaticity_x = (int)(mHdrStaticMetadata.mastering.white.x * 50000.0f + 0.5f);
+                mdcv.white_point_chromaticity_y = (int)(mHdrStaticMetadata.mastering.white.y * 50000.0f + 0.5f);
+                mdcv.max_mastering_luminance = (unsigned long)(mHdrStaticMetadata.mastering.maxLuminance * 10000.0f + 0.5f);
+                mdcv.min_mastering_luminance = (unsigned long)(mHdrStaticMetadata.mastering.minLuminance * 10000.0f + 0.5f);
+                oapvm_set(mMetadataId, 1, OAPV_METADATA_MDCV, &mdcv, sizeof(oapvm_payload_mdcv_t));
 
-        int ret = oapve_encode(mEncoderId, &inputFrames, nullptr, &bitb,
+                oapvm_payload_cll_t cll;
+                std::memset(&cll, 0, sizeof(oapvm_payload_cll_t));
+                cll.max_cll = (int)(mHdrStaticMetadata.maxCll + 0.5f);
+                cll.max_fall = (int)(mHdrStaticMetadata.maxFall + 0.5f);
+                oapvm_set(mMetadataId, 1, OAPV_METADATA_CLL, &cll, sizeof(oapvm_payload_cll_t));
+            }
+        }
+
+        int ret = oapve_encode(mEncoderId, &inputFrames, mMetadataId, &bitb,
                                &stat, mIsRec ? &reconFrames : nullptr);
 
         if (OAPV_FAILED(ret)) {
@@ -379,11 +414,16 @@ void Qv2ApvEncoder::onRelease() {
         oapve_delete(mEncoderId);
         mEncoderId = nullptr;
     }
+    if (mMetadataId) {
+        oapvm_delete(mMetadataId);
+        mMetadataId = nullptr;
+    }
     if (mBitstreamBuf) {
         delete[] mBitstreamBuf;
         mBitstreamBuf = nullptr;
     }
     mIsRec = false;
+    mHdrMetadataPresent = false;
 }
 
 void Qv2ApvEncoder::mapBlockToImgb(const std::shared_ptr <Qv2Block2D> &block, oapv_imgb_t *imgb,
