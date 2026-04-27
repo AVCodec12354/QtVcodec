@@ -21,7 +21,6 @@ If you do not have raw YUV or Y4M files for testing, you can generate them from 
 ```bash
 cd codecs/tests/testWorkSpace
 ./genEncoderInputs.sh
-cd ../../.. # Return to root
 ```
 This script will decode reference `.apv` files and place the resulting `.yuv` and `.y4m` files into `YUVTests/input/` and `Y4MTests/input/`.
 
