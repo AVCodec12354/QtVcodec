@@ -3,11 +3,13 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <fstream>
 
 #include <Qv2Buffer.h>
 #include <Qv2Constants.h>
 
 #define MAX_PLANE 4
+#define QV2_DEFAULT_BIT_DEPTH 8
 
 class PlaneInfo {
 private:
@@ -28,35 +30,46 @@ class Qv2Source {
 public:
     Qv2Source() : mCurrentFrame(0),
                   mTotalFrame(0),
-                  mFile(nullptr, &std::fclose) {};
-    virtual ~Qv2Source() = default;
+                  mWidth(0),
+                  mHeight(0),
+                  mBitDepth(QV2_DEFAULT_BIT_DEPTH),
+                  mColorFormat(QV2FormatYUV420Planar) {};
+    virtual ~Qv2Source() {
+        if (mFile.is_open()) {
+            mFile.close();
+        }
+    };
 
     virtual void setDataSource(
             std::string filePath,
             int width,
             int height,
-            int bitDepth = 8,
+            int bitDepth = QV2_DEFAULT_BIT_DEPTH,
             Qv2ColorFormat colorFormat = QV2FormatYUV420Planar
     ) {
         std::cout << "Open file: " << filePath << std::endl;
-        mFile.reset(fopen(filePath.c_str(), "rb"));
+        mFile.open(filePath, std::ios::binary | std::ios::in);
+
+        if (!mFile.is_open()) {
+            std::cout << "Failed to open file: " << filePath << std::endl;
+            return;
+        }
+
         mWidth = width;
         mHeight = height;
         mBitDepth = bitDepth;
         mColorFormat = colorFormat;
         mCurrentFrame = 0;
+
         calculatePlaneSize();
         mTotalFrame = calculateTotalFrame();
-        if (!mFile) {
-            std::cout << "mFile is nullptr..." << std::endl;
-        }
     };
 
     virtual std::shared_ptr<Qv2Buffer> getBuffer() = 0;
-    int64_t getCurrentFrame() { return mCurrentFrame; }
-    int64_t getTotalFrame() { return mTotalFrame; }
-    int getWidth() { return mWidth; }
-    int getHeight() { return mHeight; }
+    int64_t getCurrentFrame() const { return mCurrentFrame; }
+    int64_t getTotalFrame() const { return mTotalFrame; }
+    int getWidth() const { return mWidth; }
+    int getHeight() const { return mHeight; }
 
 protected:
     virtual int64_t calculateTotalFrame() = 0;
@@ -66,6 +79,6 @@ protected:
     PlaneInfo mPlaneInfo[MAX_PLANE];
     int mWidth, mHeight, mBitDepth;
     int64_t mCurrentFrame, mTotalFrame;
-    std::unique_ptr<FILE, decltype(&std::fclose)> mFile;
+    std::ifstream mFile;
     Qv2ColorFormat mColorFormat;
 };

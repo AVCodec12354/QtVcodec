@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Qv2Source.h>
+#include <fstream>
 
 class YUVSource : public Qv2Source {
 public:

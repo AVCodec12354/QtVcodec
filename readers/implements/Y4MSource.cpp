@@ -1,49 +1,62 @@
 #include "Y4MSource.h"
+#include <string>
+#include <vector>
+
+void Y4MSource::setDataSource(const std::string filePath, int width, int height,
+                              int bitDepth, Qv2ColorFormat colorFormat) {
+    YUVSource::setDataSource(filePath, width, height, bitDepth, colorFormat);
+
+    if (isY4M()) {
+        std::cout << "Detected Y4M file, skipping header" << std::endl;
+        skipFileHeader();
+    } else {
+        std::cout << "Not a valid Y4M file, resetting to pos 0" << std::endl;
+        mFile.seekg(0, std::ios::beg);
+    }
+}
 
 std::shared_ptr<Qv2Buffer> Y4MSource::getBuffer() {
-    char frameMarker[6];
-    if (fread(frameMarker, 1, 6, mFile.get()) == 6) {
-        if (strncmp(frameMarker, "FRAME", 5) != 0) {
-            fseek(mFile.get(), -6, SEEK_CUR);
-        }
-        if (frameMarker[5] != '\n') {
-            int c;
-            while ((c = fgetc(mFile.get())) != '\n' && c != EOF);
-        }
+    if (!mFile.is_open()) {
+        std::cout << "File is not open" << std::endl;
+        return nullptr;
     }
+    mFile.ignore(mFrameMarkerSize);
     return YUVSource::getBuffer();
 }
 
 bool Y4MSource::isY4M() {
-    char title[9] = {'0'};
-    if (fread((void *)title, 1, 9, mFile.get()) == 9) {
-        std::cout << "It's Y4M file!" << std::endl;
-        return (strncmp(title, "YUV4MPEG2", 9) == 0);
-    }
-    return false;
+    char magic[10];
+    mFile.read(magic, 10);
+    std::string header(magic, 10);
+    bool result = (header.find("YUV4MPEG2") != std::string::npos);
+    mFile.seekg(0, std::ios::beg);
+    return result;
 }
 
 void Y4MSource::skipFileHeader() {
-    int c;
-    while ((c = fgetc(mFile.get())) != '\n' && c != EOF);
+    std::string dummy;
+    if (std::getline(mFile, dummy)) {
+        std::cout << "Skipping header: " << dummy << std::endl;
+    } else {
+        std::cout << "Failed to read header" << std::endl;
+    }
 }
 
 int64_t Y4MSource::calculateTotalFrame() {
-    if (mFile == nullptr) return 0;
+    if (!mFile.is_open()) {
+        std::cout << "File is not open" << std::endl;
+        return 0;
+    }
     int bytesPerSample = (mBitDepth > 8) ? 2 : 1;
     int64_t frameSize =  0;
     for (int i = 0; i < mNumOfPlane; i++) { frameSize += mPlaneInfo[i].getSize(); }
-    // 6 mean FRAME in raw file
-    int64_t frameDataSize = static_cast<int64_t>(frameSize * bytesPerSample) + 6;
+    int64_t frameDataSize = static_cast<int64_t>(frameSize * bytesPerSample) + mFrameMarkerSize;
+    if (frameDataSize <= 0) return 0;
 
-#ifdef _WIN32
-    _fseeki64(mFile.get(), 0, SEEK_END);
-    int64_t fileSize = _ftelli64(mFile.get());
-    _fseeki64(mFile.get(), 0, SEEK_SET);
-#else
-    fseeko(mFile.get(), 0, SEEK_END);
-    int64_t fileSize = ftello(mFile.get());
-    fseeko(mFile.get(), 0, SEEK_SET);
-#endif
+    std::streampos currentPos = mFile.tellg();
+    mFile.seekg(0, std::ios::end);
+    int64_t fileSize = static_cast<int64_t>(mFile.tellg());
+    mFile.seekg(currentPos, std::ios::beg);
+
     return (fileSize / frameDataSize);
 }
