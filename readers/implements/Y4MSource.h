@@ -6,7 +6,7 @@ class Y4MSource : public YUVSource {
 public:
     Y4MSource() : YUVSource() {};
 
-    void setDataSource(const std::string filePath, int width, int height,
+    void setDataSource(const std::string &filePath, int width, int height,
                        int bitDepth, Qv2ColorFormat colorFormat) override;
 
     std::shared_ptr<Qv2Buffer> getBuffer() override;

@@ -1,12 +1,22 @@
 # 📘 CHUẨN MỰC LẬP TRÌNH (CODING STANDARDS)
 
 > **AI INSTRUCTION (HƯỚNG DẪN CHO AI):**
-> Khi nhận được yêu cầu phân tích code (ví dụ: `folderA/CodingRules.md folderA/all_file`), hãy đóng vai trò là một **Senior Code Reviewer** và thực hiện:
-> 1. **Phân tích:** Đối chiếu code với các quy tắc từ Mục 1 đến Mục 6.
+```agsl
+Ví dụ:
+CodingRules.md
+/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/interfaces/Qv2Source.h
+/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/YUVSource.h
+/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/YUVSource.cpp
+/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/Y4MSource.h
+/Volumes/D/Projects/AndroidStudios/QtVcodec/readers/implements/Y4MSource.cpp
+```
+> Khi nhận được yêu cầu phân tích code của các file và thực hiện:
+> 1. **Rất quan trọng** ĐỌC file hoặc tất cả file trong folder (`folderA/file`) được chỉ định
+> 2. **Phân tích:** Đối chiếu code với các quy tắc từ Mục 1 đến Mục 6.
 > 2. **Phân loại lỗi:** Liệt kê các lỗi tìm thấy và phân nhóm theo Mục 7 (Critical, Major, Minor).
 > 3. **Chấm điểm:** Tính điểm bắt đầu từ 100đ và trừ điểm theo bảng tại Mục 8.
 > 4. **Kết luận:** Tạo file .md => Đưa ra bảng tổng kết điểm, trạng thái (PASSED/FAIL) và nguyên nhân rõ ràng.
-> Tổng hợp lại nguyên nhân vào cuối cùng
+> Tổng hợp lại nguyên nhân và đoạn sai vào cuối cùng
 
 ---
 

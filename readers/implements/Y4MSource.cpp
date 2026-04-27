@@ -2,7 +2,10 @@
 #include <string>
 #include <vector>
 
-void Y4MSource::setDataSource(const std::string filePath, int width, int height,
+#define Y4M_HEADER_START "YUV4MPEG2"
+#define Y4M_HEADER_START_SIZE 9
+
+void Y4MSource::setDataSource(const std::string &filePath, int width, int height,
                               int bitDepth, Qv2ColorFormat colorFormat) {
     YUVSource::setDataSource(filePath, width, height, bitDepth, colorFormat);
 
@@ -25,10 +28,9 @@ std::shared_ptr<Qv2Buffer> Y4MSource::getBuffer() {
 }
 
 bool Y4MSource::isY4M() {
-    char magic[10];
-    mFile.read(magic, 10);
-    std::string header(magic, 10);
-    bool result = (header.find("YUV4MPEG2") != std::string::npos);
+    char magic[Y4M_HEADER_START_SIZE];
+    if (!mFile.read(magic, Y4M_HEADER_START_SIZE)) return false;
+    bool result = (std::memcmp(magic, Y4M_HEADER_START, Y4M_HEADER_START_SIZE) == 0);
     mFile.seekg(0, std::ios::beg);
     return result;
 }

@@ -41,7 +41,7 @@ public:
     };
 
     virtual void setDataSource(
-            std::string filePath,
+            const std::string &filePath,
             int width,
             int height,
             int bitDepth = QV2_DEFAULT_BIT_DEPTH,
