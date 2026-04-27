@@ -13,8 +13,6 @@ package "Qv2Core Interfaces" {
     }
 
     class Qv2Buffer {
-        + mTimestamp: uint64_t
-        + mFlags: uint32_t
         + type(): Qv2Buffer_Type
         + linearBlocks(): vector<shared_ptr<Qv2Block1D>>
         + graphicBlocks(): vector<shared_ptr<Qv2Block2D>>
@@ -67,17 +65,30 @@ package "Qv2Core Interfaces" {
     struct Qv2Work {
         + input: shared_ptr<Qv2Buffer>
         + output: shared_ptr<Qv2Buffer>
+        + recon: shared_ptr<Qv2Buffer>
+        + timestamp: uint64_t
+        + frameIdx: uint64_t
+        + flags: uint32_t
         + result: int
+        + hdrMetadata: Qv2HdrStaticMetadata
+        + colorAspects: Qv2ColorAspect
+    }
+
+    enum Qv2WorkFlags {
+        QV2_WORK_FLAG_NONE = 0
+        QV2_WORK_FLAG_EOS = 1
     }
 
     abstract class Qv2Component {
         # mName: string
         # mListener: Listener*
         # mState: atomic<State>
+        # mIsRec: bool
         + getName(): string
         + getState(): State
         + setState(state: State): void
         + setListener(listener: Listener*): void
+        + enableRecon(enable: bool): void
         + {abstract} getVersion(): string
         + {abstract} configure(params: vector<Qv2Param*>): Qv2Status
         + {abstract} query(params: vector<Qv2Param*>): Qv2Status
@@ -127,35 +138,19 @@ package "Qv2Core Interfaces" {
         + {static} cast<T>(param): T*
     }
 
-    enum Qv2Param_Index {
-        kIndexVideoSize
-        kIndexBitrate
-        kIndexFrameRate
-        kIndexBitDepth
-        kIndexColorFormat
+    package "Metadata & Constants" {
+        struct Qv2HdrStaticMetadata
+        struct Qv2ColorAspect
     }
 
-    package "Specific Parameters (Examples)" {
+    package "Specific Parameter Examples" {
         class Qv2VideoSizeInput
         class Qv2BitrateSetting
     }
 
     enum Qv2Status {
         QV2_OK = 0
-        QV2_ERR_GENERIC = -1
-        QV2_ERR_INVALID_ARG = -101
-        QV2_ERR_NO_MEMORY = -102
-        QV2_ERR_NOT_INITIALIZED = -103
-        QV2_ERR_ALREADY_EXISTS = -104
-        QV2_ERR_NOT_FOUND = -105
-        QV2_ERR_UNSUPPORTED = -201
-        QV2_ERR_BAD_VALUE = -202
-        QV2_ERR_BAD_FORMAT = -203
-        QV2_ERR_MALFORMED = -301
-        QV2_ERR_BUFFER_OVERFLOW = -302
-        QV2_ERR_EOS = -303
-        QV2_ERR_TIMEOUT = -304
-        QV2_ERR_HW_FAILURE = -401
+        ...
         QV2_ERR_INTERNAL = -402
     }
 }
@@ -167,6 +162,9 @@ Qv2Buffer +-- Qv2Buffer_Type
 Qv2Block2D ..> Qv2NumPlane : uses
 
 Qv2Work o-- Qv2Buffer
+Qv2Work +-- Qv2WorkFlags
+Qv2Work ..> Qv2HdrStaticMetadata : contains
+Qv2Work ..> Qv2ColorAspect : contains
 
 Qv2ComponentFactory ..> Qv2Component : creates
 Qv2ComponentFactory +-down- ComponentType
@@ -176,7 +174,6 @@ Qv2Component +-right- Qv2Component_Listener
 Qv2Component ..> Qv2Work : processes
 Qv2Component ..> Qv2Param : configured by
 
-Qv2Param +-- Qv2Param_Index
 Qv2Param <|-- Qv2VideoSizeInput
 Qv2Param <|-- Qv2BitrateSetting
 

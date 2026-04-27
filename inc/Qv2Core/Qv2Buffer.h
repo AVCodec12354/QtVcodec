@@ -103,7 +103,7 @@ public:
         return buffer;
     }
 
-    explicit Qv2Buffer(Type type) : mType(type), mTimestamp(0), mFlags(0) {}
+    explicit Qv2Buffer(Type type) : mType(type) {}
     virtual ~Qv2Buffer() = default;
 
     Type type() const { return mType; }
@@ -111,14 +111,7 @@ public:
     const std::vector<std::shared_ptr<Qv2Block1D>>& linearBlocks() const { return mBlocks1D; }
     const std::vector<std::shared_ptr<Qv2Block2D>>& graphicBlocks() const { return mBlocks2D; }
 
-    uint64_t timestamp() const { return mTimestamp; }
-    void setTimestamp(uint64_t timestamp) { mTimestamp = timestamp; }
-    uint32_t flags() const { return mFlags; }
-    void setFlags(uint32_t flags) { mFlags = flags; }
-
 private:
-    uint64_t mTimestamp;
-    uint32_t mFlags;
     Type mType;
     std::vector<std::shared_ptr<Qv2Block1D>> mBlocks1D;
     std::vector<std::shared_ptr<Qv2Block2D>> mBlocks2D;

@@ -18,9 +18,9 @@
 #endif
 
 inline const char* get_timestamp() {
-    static char buf[20];
+    static char buf[32];
     time_t now = time(nullptr);
-    strftime(buf, sizeof(buf), "%H:%M:%S", localtime(&now));
+    strftime(buf, sizeof(buf), "%d-%m-%Y %H:%M:%S", localtime(&now));
     return buf;
 }
 
@@ -41,8 +41,14 @@ inline long get_current_tid() {
            get_timestamp(), (int)getpid(), get_current_tid(), \
            level, tag, ##__VA_ARGS__)
 
-#define QV2_LOGV(fmt, ...) QV2_LOG("V", LOG_TAG, fmt, ##__VA_ARGS__)
+#if LOG_DEBUG
 #define QV2_LOGD(fmt, ...) QV2_LOG("D", LOG_TAG, fmt, ##__VA_ARGS__)
+#define QV2_LOGV(fmt, ...) QV2_LOG("V", LOG_TAG, fmt, ##__VA_ARGS__)
+#else
+#define QV2_LOGD(fmt, ...) ((void)0)
+#define QV2_LOGV(fmt, ...) ((void)0)
+#endif
+
 #define QV2_LOGI(fmt, ...) QV2_LOG("I", LOG_TAG, fmt, ##__VA_ARGS__)
 #define QV2_LOGW(fmt, ...) QV2_LOG("W", LOG_TAG, fmt, ##__VA_ARGS__)
 #define QV2_LOGE(fmt, ...) QV2_LOG("E", LOG_TAG, fmt, ##__VA_ARGS__)

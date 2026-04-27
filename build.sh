@@ -1,8 +1,8 @@
+clear
 rm -rf build
-rm -rf outputs
+rm -f outputs/QtVcodec
+rm -f outputs/tests/Qv2ComponentTests
 mkdir build
 cd build
 cmake ..
 cmake --build .
-#../outputs/QtVCodec
-../outputs/tests/Qv2ComponentTests

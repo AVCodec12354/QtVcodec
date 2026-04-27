@@ -73,6 +73,10 @@ public:
         onStateChanged(state);
     }
 
+    void enableRecon(bool enable) {
+        mIsRec = enable;
+    }
+
     void setListener(Listener* listener) { mListener = listener; }
 
     virtual Qv2Status configure(const std::vector<Qv2Param*>& params) = 0;
@@ -98,6 +102,7 @@ protected:
     std::string mName;
     Listener* mListener = nullptr;
     std::atomic<State> mState{UNINITIALIZED};
+    bool mIsRec = false;
 };
 
 #endif // QV2COMPONENT_H
