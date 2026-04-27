@@ -107,6 +107,24 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
                 QV2_LOGV("ColorFormat translated from %d to OAPV IDC: %d", v->mColorFormat, mColorFmt);
                 break;
             }
+            case Qv2ProfileLevelInput::ID: {
+                auto v = static_cast<Qv2ProfileLevelInput *>(param);
+                p->profile_idc = v->mProfile;
+                // v->mLevel carries (Band << 8) | LevelIndex
+                int band = (v->mLevel >> 8) & 0xFF;
+                int levelIdx = v->mLevel & 0xFF;
+
+                // Map level index to IDC: Level 1.0 = 30, 1.1 = 33, 2.0 = 60, etc.
+                // Our enum has index 0 -> L1, 1 -> L1.1, 2 -> L2, ...
+                static const float levelMap[] = {1.0f, 1.1f, 2.0f, 2.1f, 3.0f, 3.1f, 4.0f, 4.1f, 5.0f, 5.1f, 6.0f, 6.1f, 7.0f, 7.1f};
+                if (levelIdx >= 0 && levelIdx < (int)(sizeof(levelMap)/sizeof(levelMap[0]))) {
+                    p->level_idc = OAPV_LEVEL_TO_LEVEL_IDC(levelMap[levelIdx]);
+                }
+                p->band_idc = band;
+
+                QV2_LOGV("Set Profile: %d, Level IDC: %d, Band: %d", p->profile_idc, p->level_idc, p->band_idc);
+                break;
+            }
             case Qv2QPInput::ID: {
                 auto v = static_cast<Qv2QPInput *>(param);
                 int maxQP = 63 + (mInputDepth - 10) * 6;

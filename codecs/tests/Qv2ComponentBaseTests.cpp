@@ -44,6 +44,11 @@ TEST_F(Qv2ComponentTest, StateTransitions) {
     qpParam->mQP = 25;
     params.push_back(qpParam.get());
 
+    auto plParam = std::make_shared<Qv2ProfileLevelInput>();
+    plParam->mProfile = QV2_APV_PROFILE_422_10;
+    plParam->mLevel = QV2_APV_LEVEL_5_1_BAND_0;
+    params.push_back(plParam.get());
+
     EXPECT_EQ(mComponent->configure(params), QV2_OK);
     EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
 
