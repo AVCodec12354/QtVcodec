@@ -27,6 +27,7 @@ struct Qv2Param {
         kIndexBitDepth = 0x04,
         kIndexColorFormat = 0x05,
         kIndexProfileLevel = 0x06,
+        kIndexFamily = 0x07,
         kIndexQP = 0x09
     };
 
@@ -163,5 +164,14 @@ struct Qv2ProfileLevelT : public Qv2Param {
 
 using Qv2ProfileLevelInput = Qv2ProfileLevelT<Qv2Param::INPUT>;
 using Qv2ProfileLevelOutput = Qv2ProfileLevelT<Qv2Param::OUTPUT>;
+
+/**
+ * @brief APV Family Setting
+ */
+struct Qv2APVFamilySetting : public Qv2Param {
+    static constexpr uint32_t ID = makeId(OUTPUT, SETTING, kIndexFamily);
+    int mFamily;
+    Qv2APVFamilySetting() : Qv2Param(ID, sizeof(Qv2APVFamilySetting)), mFamily(0) {}
+};
 
 #endif // QV2PARAMS_H

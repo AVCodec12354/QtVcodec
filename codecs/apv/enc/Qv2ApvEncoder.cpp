@@ -125,6 +125,19 @@ Qv2Status Qv2ApvEncoder::configure(const std::vector<Qv2Param *> &params) {
                 QV2_LOGV("Set Profile: %d, Level IDC: %d, Band: %d", p->profile_idc, p->level_idc, p->band_idc);
                 break;
             }
+            case Qv2APVFamilySetting::ID: {
+                auto v = static_cast<Qv2APVFamilySetting *>(param);
+                int kbps = 0;
+                int ret = oapve_family_bitrate(v->mFamily, p->w, p->h, p->fps_num, p->fps_den, &kbps);
+                if (OAPV_SUCCEEDED(ret)) {
+                    p->bitrate = kbps;
+                    p->rc_type = OAPV_RC_ABR;
+                    QV2_LOGV("Set Family: %d, calculated bitrate: %d kbps", v->mFamily, p->bitrate);
+                } else {
+                    QV2_LOGE("Failed to calculate bitrate for family: %d", v->mFamily);
+                }
+                break;
+            }
             case Qv2QPInput::ID: {
                 auto v = static_cast<Qv2QPInput *>(param);
                 int maxQP = 63 + (mInputDepth - 10) * 6;

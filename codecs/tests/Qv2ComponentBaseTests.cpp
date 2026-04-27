@@ -49,6 +49,10 @@ TEST_F(Qv2ComponentTest, StateTransitions) {
     plParam->mLevel = QV2_APV_LEVEL_5_1_BAND_0;
     params.push_back(plParam.get());
 
+    auto familyParam = std::make_shared<Qv2APVFamilySetting>();
+    familyParam->mFamily = QV2_APV_FAMILY_422_HQ;
+    params.push_back(familyParam.get());
+
     EXPECT_EQ(mComponent->configure(params), QV2_OK);
     EXPECT_EQ(mComponent->getState(), Qv2Component::CONFIGURED);
 
