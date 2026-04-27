@@ -16,7 +16,16 @@ Run the main build script from the root directory to compile the core library an
 ./build.sh
 ```
 
-### Step 2: Run Automated Tests
+### Step 2: Data Preparation (Optional)
+If you do not have raw YUV or Y4M files for testing, you can generate them from the provided reference bitstreams inside the `testWorkSpace` directory.
+```bash
+cd codecs/tests/testWorkSpace
+./genEncoderInputs.sh
+cd ../../.. # Return to root
+```
+This script will decode reference `.apv` files and place the resulting `.yuv` and `.y4m` files into `YUVTests/input/` and `Y4MTests/input/`.
+
+### Step 3: Run Automated Tests
 Execute the test runner script. This script will:
 1. Clean old test outputs in `Y4MTests/output` and `YUVTests/output`.
 2. Create necessary directories if they don't exist.
@@ -25,7 +34,7 @@ Execute the test runner script. This script will:
 ./run.sh
 ```
 
-### Step 3: Verify Output Quality
+### Step 4: Verify Output Quality
 After the tests finish, use the interactive player script to view the generated `.apv` bitstreams.
 ```bash
 ./playOutput.sh

@@ -13,7 +13,7 @@ QtVCodec uses a component-based architecture for video encoding/decoding:
 ./build.sh
 
 # Run component tests
-cd outputs/tests && ./Qv2ComponentTests
+cd testWorkSpace/tests && ./Qv2ComponentTests
 
 # Debug crashes
 lldb ./build/QtVCodec

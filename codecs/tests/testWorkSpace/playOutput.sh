@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-TEST_DIR="outputs/tests"
+TEST_DIR="."
 TARGET_FOLDERS=("Y4MTests/output" "YUVTests/output")
 
 # ANSI Color Codes
@@ -10,10 +10,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-# Check if we are in the right directory or need to move
-if [ -d "$TEST_DIR" ]; then
-    cd "$TEST_DIR" || exit 1
-fi
+# Move to script directory
+cd "$(dirname "$0")" || exit 1
 
 echo -e "${CYAN}==========================================${NC}"
 echo -e "${CYAN}   QtVCodec APV Bitstream Player          ${NC}"
@@ -56,7 +54,8 @@ for FOLDER in "${TARGET_FOLDERS[@]}"; do
                 echo -e "Playing: ${GREEN}$FILE${NC}"
                 echo -e "Format:  ${CYAN}Raw APV Bitstream${NC}"
 
-                ffplay -f apv -loop 33 -autoexit "$FILE"
+                # Increased loop to 25 so you have plenty of time to pause
+                ffplay -f apv -loop 25 -autoexit "$FILE"
 
                 echo -e "\n${YELLOW}Playback of current file finished.${NC}"
                 echo -n "Action: [Enter] Next file | [r] Replay this file | [q] Quit script: "

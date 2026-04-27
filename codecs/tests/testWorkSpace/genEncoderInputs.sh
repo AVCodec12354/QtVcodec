@@ -2,7 +2,7 @@
 
 # Configuration
 DECODER="./oapv_app_dec"
-BITSTREAM_DIR="."
+BITSTREAM_DIR="./apvBitstreams"
 Y4M_OUTPUT_DIR="./Y4MTests/input"
 YUV_OUTPUT_DIR="./YUVTests/input"
 
@@ -10,13 +10,16 @@ YUV_OUTPUT_DIR="./YUVTests/input"
 mkdir -p "$Y4M_OUTPUT_DIR"
 mkdir -p "$YUV_OUTPUT_DIR"
 
+# Move to script directory
+cd "$(dirname "$0")" || exit 1
+
 # Check if decoder exists
 if [ ! -f "$DECODER" ]; then
     echo "Error: $DECODER not found in current directory."
     exit 1
 fi
 
-# Bitstream Information from README.md
+# Bitstream Information
 # Format: name|colorFormat|resolution|fps|numFrames
 BITSTREAMS=(
     "tile_A|yuv422p10le|3840x2160|60|3"
@@ -50,7 +53,7 @@ for info in "${BITSTREAMS[@]}"; do
         yuv_file="${YUV_OUTPUT_DIR}/${name}_${cfmt}_${res}_${fps}fps_${frames}.yuv"
         echo "Decoding YUV: $input_file -> $yuv_file"
         # Using -y 1 to force raw YUV output (no Y4M header)
-        $DECODER -i "$input_file" -o "$yuv_file"
+        $DECODER -i "$input_file" -o "$yuv_file" -y 1
 
         if [ $? -eq 0 ]; then
             echo "Successfully processed $name"

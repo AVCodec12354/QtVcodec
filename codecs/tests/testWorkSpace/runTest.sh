@@ -3,7 +3,7 @@
 clear
 
 # Path to tests directory
-TEST_DIR="outputs/tests"
+TEST_DIR="."
 cd "$TEST_DIR" || { echo "Error: Directory $TEST_DIR not found"; exit 1; }
 
 # List of target folders to process
