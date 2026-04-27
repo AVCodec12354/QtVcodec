@@ -42,7 +42,7 @@ private:
                         int bitDepth) const;
 
     oapve_t mEncoderId = nullptr;
-    uint8_t *mBitstreamBuf = nullptr;
+    std::unique_ptr<uint8_t[]> mBitstreamBuf;
 
     std::unique_ptr <oapve_cdesc_t> mCodecDesc;
 

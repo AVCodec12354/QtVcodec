@@ -15,7 +15,7 @@
 constexpr char COMPONENT_NAME[] = "qv2.apv.encoder";
 
 Qv2ApvEncoder::Qv2ApvEncoder()
-        : mEncoderId(nullptr), mBitstreamBuf(nullptr) {
+        : mEncoderId(nullptr) {
 
     setState(UNINITIALIZED);
 
@@ -246,7 +246,7 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
 
         oapv_bitb_t bitb;
         std::memset(&bitb, 0, sizeof(oapv_bitb_t));
-        bitb.addr = mBitstreamBuf;
+        bitb.addr = mBitstreamBuf.get();
         bitb.bsize = MAX_BS_BUF;
 
         oapve_stat_t stat;
@@ -319,12 +319,10 @@ Qv2Status Qv2ApvEncoder::start() {
         return QV2_ERR_INTERNAL;
     }
 
-    if (mBitstreamBuf) {
-        delete[] mBitstreamBuf;
-    }
-    mBitstreamBuf = new unsigned char[MAX_BS_BUF];
-    if (mBitstreamBuf == nullptr) {
-        QV2_LOGE("cannot allocate bitstream buffer, size=%u", MAX_BS_BUF);
+    try {
+        mBitstreamBuf = std::make_unique<uint8_t[]>(MAX_BS_BUF);
+    } catch (const std::bad_alloc& e) {
+        QV2_LOGE("cannot allocate bitstream buffer, size=%u, error: %s", MAX_BS_BUF, e.what());
         return QV2_ERR_INTERNAL;
     }
 
@@ -333,6 +331,7 @@ Qv2Status Qv2ApvEncoder::start() {
     mEncoderId = oapve_create(mCodecDesc.get(), &ret);
     if (mEncoderId == nullptr) {
         QV2_LOGE("cannot create APV encoder, ret=%d", ret);
+        mBitstreamBuf.reset();
         return QV2_ERR_INTERNAL;
     }
 
@@ -418,10 +417,7 @@ void Qv2ApvEncoder::onRelease() {
         oapvm_delete(mMetadataId);
         mMetadataId = nullptr;
     }
-    if (mBitstreamBuf) {
-        delete[] mBitstreamBuf;
-        mBitstreamBuf = nullptr;
-    }
+    mBitstreamBuf.reset();
     mIsRec = false;
     mHdrMetadataPresent = false;
 }
