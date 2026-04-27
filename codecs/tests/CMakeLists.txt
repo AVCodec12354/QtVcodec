@@ -30,6 +30,8 @@ set(CORE_SOURCES
 
 add_executable(Qv2ComponentTests 
     testMain.cpp
+    Qv2EncoderTests.cpp
+    Qv2ComponentBaseTests.cpp
     ${CORE_SOURCES}
 )
 
