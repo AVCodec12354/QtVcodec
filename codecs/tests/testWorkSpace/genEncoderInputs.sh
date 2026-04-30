@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Move to script directory first to ensure relative paths are correct
+cd "$(dirname "$0")" || exit 1
+
 # Configuration
 DECODER="./oapv_app_dec"
 BITSTREAM_DIR="./apvBitstreams"
@@ -10,14 +13,14 @@ YUV_OUTPUT_DIR="./YUVTests/input"
 mkdir -p "$Y4M_OUTPUT_DIR"
 mkdir -p "$YUV_OUTPUT_DIR"
 
-# Move to script directory
-cd "$(dirname "$0")" || exit 1
-
 # Check if decoder exists
 if [ ! -f "$DECODER" ]; then
     echo "Error: $DECODER not found in current directory."
     exit 1
 fi
+
+# Ensure decoder is executable
+chmod +x "$DECODER"
 
 # Bitstream Information
 # Format: name|colorFormat|resolution|fps|numFrames
@@ -44,16 +47,15 @@ for info in "${BITSTREAMS[@]}"; do
     input_file="${BITSTREAM_DIR}/${name}.apv"
 
     if [ -f "$input_file" ]; then
-        # 1. Decode to Y4M
+        # 1. Decode to Y4M (extension .y4m triggers Y4M output)
         y4m_file="${Y4M_OUTPUT_DIR}/${name}_${cfmt}_${res}_${fps}fps_${frames}.y4m"
         echo "Decoding Y4M: $input_file -> $y4m_file"
         $DECODER -i "$input_file" -o "$y4m_file"
 
-        # 2. Decode to Raw YUV
+        # 2. Decode to Raw YUV (extension .yuv triggers raw YUV output)
         yuv_file="${YUV_OUTPUT_DIR}/${name}_${cfmt}_${res}_${fps}fps_${frames}.yuv"
         echo "Decoding YUV: $input_file -> $yuv_file"
-        # Using -y 1 to force raw YUV output (no Y4M header)
-        $DECODER -i "$input_file" -o "$yuv_file" -y 1
+        $DECODER -i "$input_file" -o "$yuv_file"
 
         if [ $? -eq 0 ]; then
             echo "Successfully processed $name"
