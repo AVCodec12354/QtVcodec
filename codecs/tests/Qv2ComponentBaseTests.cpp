@@ -13,7 +13,14 @@ protected:
 TEST_F(Qv2ComponentTest, InitialState) {
     EXPECT_EQ(mComponent->getState(), Qv2Component::INITIALIZED);
     EXPECT_FALSE(mComponent->getName().empty());
-    EXPECT_FALSE(mComponent->getVersion().empty());
+}
+
+TEST_F(Qv2ComponentTest, GetVersion) {
+    std::string version = mComponent->getVersion();
+    EXPECT_FALSE(version.empty());
+    printf("khanh.pd1 version: %s\n", version.c_str());
+    // APV encoder version should contain "OpenAPV" or version numbers
+    EXPECT_TRUE(version.find("OpenAPV") != std::string::npos || version.find("v") != std::string::npos);
 }
 
 TEST_F(Qv2ComponentTest, StateTransitions) {
