@@ -3,23 +3,177 @@
 
 #pragma once
 
-enum Qv2ColorFormat: int32_t {
-    QV2FormatYUV420Flexible          = 0x7F420888,
-    QV2FormatYUV420PackedPlanar      = 20,
-    QV2FormatYUV420PackedSemiPlanar  = 39,
-    QV2FormatYUV420Planar            = 19,
-    QV2FormatYUV420SemiPlanar        = 21,
-    QV2FormatYUV422Flexible          = 0x7F422888,
-    QV2FormatYUV422PackedPlanar      = 23,
-    QV2FormatYUV422PackedSemiPlanar  = 40,
-    QV2FormatYUV422Planar            = 22,
-    QV2FormatYUV422SemiPlanar        = 24,
-    QV2FormatYUV444Flexible          = 0x7F444888,
-    QV2FormatYUV444Interleaved       = 29,
-    QV2FormatYUVP010                 = 54,
-    QV2FormatYUVP210                 = 60,
-    QV2QCOM_FormatYUV420SemiPlanar   = 0x7fa30c00,
-    QV2TI_FormatYUV420PackedSemiPlanar = 0x7f000100,
+enum Qv2APVProfile : int32_t {
+    QV2_APV_PROFILE_422_10 = 33,
+    QV2_APV_PROFILE_422_12 = 44,
+    QV2_APV_PROFILE_444_10 = 55,
+    QV2_APV_PROFILE_444_12 = 66,
+    QV2_APV_PROFILE_4444_10 = 77,
+    QV2_APV_PROFILE_4444_12 = 88,
+    QV2_APV_PROFILE_400_10 = 99,
 };
+
+enum Qv2APVLevel : int32_t {
+    // Band 0
+    QV2_APV_LEVEL_1_BAND_0           = 0x0000,
+    QV2_APV_LEVEL_1_1_BAND_0         = 0x0001,
+    QV2_APV_LEVEL_2_BAND_0           = 0x0002,
+    QV2_APV_LEVEL_2_1_BAND_0         = 0x0003,
+    QV2_APV_LEVEL_3_BAND_0           = 0x0004,
+    QV2_APV_LEVEL_3_1_BAND_0         = 0x0005,
+    QV2_APV_LEVEL_4_BAND_0           = 0x0006,
+    QV2_APV_LEVEL_4_1_BAND_0         = 0x0007,
+    QV2_APV_LEVEL_5_BAND_0           = 0x0008,
+    QV2_APV_LEVEL_5_1_BAND_0         = 0x0009,
+    QV2_APV_LEVEL_6_BAND_0           = 0x000A,
+    QV2_APV_LEVEL_6_1_BAND_0         = 0x000B,
+    QV2_APV_LEVEL_7_BAND_0           = 0x000C,
+    QV2_APV_LEVEL_7_1_BAND_0         = 0x000D,
+
+    // Band 1
+    QV2_APV_LEVEL_1_BAND_1           = 0x0100,
+    QV2_APV_LEVEL_1_1_BAND_1         = 0x0101,
+    QV2_APV_LEVEL_2_BAND_1           = 0x0102,
+    QV2_APV_LEVEL_2_1_BAND_1         = 0x0103,
+    QV2_APV_LEVEL_3_BAND_1           = 0x0104,
+    QV2_APV_LEVEL_3_1_BAND_1         = 0x0105,
+    QV2_APV_LEVEL_4_BAND_1           = 0x0106,
+    QV2_APV_LEVEL_4_1_BAND_1         = 0x0107,
+    QV2_APV_LEVEL_5_BAND_1           = 0x0108,
+    QV2_APV_LEVEL_5_1_BAND_1         = 0x0109,
+    QV2_APV_LEVEL_6_BAND_1           = 0x010A,
+    QV2_APV_LEVEL_6_1_BAND_1         = 0x010B,
+    QV2_APV_LEVEL_7_BAND_1           = 0x010C,
+    QV2_APV_LEVEL_7_1_BAND_1         = 0x010D,
+
+    // Band 2
+    QV2_APV_LEVEL_1_BAND_2           = 0x0200,
+    QV2_APV_LEVEL_1_1_BAND_2         = 0x0201,
+    QV2_APV_LEVEL_2_BAND_2           = 0x0202,
+    QV2_APV_LEVEL_2_1_BAND_2         = 0x0203,
+    QV2_APV_LEVEL_3_BAND_2           = 0x0204,
+    QV2_APV_LEVEL_3_1_BAND_2         = 0x0205,
+    QV2_APV_LEVEL_4_BAND_2           = 0x0206,
+    QV2_APV_LEVEL_4_1_BAND_2         = 0x0207,
+    QV2_APV_LEVEL_5_BAND_2           = 0x0208,
+    QV2_APV_LEVEL_5_1_BAND_2         = 0x0209,
+    QV2_APV_LEVEL_6_BAND_2           = 0x020A,
+    QV2_APV_LEVEL_6_1_BAND_2         = 0x020B,
+    QV2_APV_LEVEL_7_BAND_2           = 0x020C,
+    QV2_APV_LEVEL_7_1_BAND_2         = 0x020D,
+
+    // Band 3
+    QV2_APV_LEVEL_1_BAND_3           = 0x0300,
+    QV2_APV_LEVEL_1_1_BAND_3         = 0x0301,
+    QV2_APV_LEVEL_2_BAND_3           = 0x0302,
+    QV2_APV_LEVEL_2_1_BAND_3         = 0x0303,
+    QV2_APV_LEVEL_3_BAND_3           = 0x0304,
+    QV2_APV_LEVEL_3_1_BAND_3         = 0x0305,
+    QV2_APV_LEVEL_4_BAND_3           = 0x0306,
+    QV2_APV_LEVEL_4_1_BAND_3         = 0x0307,
+    QV2_APV_LEVEL_5_BAND_3           = 0x0308,
+    QV2_APV_LEVEL_5_1_BAND_3         = 0x0309,
+    QV2_APV_LEVEL_6_BAND_3           = 0x030A,
+    QV2_APV_LEVEL_6_1_BAND_3         = 0x030B,
+    QV2_APV_LEVEL_7_BAND_3           = 0x030C,
+    QV2_APV_LEVEL_7_1_BAND_3         = 0x030D,
+};
+
+enum Qv2APVFamily : int32_t {
+    QV2_APV_FAMILY_422_LQ = 1,
+    QV2_APV_FAMILY_422_SQ = 2,
+    QV2_APV_FAMILY_422_HQ = 3,
+    QV2_APV_FAMILY_444_UQ = 4,
+};
+enum Qv2APVPreset : int32_t {
+    QV2_PRESET_FASTEST = 0,
+    QV2_PRESET_FAST = 1,
+    QV2_PRESET_MEDIUM = 2,
+    QV2_PRESET_SLOW = 3,
+    QV2_PRESET_PLACEBO = 4,
+    QV2_PRESET_DEFAULT = QV2_PRESET_MEDIUM
+};
+
+enum Qv2ColorFormat : int32_t {
+    QV2_CF_UNKNOWN = 0x0000,
+    QV2_CF_YCBCR400 = 0x080A,
+    QV2_CF_YCBCR420 = 0x080B,
+    QV2_CF_YCBCR422 = 0x080C,
+    QV2_CF_YCBCR444 = 0x080D,
+    QV2_CF_YCBCR4444 = 0x080E,
+    QV2_CF_YCBCR400_10LE = 0x0A0A,
+    QV2_CF_YCBCR420_10LE = 0x0A0B,
+    QV2_CF_YCBCR422_10LE = 0x0A0C,
+    QV2_CF_YCBCR444_10LE = 0x0A0D,
+    QV2_CF_YCBCR4444_10LE = 0x0A0E,
+    QV2_CF_YCBCR400_12LE = 0x0C0A,
+    QV2_CF_YCBCR420_12LE = 0x0C0B,
+    QV2_CF_YCBCR422_12LE = 0x0C0C,
+    QV2_CF_YCBCR444_12LE = 0x0C0D,
+    QV2_CF_YCBCR4444_12LE = 0x0C0E,
+    QV2_CF_P210 = 0x0A14
+};
+
+enum Qv2ColorRange : int32_t {
+    QV2_CR_UNKNOWN = -1,
+    QV2_CR_LIMITED = 0,
+    QV2_CR_FULL = 1
+};
+
+enum Qv2ColorPrimaries : int32_t {
+    QV2_CP_UNKNOWN = -1,
+    QV2_CP_BT709 = 1,
+    QV2_CP_UNSPECIFIED = 2,
+    QV2_CP_RESERVED = 3,
+    QV2_CP_BT470M = 4,
+    QV2_CP_BT470BG = 5,
+    QV2_CP_SMPTE170M = 6,
+    QV2_CP_SMPTE240M = 7,
+    QV2_CP_FILM = 8,
+    QV2_CP_BT2020 = 9,
+    QV2_CP_SMPTE4280 = 10,
+    QV2_CP_SMPTE4311 = 11,
+    QV2_CP_SMPTE4322 = 12
+};
+
+enum Qv2ColorTransfer : int32_t {
+    QV2_CT_UNKNOWN = -1,
+    QV2_CT_BT709 = 1,
+    QV2_CT_UNSPECIFIED = 2,
+    QV2_CT_BT470M = 4,
+    QV2_CT_BT470BG = 5,
+    QV2_CT_SMPTE170M = 6,
+    QV2_CT_SMPTE240M = 7,
+    QV2_CT_LINEAR = 8,
+    QV2_CT_LOG100 = 9,
+    QV2_CT_LOG316 = 10,
+    QV2_CT_IEC61966_2_4 = 11,
+    QV2_CT_BT1361E = 12,
+    QV2_CT_IEC61966_2_1 = 13,
+    QV2_CT_BT2020_10 = 14,
+    QV2_CT_BT2020_12 = 15,
+    QV2_CT_SMPTE2084 = 16,
+    QV2_CT_SMPTE428 = 17,
+    QV2_CT_HLG_ARIB_STD_B67 = 18
+};
+
+enum Qv2ColorMatrix : int32_t {
+    QV2_CM_UNKNOWN = -1,
+    QV2_CM_GBR = 0,
+    QV2_CM_BT709 = 1,
+    QV2_CM_UNSPECIFIED = 2,
+    QV2_CM_FCC = 4,
+    QV2_CM_BT470BG = 5,
+    QV2_CM_SMPTE170M = 6,
+    QV2_CM_SMPTE240M = 7,
+    QV2_CM_YCGCO = 8,
+    QV2_CM_BT2020NC = 9,
+    QV2_CM_BT2020C = 10,
+    QV2_CM_SMPTE2085 = 11,
+    QV2_CM_CHROMA_DERIVED_NC = 12,
+    QV2_CM_CHROMA_DERIVED_C = 13,
+    QV2_CM_ICTCP = 14
+};
+
 
 #endif // QV2CONSTANTS_H

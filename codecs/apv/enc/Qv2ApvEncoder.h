@@ -34,17 +34,24 @@ protected:
 private:
     void showEncoderParams(oapve_cdesc_t *cdsc) const;
 
+    int getCodecBitDepth(int profile_idc) const;
+
+    int toOapvFmt(int qv2Format) const;
+
+    void mapBlockToImgb(const std::shared_ptr <Qv2Block2D> &block, oapv_imgb_t *imgb,
+                        int bitDepth) const;
+
     oapve_t mEncoderId = nullptr;
-    oapvm_t mMetaDataId = nullptr;
-    uint8_t *mBitstreamBuf = nullptr;
+    std::unique_ptr<uint8_t[]> mBitstreamBuf;
 
     std::unique_ptr <oapve_cdesc_t> mCodecDesc;
-    oapv_frms_t mInputFrames;
-    oapv_frms_t mReconFrames;
-    oapv_bitb_t mBitb;
-    oapve_stat_t mStat;
 
-    bool mIsRec = false;
+    int mInputDepth = 10;
+    int mColorFmt = OAPV_CF_YCBCR422;
+
+    oapvm_t mMetadataId = nullptr;
+    bool mHdrMetadataPresent = false;
+    Qv2HdrStaticMetadata mHdrStaticMetadata;
 };
 
 #endif // QV2APVENCODER_H
