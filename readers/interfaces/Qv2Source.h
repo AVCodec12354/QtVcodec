@@ -33,7 +33,7 @@ public:
                   mWidth(0),
                   mHeight(0),
                   mBitDepth(QV2_DEFAULT_BIT_DEPTH),
-                  mColorFormat(QV2FormatYUV420Planar) {};
+                  mColorFormat(QV2_CF_YCBCR420) {};
     virtual ~Qv2Source() {
         if (mFile.is_open()) {
             mFile.close();
@@ -45,7 +45,7 @@ public:
             int width,
             int height,
             int bitDepth = QV2_DEFAULT_BIT_DEPTH,
-            Qv2ColorFormat colorFormat = QV2FormatYUV420Planar
+            Qv2ColorFormat colorFormat = QV2_CF_YCBCR420
     ) {
         std::cout << "Open file: " << filePath << std::endl;
         mFile.open(filePath, std::ios::binary | std::ios::in);

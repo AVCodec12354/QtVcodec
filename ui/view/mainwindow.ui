@@ -3020,7 +3020,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>Colorspace:</string>
+                     <string>Pixel Format:</string>
                     </property>
                    </widget>
                   </item>
@@ -3787,7 +3787,7 @@
                 <item>
                  <layout class="QHBoxLayout" name="Layout10" stretch="1,1">
                   <item>
-                   <layout class="QHBoxLayout" name="Primaries" stretch="1,1">
+                   <layout class="QHBoxLayout" name="Primaries" stretch="1,0">
                     <item>
                      <widget class="QLabel" name="label_20">
                       <property name="sizePolicy">

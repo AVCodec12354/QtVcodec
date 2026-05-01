@@ -96,22 +96,42 @@ enum Qv2APVPreset : int32_t {
 
 enum Qv2ColorFormat : int32_t {
     QV2_CF_UNKNOWN = 0x0000,
+
+    // Planar Formats (Y, U, V separate planes)
     QV2_CF_YCBCR400 = 0x080A,
     QV2_CF_YCBCR420 = 0x080B,
     QV2_CF_YCBCR422 = 0x080C,
     QV2_CF_YCBCR444 = 0x080D,
     QV2_CF_YCBCR4444 = 0x080E,
+
     QV2_CF_YCBCR400_10LE = 0x0A0A,
     QV2_CF_YCBCR420_10LE = 0x0A0B,
     QV2_CF_YCBCR422_10LE = 0x0A0C,
     QV2_CF_YCBCR444_10LE = 0x0A0D,
     QV2_CF_YCBCR4444_10LE = 0x0A0E,
+
     QV2_CF_YCBCR400_12LE = 0x0C0A,
     QV2_CF_YCBCR420_12LE = 0x0C0B,
     QV2_CF_YCBCR422_12LE = 0x0C0C,
     QV2_CF_YCBCR444_12LE = 0x0C0D,
     QV2_CF_YCBCR4444_12LE = 0x0C0E,
-    QV2_CF_P210 = 0x0A14
+
+    // Semi-Planar Formats (Y plane + Interleaved UV plane)
+    QV2_CF_NV12 = 0x0814, // 8-bit 4:2:0 (Y + UV)
+    QV2_CF_NV21 = 0x0815, // 8-bit 4:2:0 (Y + VU)
+    QV2_CF_NV16 = 0x0816, // 8-bit 4:2:2 (Y + UV)
+    QV2_CF_P010 = 0x0A14, // 10-bit 4:2:0 (Y + UV)
+    QV2_CF_P210 = 0x0A15, // 10-bit 4:2:2 (Y + UV)
+    QV2_CF_P012 = 0x0C14, // 12-bit 4:2:0 (Y + UV)
+    QV2_CF_P212 = 0x0C15, // 12-bit 4:2:2 (Y + UV)
+
+    // Packed Formats (Y, U, V interleaved in a single plane)
+    QV2_CF_YUY2 = 0x0820, // 8-bit 4:2:2 (YUYV)
+    QV2_CF_UYVY = 0x0821, // 8-bit 4:2:2 (UYVY)
+    QV2_CF_Y210 = 0x0A20, // 10-bit 4:2:2 Packed
+    QV2_CF_Y410 = 0x0A21, // 10-bit 4:4:4 Packed
+    QV2_CF_Y212 = 0x0C20, // 12-bit 4:2:2 Packed
+    QV2_CF_Y412 = 0x0C21  // 12-bit 4:4:4 Packed
 };
 
 enum Qv2ColorRange : int32_t {

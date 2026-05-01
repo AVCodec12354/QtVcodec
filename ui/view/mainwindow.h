@@ -6,31 +6,24 @@
 #include <QRegularExpressionValidator>
 
 #include <iostream>
-#include "EncoderViewModel.h"
+#include "EncoderTabViewModel.h"
 #include "VideoRenderer.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow, public VideoRenderer::Listener {
+class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-protected:
-    void onPlaying(long currentFrame, long totalFrame) override;
-    void onFinished() override;
-
 private:
     std::unique_ptr<Ui::MainWindow> ui;
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 
-    std::unique_ptr<VideoRenderer> videoRenderer;
-    std::unique_ptr<EncoderViewModel> encoderViewModel;
-    std::shared_ptr<Qv2Component> mEncoder;
-
+    std::unique_ptr<EncoderTabViewModel> encoderTabViewModel;
     void resetEncoderUI();
     void setValidatorForEditText();
     void connectToDecoderUI(MainWindow* window);

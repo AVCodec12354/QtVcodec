@@ -33,48 +33,60 @@ void YUVSource::calculatePlaneSize() {
     const int halfHeight = (mHeight + 1) / 2;
 
     switch (mColorFormat) {
-        case QV2FormatYUV420Flexible:
-        case QV2FormatYUV420PackedPlanar:
-        case QV2FormatYUV420Planar:
+        case QV2_CF_YCBCR420:
+        case QV2_CF_YCBCR420_10LE:
+        case QV2_CF_YCBCR420_12LE:
             mNumOfPlane = 3;
             mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
             mPlaneInfo[PLANE_U].config(halfWidth, halfHeight);
             mPlaneInfo[PLANE_V].config(halfWidth, halfHeight);
             break;
 
-        case QV2FormatYUV420PackedSemiPlanar:
-        case QV2FormatYUV420SemiPlanar:
-        case QV2FormatYUVP010:
+        case QV2_CF_NV12:
+        case QV2_CF_NV21:
+        case QV2_CF_P010:
+        case QV2_CF_P012:
             mNumOfPlane = 2;
             mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
             mPlaneInfo[PLANE_UV].config(mWidth, halfHeight);
             break;
 
-        case QV2FormatYUV422Flexible:
-        case QV2FormatYUV422PackedPlanar:
-        case QV2FormatYUV422Planar:
+        case QV2_CF_YCBCR422:
+        case QV2_CF_YCBCR422_10LE:
+        case QV2_CF_YCBCR422_12LE:
             mNumOfPlane = 3;
             mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
             mPlaneInfo[PLANE_U].config(halfWidth, mHeight);
             mPlaneInfo[PLANE_V].config(halfWidth, mHeight);
             break;
 
-        case QV2FormatYUV422PackedSemiPlanar:
-        case QV2FormatYUV422SemiPlanar:
-        case QV2FormatYUVP210:
+        case QV2_CF_NV16:
+        case QV2_CF_P210:
+        case QV2_CF_P212:
             mNumOfPlane = 2;
             mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
-            mPlaneInfo[PLANE_UV].config(mWidth, mHeight);
+            mPlaneInfo[PLANE_UV].config(mWidth, mHeight); // UV gộp chung, kích thước bằng Y
             break;
 
-        case QV2FormatYUV444Flexible:
+        case QV2_CF_YCBCR444:
+        case QV2_CF_YCBCR444_10LE:
+        case QV2_CF_YCBCR444_12LE:
             mNumOfPlane = 3;
             mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
             mPlaneInfo[PLANE_U].config(mWidth, mHeight);
             mPlaneInfo[PLANE_V].config(mWidth, mHeight);
             break;
 
-        case QV2FormatYUV444Interleaved:
+        case QV2_CF_YUY2:
+        case QV2_CF_UYVY:
+        case QV2_CF_Y210:
+        case QV2_CF_Y212:
+            mNumOfPlane = 1;
+            mPlaneInfo[PLANE_Y].config(mWidth * 2, mHeight);
+            break;
+
+        case QV2_CF_Y410:
+        case QV2_CF_Y412:
             mNumOfPlane = 1;
             mPlaneInfo[PLANE_Y].config(mWidth * 3, mHeight);
             break;

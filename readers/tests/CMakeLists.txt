@@ -5,7 +5,7 @@ project(Qv2ComponentTests LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/outputs/tests)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/outputs/tests)
 
 add_executable(Qv2SourceTest
         ${CMAKE_SOURCE_DIR}/readers/implements/Y4MSource.cpp

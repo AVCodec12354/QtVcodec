@@ -54,28 +54,42 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
-        renderers/VideoGLWidget.cpp
-        renderers/VideoRenderer.cpp
+
         inc/Qv2Core/Qv2ComponentFactory.cpp
+
+        readers/implements/YUVSource.cpp
+        readers/implements/Y4MSource.cpp
+
+        renderers/implements/VideoRenderer.cpp
+        renderers/interfaces/VideoGLWidget.h
+
         codecs/apv/enc/Qv2ApvEncoder.cpp
         codecs/apv/dec/Qv2ApvDecoder.cpp
         codecs/hevc/enc/Qv2HevcEncoder.cpp
         codecs/hevc/dec/Qv2HevcDecoder.cpp
+
+        ui/helpers/QTLogger.cpp
         ui/view/mainwindow.cpp
         ui/view/mainwindow.ui
-        ui/viewmodels/EncoderViewModel.cpp
-        ui/helpers/QTLogger.cpp
+        ui/viewmodels/EncoderTabViewModel.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${openapv_lib_SOURCE_DIR}/inc
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc/Qv2Core
+
         ${CMAKE_CURRENT_SOURCE_DIR}/ui
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/helpers
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/view
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/viewmodels
-        ${CMAKE_CURRENT_SOURCE_DIR}/renderers
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/readers/interfaces
+        ${CMAKE_CURRENT_SOURCE_DIR}/readers/implements
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/renderers/interfaces
+        ${CMAKE_CURRENT_SOURCE_DIR}/renderers/implements
+
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc/Qv2Core
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs/apv/enc
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs/apv/dec
         ${CMAKE_CURRENT_SOURCE_DIR}/codecs/hevc/enc
