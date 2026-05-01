@@ -128,6 +128,34 @@ TEST_F(Qv2ComponentTest, FlushOperation) {
     mComponent->release();
 }
 
+TEST_F(Qv2ComponentTest, ErrorCallbackOnInvalidParam) {
+    TestComponentListener listener;
+    mComponent->setListener(&listener);
+
+    std::vector<Qv2Param*> params;
+    auto qpParam = std::make_shared<Qv2QPInput>();
+    qpParam->mQP = 999; // intentionally out of range (max is usually around 63-75)
+    params.push_back(qpParam.get());
+
+    // We expect configure to return an error AND potentially trigger onError if
+    // the implementation uses notifyError() for parameter validation.
+    Qv2Status status = mComponent->configure(params);
+    EXPECT_NE(status, QV2_OK);
+}
+
+TEST_F(Qv2ComponentTest, ForceErrorState) {
+    TestComponentListener listener;
+    mComponent->setListener(&listener);
+
+    // Manually trigger an error to verify callback and state transition
+    mComponent->notifyError(QV2_ERR_INTERNAL);
+
+    EXPECT_TRUE(listener.errorCalled);
+    EXPECT_EQ(listener.lastError, QV2_ERR_INTERNAL);
+    EXPECT_EQ(mComponent->getState(), Qv2Component::ERROR);
+    EXPECT_EQ(listener.lastState, Qv2Component::ERROR);
+}
+
 class TestComponentListener : public Qv2Component::Listener {
 public:
     void onWorkDone(std::weak_ptr<Qv2Component> component, std::vector<std::unique_ptr<Qv2Work>> workItems) override {

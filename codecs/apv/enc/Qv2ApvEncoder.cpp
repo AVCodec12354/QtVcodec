@@ -210,6 +210,9 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
         if (item->input->graphicBlocks().empty()) {
             QV2_LOGE("Input buffer has no graphic blocks");
             item->result = QV2_ERR_INVALID_ARG;
+            if (mListener) {
+                mListener->onError(weak_from_this(), QV2_ERR_INVALID_ARG);
+            }
             continue;
         }
 
@@ -227,6 +230,9 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
 
         if (codecDepth != mInputDepth) {
             QV2_LOGE("can not support if codecDepth != mInputDepth");
+            if (mListener) {
+                mListener->onError(weak_from_this(), QV2_ERR_UNSUPPORTED);
+            }
             return QV2_ERR_UNSUPPORTED;
         } else {
             inputFrames.frm[FRM_IDX].imgb = &srcImgb;
@@ -287,6 +293,9 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
         if (OAPV_FAILED(ret)) {
             QV2_LOGE("oapve_encode failed: %d", ret);
             item->result = QV2_ERR_INTERNAL;
+            if (mListener) {
+                mListener->onError(weak_from_this(), QV2_ERR_INTERNAL);
+            }
         } else {
             if (item->output && !item->output->linearBlocks().empty()) {
                 auto outBlock = item->output->linearBlocks()[0];
@@ -296,9 +305,15 @@ Qv2Status Qv2ApvEncoder::queue(std::vector <std::unique_ptr<Qv2Work>> items) {
                     item->result = QV2_OK;
                 } else {
                     item->result = QV2_ERR_BUFFER_OVERFLOW;
+                    if (mListener) {
+                        mListener->onError(weak_from_this(), QV2_ERR_BUFFER_OVERFLOW);
+                    }
                 }
             } else {
                 item->result = QV2_ERR_INVALID_ARG;
+                if (mListener) {
+                    mListener->onError(weak_from_this(), QV2_ERR_INVALID_ARG);
+                }
             }
         }
     }
