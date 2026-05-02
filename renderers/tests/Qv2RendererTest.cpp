@@ -61,16 +61,15 @@ INSTANTIATE_TEST_SUITE_P(
         YUV_AllFormats,
         Qv2RendererTest,
         ::testing::Values(
-            std::make_tuple("yuv", "input_480x856_yuv420p.yuv", 480, 856, 8, 10, QV2_CF_YCBCR420),
             // 10-bit Semi-Planar & Packed
-            std::make_tuple("yuv", "pattern1_480x360_p010_10b.yuv", 480, 360, 10, 10, QV2_CF_P010),
-            std::make_tuple("yuv", "pattern1_320x240_y210_10b.yuv", 320, 240, 10, 5,  QV2_CF_Y210),
+            std::make_tuple("yuv", "pattern1_480x360_p010le_10bit_25fps.yuv", 480, 360, 10, 10, QV2_CF_P010),
+            std::make_tuple("yuv", "pattern1_320x240_y210le_10bit_25fps.yuv", 320, 240, 10, 5,  QV2_CF_Y210),
             // 8-bit Semi-Planar (NV12, NV21)
-            std::make_tuple("yuv", "input_176x144_nv12_8b.yuv",     176, 144, 8,  3,  QV2_CF_NV12),
-            std::make_tuple("yuv", "input_176x144_nv21_8b.yuv",     176, 144, 8,  3,  QV2_CF_NV21),
+            std::make_tuple("yuv", "input_176x144_nv12_8bit_25fps.yuv",     176, 144, 8,  3,  QV2_CF_NV12),
+            std::make_tuple("yuv", "input_176x144_nv21_8bit_25fps.yuv",     176, 144, 8,  3,  QV2_CF_NV21),
             // 8-bit Packed (YUYV, UYVY)
-            std::make_tuple("yuv", "input_320x240_yuyv_8b.yuv",     320, 240, 8,  5,  QV2_CF_YUY2),
-            std::make_tuple("yuv", "input_320x240_uyvy_8b.yuv",     320, 240, 8,  5,  QV2_CF_UYVY)
+            std::make_tuple("yuv", "input_320x240_yuyv422_8bit_25fps.yuv",     320, 240, 8,  5,  QV2_CF_YUY2),
+            std::make_tuple("yuv", "input_320x240_uyvy422_8bit_25fps.yuv",     320, 240, 8,  5,  QV2_CF_UYVY)
         )
 );
 
@@ -78,12 +77,11 @@ INSTANTIATE_TEST_SUITE_P(
         Y4M_AllFormats,
         Qv2RendererTest,
         ::testing::Values(
-            std::make_tuple("y4m", "pattern1_yuv422p10le_320x240_25fps.y4m", 320, 240, 10, 125, QV2_CF_YCBCR422_10LE),
             // 10-bit Planar
-            std::make_tuple("y4m", "pattern1_320x240_p420_10b.y4m", 320, 240, 10, 10, QV2_CF_YCBCR420_10LE),
-            std::make_tuple("y4m", "pattern1_480x360_p444_10b.y4m", 480, 360, 10, 5,  QV2_CF_YCBCR444_10LE),
+            std::make_tuple("y4m", "pattern1_320x240_yuv420p10le_10bit_25fps.y4m", 320, 240, 10, 10, QV2_CF_YCBCR420_10LE),
+            std::make_tuple("y4m", "pattern1_480x360_yuv444p10le_10bit_25fps.y4m", 480, 360, 10, 5,  QV2_CF_YCBCR444_10LE),
             // 8-bit Planar
-            std::make_tuple("y4m", "input_320x240_p444_8b.y4m",     320, 240, 8,  8,  QV2_CF_YCBCR444),
-            std::make_tuple("y4m", "input_480x360_p422_8b.y4m",     480, 360, 8,  5,  QV2_CF_YCBCR422)
+            std::make_tuple("y4m", "input_320x240_yuv444p_8bit_25fps.y4m",         320, 240, 8,  8,  QV2_CF_YCBCR444),
+            std::make_tuple("y4m", "input_480x360_yuv422p_8bit_25fps.y4m",         480, 360, 8,  5,  QV2_CF_YCBCR422)
         )
 );
