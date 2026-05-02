@@ -6,7 +6,7 @@
 #include <chrono>
 
 EncoderTabViewModel::EncoderTabViewModel(VideoGLWidget *glWidget) {
-    videoWidget = qobject_cast<VideoGLWidget*>(glWidget);
+    mVideoWidget = qobject_cast<VideoGLWidget*>(glWidget);
     qRegisterMetaType<std::shared_ptr<Qv2Buffer>>("std::shared_ptr<Qv2Buffer>");
 }
 
@@ -20,12 +20,12 @@ EncoderTabViewModel::~EncoderTabViewModel() {
 void EncoderTabViewModel::start(const std::string &file) {
     if (mIsRunning) return;
     if (std::filesystem::path(file).extension() == ".y4m") {
-        rawSource = std::make_shared<Y4MSource>();
+        mRawSource = std::make_shared<Y4MSource>();
     } else {
-        rawSource = std::make_shared<YUVSource>();
+        mRawSource = std::make_shared<YUVSource>();
     }
 
-    rawSource->setDataSource(file, mWidth, mHeight, mBitDepth, QV2_CF_YCBCR422_10LE);
+    mRawSource->setDataSource(file, mWidth, mHeight, mBitDepth, QV2_CF_YCBCR422_10LE);
     mIsRunning = true;
     int fps = (mFPS > 0) ? mFPS : 25;
     auto frameDuration = std::chrono::milliseconds(1000 / fps);
@@ -33,9 +33,9 @@ void EncoderTabViewModel::start(const std::string &file) {
     mRenderThread = std::thread([this, frameDuration]() {
         while (mIsRunning) {
             auto nextFrameTime = std::chrono::steady_clock::now() + frameDuration;
-            auto frame = rawSource->getBuffer();
+            auto frame = mRawSource->getBuffer();
             if (frame) {
-                QMetaObject::invokeMethod(videoWidget, "bindBuffer",
+                QMetaObject::invokeMethod(mVideoWidget, "bindBuffer",
                                           Qt::QueuedConnection,
                                           Q_ARG(std::shared_ptr<Qv2Buffer>, frame));
                 // mEncoder->encodeFrame(frame);
@@ -50,7 +50,7 @@ void EncoderTabViewModel::start(const std::string &file) {
 
 void EncoderTabViewModel::stop() {
     mIsRunning = false;
-    rawSource.reset();
+    mRawSource.reset();
     if (mRenderThread.joinable()) {
         mRenderThread.join();
     }

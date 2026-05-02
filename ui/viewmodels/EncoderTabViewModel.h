@@ -50,8 +50,8 @@ public:
 private:
     std::thread mRenderThread;
     std::atomic<bool> mIsRunning{false};
-    std::shared_ptr<Qv2Source> rawSource;
-    VideoGLWidget* videoWidget;
+    std::shared_ptr<Qv2Source> mRawSource;
+    VideoGLWidget* mVideoWidget;
 
     int mWidth, mHeight, mFPS, mBitDepth, mPixelFormat;
 };

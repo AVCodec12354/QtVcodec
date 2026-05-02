@@ -30,7 +30,7 @@ private:
             0.0f, 0.0f,
             1.0f, 0.0f
     };
-    bool isInitialized = false;
-    GLuint shaderProgram, vShader, fShader;
+    bool mIsInitialized = false;
+    GLuint mShaderProgram, mVertexShader, mFragmentShader;
     GLuint mTextures[MAX_NUM_PLANES] = {0};
 };

@@ -6,18 +6,18 @@
 
 VideoRenderer::VideoRenderer() {
     std::cout << __FUNCTION__  << std::endl;
-    isInitialized = false;
+    mIsInitialized = false;
 }
 
 VideoRenderer::~VideoRenderer() {
     std::cout << __FUNCTION__  << std::endl;
-    if (QOpenGLContext::currentContext() && isInitialized) {
+    if (QOpenGLContext::currentContext() && mIsInitialized) {
         mWidget->makeCurrent();
         glDeleteTextures(MAX_NUM_PLANES, mTextures);
-        glDeleteProgram(shaderProgram);
+        glDeleteProgram(mShaderProgram);
         mWidget->doneCurrent();
     }
-    isInitialized = false;
+    mIsInitialized = false;
 }
 
 void VideoRenderer::createShader(GLuint &shader, GLuint type, const char* shaderCode) {
@@ -37,26 +37,26 @@ void VideoRenderer::createShader(GLuint &shader, GLuint type, const char* shader
 void VideoRenderer::initOpenGL(int numOfPlane) {
     std::cout << __FUNCTION__ << std::endl;
     initializeOpenGLFunctions();
-    createShader(vShader, GL_VERTEX_SHADER, vertexShader);
+    createShader(mVertexShader, GL_VERTEX_SHADER, vertexShader);
     std::string fragmentShader;
     generateFragmentShader(fragmentShader, numOfPlane);
     std::cout << "Shader code:\n" << fragmentShader << std::endl;
-    createShader(fShader, GL_FRAGMENT_SHADER, fragmentShader.c_str());
+    createShader(mFragmentShader, GL_FRAGMENT_SHADER, fragmentShader.c_str());
 
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vShader);
-    glAttachShader(shaderProgram, fShader);
-    glLinkProgram(shaderProgram);
+    mShaderProgram = glCreateProgram();
+    glAttachShader(mShaderProgram, mVertexShader);
+    glAttachShader(mShaderProgram, mFragmentShader);
+    glLinkProgram(mShaderProgram);
 
     int success;
     char infoLog[MAX_LOG_LENGTH];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(shaderProgram, MAX_LOG_LENGTH, nullptr, infoLog);
+        glGetProgramInfoLog(mShaderProgram, MAX_LOG_LENGTH, nullptr, infoLog);
         std::cout << "Program linking error: " << infoLog << std::endl;
     }
-    glDeleteShader(vShader);
-    glDeleteShader(fShader);
+    glDeleteShader(mVertexShader);
+    glDeleteShader(mFragmentShader);
 
     glGenTextures(numOfPlane, mTextures);
     for(int i = 0; i < numOfPlane; i++) {
@@ -67,7 +67,7 @@ void VideoRenderer::initOpenGL(int numOfPlane) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
-    isInitialized = true;
+    mIsInitialized = true;
 }
 
 void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
@@ -79,12 +79,12 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
     int bitDepth  = block->bitDepth();
     int numPlanes = block->numPlanes();
 
-    if (!isInitialized) {
+    if (!mIsInitialized) {
         initOpenGL(numPlanes);
         updateSurfaceSize(width, height);
     }
 
-    glUseProgram(shaderProgram);
+    glUseProgram(mShaderProgram);
     for (int i = 0; i < numPlanes; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, mTextures[i]);
@@ -121,23 +121,23 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
 
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, pW, pH, 0, glFormat, type, block->addr(i));
         std::string samplerName = "tex" + std::to_string(i);
-        glUniform1i(glGetUniformLocation(shaderProgram, samplerName.c_str()), i);
+        glUniform1i(glGetUniformLocation(mShaderProgram, samplerName.c_str()), i);
     }
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
-    glUniform1i(glGetUniformLocation(shaderProgram, "isLimitedRange"), 0);
-    glUniform1i(glGetUniformLocation(shaderProgram, "isPacked"), CF_IS_PACKED(format));
-    glUniform1i(glGetUniformLocation(shaderProgram, "isSemiPlanar"), CF_IS_SEMI_PLANAR(format));
-    glUniform1i(glGetUniformLocation(shaderProgram, "swapUV"), (format == QV2_CF_NV21));
-    glUniform2f(glGetUniformLocation(shaderProgram, "texSize"), (float)width, (float)height);
+    glUniform1i(glGetUniformLocation(mShaderProgram, "isLimitedRange"), 0);
+    glUniform1i(glGetUniformLocation(mShaderProgram, "isPacked"), CF_IS_PACKED(format));
+    glUniform1i(glGetUniformLocation(mShaderProgram, "isSemiPlanar"), CF_IS_SEMI_PLANAR(format));
+    glUniform1i(glGetUniformLocation(mShaderProgram, "swapUV"), (format == QV2_CF_NV21));
+    glUniform2f(glGetUniformLocation(mShaderProgram, "texSize"), (float)width, (float)height);
 
     float bitScale = 1.0f;
     if (bitDepth == 10) bitScale = 65535.0f / 1023.0f;
     else if (bitDepth == 12) bitScale = 65535.0f / 4095.0f;
 
     if (CF_IS_SEMI_PLANAR(format) || CF_IS_PACKED(format)) bitScale = 1.0f;
-    glUniform1f(glGetUniformLocation(shaderProgram, "bitScale"), bitScale);
-    glUniformMatrix3fv(glGetUniformLocation(shaderProgram, "cs_matrix"), 1, GL_TRUE, bt709);
+    glUniform1f(glGetUniformLocation(mShaderProgram, "bitScale"), bitScale);
+    glUniformMatrix3fv(glGetUniformLocation(mShaderProgram, "cs_matrix"), 1, GL_TRUE, bt709);
     draw();
     glFlush();
 }
@@ -146,11 +146,11 @@ void VideoRenderer::draw() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    GLint vertexInLoc = glGetAttribLocation(shaderProgram, "vertexIn");
+    GLint vertexInLoc = glGetAttribLocation(mShaderProgram, "vertexIn");
     glEnableVertexAttribArray(vertexInLoc);
     glVertexAttribPointer(vertexInLoc, 2, GL_FLOAT, GL_FALSE, 0, vertices);
 
-    GLint textureInLoc = glGetAttribLocation(shaderProgram, "textureIn");
+    GLint textureInLoc = glGetAttribLocation(mShaderProgram, "textureIn");
     glEnableVertexAttribArray(textureInLoc);
     glVertexAttribPointer(textureInLoc, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
 
