@@ -137,6 +137,28 @@ enum Qv2ColorFormat : int32_t {
 #define QV2_SUBSAMPLING_420  1
 #define QV2_SUBSAMPLING_422  2
 #define QV2_SUBSAMPLING_444  3
+
+#define CF_IS_SEMI_PLANAR(fmt) ( \
+    (fmt) == QV2_CF_NV12 ||        \
+    (fmt) == QV2_CF_NV21 ||        \
+    (fmt) == QV2_CF_P010 ||        \
+    (fmt) == QV2_CF_P012 ||        \
+    (fmt) == QV2_CF_NV16 ||        \
+    (fmt) == QV2_CF_P210 ||        \
+    (fmt) == QV2_CF_P212           \
+)
+
+#define CF_IS_PACKED(fmt) ( \
+    ((fmt) == QV2_CF_YUY2 ||         \
+    (fmt) == QV2_CF_Y210  ||         \
+    (fmt) == QV2_CF_Y212)  ? 1 :     \
+                                     \
+    ((fmt) == QV2_CF_UYVY) ? 2 :     \
+                                     \
+    ((fmt) == QV2_CF_Y410 ||         \
+    (fmt) == QV2_CF_Y412)  ? 3 : 0   \
+)
+
 #define QV2_GET_SUBSAMPLING(fmt) ( \
     /* 420 */ \
     ((fmt) == QV2_CF_YCBCR420 || \
@@ -162,6 +184,7 @@ enum Qv2ColorFormat : int32_t {
     /* default 444 */ \
     QV2_SUBSAMPLING_444 \
 )
+
 #define QV2_GET_PLANE_SIZE(fmt, plane, width, height, outW, outH) \
 do { \
     outW = width; \

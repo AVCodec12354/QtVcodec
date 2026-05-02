@@ -11,9 +11,13 @@ VideoRenderer::VideoRenderer() {
 
 VideoRenderer::~VideoRenderer() {
     std::cout << __FUNCTION__  << std::endl;
+    if (QOpenGLContext::currentContext() && isInitialized) {
+        mWidget->makeCurrent();
+        glDeleteTextures(MAX_NUM_PLANES, mTextures);
+        glDeleteProgram(shaderProgram);
+        mWidget->doneCurrent();
+    }
     isInitialized = false;
-    glDeleteTextures(MAX_NUM_PLANES, mTextures);
-    glDeleteProgram(shaderProgram);
 }
 
 void VideoRenderer::createShader(GLuint &shader, GLuint type, const char* shaderCode) {
@@ -68,13 +72,12 @@ void VideoRenderer::initOpenGL(int numOfPlane) {
 
 void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
     if (!buffer || buffer->graphicBlocks().empty()) return;
-
     auto block = buffer->graphicBlocks()[0];
-    int numPlanes = block->numPlanes();
+    int format    = block->format();
     int width     = block->width();
     int height    = block->height();
     int bitDepth  = block->bitDepth();
-    int format    = block->format();
+    int numPlanes = block->numPlanes();
 
     if (!isInitialized) {
         initOpenGL(numPlanes);
@@ -82,83 +85,61 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
     }
 
     glUseProgram(shaderProgram);
-
-    // 1. Upload Planes
-    std::vector<std::string> names = getSamplerNames(numPlanes);
     for (int i = 0; i < numPlanes; ++i) {
-        uint8_t* addr = block->addr(i);
-        int stride    = block->stride(i);
-
-        int pWidth = width;
-        int pHeight = height;
-
-        // Logic tính kích thước Plane chuẩn xác hơn
-        if (i > 0) {
-            // Hầu hết format YUV là 4:2:0 (NV12, P010, I420) -> Chia cả 2
-            pWidth = width / 2;
-            pHeight = height / 2;
-
-            // Nếu là 4:2:2 (NV16, P210) -> Chỉ chia Width
-            if (format == 0x02 /* Thay bằng enum 422 của bạn */) {
-                pHeight = height;
-            }
-            // Nếu là 4:4:4 -> Không chia gì cả
-        }
-
-        GLenum internalFormat, formatGL;
-        GLenum type = (bitDepth <= 8) ? GL_UNSIGNED_BYTE : GL_UNSIGNED_SHORT;
-
-        if (numPlanes == 2) {
-            internalFormat = (i == 0) ? (bitDepth <= 8 ? GL_R8 : GL_R16) : (bitDepth <= 8 ? GL_RG8 : GL_RG16);
-            formatGL = (i == 0) ? GL_RED : GL_RG;
-        } else {
-            internalFormat = (bitDepth <= 8) ? GL_R8 : GL_R16;
-            formatGL = GL_RED;
-        }
-
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, mTextures[i]);
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        int bytesPerPixel = (bitDepth <= 8) ? 1 : 2;
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, stride / bytesPerPixel);
+        int pW, pH;
+        QV2_GET_PLANE_SIZE(format, i, width, height, pW, pH);
+        GLenum internalFormat, glFormat;
+        GLenum type = (bitDepth <= 8) ? GL_UNSIGNED_BYTE : GL_UNSIGNED_SHORT;
 
-        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, pWidth, pHeight, 0, formatGL, type, addr);
-        glUniform1i(glGetUniformLocation(shaderProgram, names[i].c_str()), i);
+        if (CF_IS_PACKED(format)) {
+            // Packed format (YUY2, Y210...)
+            internalFormat = (bitDepth <= 8) ? GL_RGBA8 : GL_RGBA16;
+            glFormat = GL_RGBA;
+            pW = width / 2;
+        } else if (CF_IS_SEMI_PLANAR(format) && i == 1) {
+            // Semi-planar (NV12, P010...)
+            internalFormat = (bitDepth <= 8) ? GL_RG8 : GL_RG16;
+            glFormat = GL_RG;
+            pW = width / 2;
+        } else {
+            // Planar
+            internalFormat = (bitDepth <= 8) ? GL_R8 : GL_R16;
+            glFormat = GL_RED;
+        }
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        int bytesPerComponent = (bitDepth <= 8) ? 1 : 2;
+        int componentsPerPixel = (glFormat == GL_RG) ? 2 : (glFormat == GL_RGBA ? 4 : 1);
+        int bpp = bytesPerComponent * componentsPerPixel;
+        if (block->stride(i) % bpp != 0) {
+            std::cerr << "Warning: Stride is not a multiple of pixel size!" << std::endl;
+        }
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, block->stride(i) / bpp);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, pW, pH, 0, glFormat, type, block->addr(i));
+        std::string samplerName = "tex" + std::to_string(i);
+        glUniform1i(glGetUniformLocation(shaderProgram, samplerName.c_str()), i);
     }
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
-    // 2. BitScale (🔥 SỬA LỖI ĐEN MÀN HÌNH)
-    // Nếu 10-bit và dùng GL_UNSIGNED_SHORT, giá trị 1023 sẽ là 1023/65535 = 0.015 (Rất tối)
-    // Chúng ta cần nhân với 64.0 để đưa nó về dải 0.0 - 1.0
+    glUniform1i(glGetUniformLocation(shaderProgram, "isLimitedRange"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "isPacked"), CF_IS_PACKED(format));
+    glUniform1i(glGetUniformLocation(shaderProgram, "isSemiPlanar"), CF_IS_SEMI_PLANAR(format));
+    glUniform1i(glGetUniformLocation(shaderProgram, "swapUV"), (format == QV2_CF_NV21));
+    glUniform2f(glGetUniformLocation(shaderProgram, "texSize"), (float)width, (float)height);
+
     float bitScale = 1.0f;
-    if (bitDepth == 10) bitScale = 64.0f;
-    else if (bitDepth == 12) bitScale = 16.0f;
+    if (bitDepth == 10) bitScale = 65535.0f / 1023.0f;
+    else if (bitDepth == 12) bitScale = 65535.0f / 4095.0f;
+
+    if (CF_IS_SEMI_PLANAR(format) || CF_IS_PACKED(format)) bitScale = 1.0f;
     glUniform1f(glGetUniformLocation(shaderProgram, "bitScale"), bitScale);
-
-    // 3. Color Matrix (Dùng GL_FALSE và ma trận chuẩn)
-    // Tôi sẽ cung cấp ma trận BT.709 chuẩn Row-Major
-    static const float bt709_matrix[] = {
-            1.1644f,  0.0000f,  1.7927f,
-            1.1644f, -0.2132f, -0.5329f,
-            1.1644f,  2.1124f,  0.0000f
-    };
-    glUniformMatrix3fv(glGetUniformLocation(shaderProgram, "cs_matrix"), 1, GL_TRUE, bt709_matrix);
-
-    // 4. Uniforms & Flags
-    // Đưa các giá trị offset về 0.0 nếu là Full Range để test trước
-    glUniform1f(glGetUniformLocation(shaderProgram, "yOffset"),  16.0f/255.0f);
-    glUniform1f(glGetUniformLocation(shaderProgram, "yRange"),   219.0f/255.0f);
-    glUniform1f(glGetUniformLocation(shaderProgram, "uvOffset"), 128.0f/255.0f);
-    glUniform1f(glGetUniformLocation(shaderProgram, "uvRange"),  224.0f/255.0f);
-
-    glUniform1i(glGetUniformLocation(shaderProgram, "isLimitedRange"), 1);
-    glUniform1i(glGetUniformLocation(shaderProgram, "isNV21"), (format == 0x15));
-
-    bool isYV12 = (numPlanes == 3 && block->addr(1) > block->addr(2));
-    glUniform1i(glGetUniformLocation(shaderProgram, "isYV12"), isYV12);
-
+    glUniformMatrix3fv(glGetUniformLocation(shaderProgram, "cs_matrix"), 1, GL_TRUE, bt709);
     draw();
+    glFlush();
 }
 
 void VideoRenderer::draw() {

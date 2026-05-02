@@ -106,3 +106,4 @@ target_link_libraries(${PROJECT_NAME}
 # Thêm thư mục tests
 add_subdirectory(codecs/tests)
 add_subdirectory(readers/tests)
+add_subdirectory(renderers/tests)

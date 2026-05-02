@@ -39,6 +39,6 @@ protected:
             mWidget->updateGeometry();
         }
     }
-private:
+
     QPointer<QOpenGLWidget> mWidget = nullptr;
 };

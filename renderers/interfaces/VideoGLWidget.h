@@ -23,11 +23,12 @@ public:
     }
 
     void bindBuffer(std::shared_ptr<Qv2Buffer> buffer) {
+        std::cout << __FUNCTION__ << std::endl;
+        makeCurrent();
         {
             std::lock_guard<std::mutex> lock(mMutex);
             mCurrentBuffer = buffer;
         }
-        std::cout << __FUNCTION__ << std::endl;
         QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
     }
 protected:
