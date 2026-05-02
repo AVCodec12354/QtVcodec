@@ -20,6 +20,8 @@ public:
     ~MainWindow();
 
 private:
+    void parseFileNameAndSetUI(const QString &filePath);
+
     std::unique_ptr<Ui::MainWindow> ui;
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 

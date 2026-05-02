@@ -25,7 +25,7 @@ void EncoderTabViewModel::start(const std::string &file) {
         mRawSource = std::make_shared<YUVSource>();
     }
 
-    mRawSource->setDataSource(file, mWidth, mHeight, mBitDepth, QV2_CF_YCBCR422_10LE);
+    mRawSource->setDataSource(file, mWidth, mHeight, mBitDepth, mPixelFormat);
     mIsRunning = true;
     int fps = (mFPS > 0) ? mFPS : 25;
     auto frameDuration = std::chrono::milliseconds(1000 / fps);
@@ -35,11 +35,13 @@ void EncoderTabViewModel::start(const std::string &file) {
             auto nextFrameTime = std::chrono::steady_clock::now() + frameDuration;
             auto frame = mRawSource->getBuffer();
             if (frame) {
+                QTDebug("EncoderTabViewModel", "Frame received");
                 QMetaObject::invokeMethod(mVideoWidget, "bindBuffer",
                                           Qt::QueuedConnection,
                                           Q_ARG(std::shared_ptr<Qv2Buffer>, frame));
                 // mEncoder->encodeFrame(frame);
             } else {
+                QTInfo("EncoderTabViewModel", "EOS received");
                 mIsRunning = false;
                 break;
             }
@@ -56,86 +58,35 @@ void EncoderTabViewModel::stop() {
     }
 }
 
-void EncoderTabViewModel::setWidth(int value) {
-    mWidth = value;
-}
-
-void EncoderTabViewModel::setHeight(int value) {
-    mHeight = value;
-}
-
-void EncoderTabViewModel::setFPS(int value) {
-    mFPS = value;
-}
-
-void EncoderTabViewModel::setBitDepth(int value) {
-    mBitDepth = value;
-}
-
 void EncoderTabViewModel::setPixelFormat(string value) {
-    // TODO
-}
-
-void EncoderTabViewModel::enableBitrateABR(bool value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setQuantizationParameters(int value) {
-    // TODO
+    mPixelFormat = getValue(PixelFormatMap, value, QV2_CF_UNKNOWN);
 }
 
 void EncoderTabViewModel::setProfile(string value) {
-    // TODO
+    mProfile = getValue(ProfileMap, value, static_cast<Qv2APVProfile>(0));
 }
 
 void EncoderTabViewModel::setLevel(int value) {
-    // TODO
+    int finalLevelValue = (mBand << 8) | (value & 0xFF);
+    mLevel = static_cast<Qv2APVLevel>(finalLevelValue);
 }
 
 void EncoderTabViewModel::setFamily(string value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setBand(int value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setMaxCU(int value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setSpeedCU(int value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setWidthOfTile(int value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setHeightOfTile(int value) {
-    // TODO
+    mFamily = getValue(FamilyMap, value, static_cast<Qv2APVFamily>(0));
 }
 
 void EncoderTabViewModel::setPrimaries(string value) {
-    // TODO
+    mColorPrimaries = getValue(PrimariesMap, value, QV2_CP_UNKNOWN);
 }
 
 void EncoderTabViewModel::setTransfer(string value) {
-    // TODO
+    mColorTransfer = getValue(TransferMap, value, QV2_CT_UNKNOWN);
 }
 
 void EncoderTabViewModel::setMatrix(string value) {
-    // TODO
+    mColorMatrix = getValue(MatrixMap, value, QV2_CM_UNKNOWN);
 }
 
 void EncoderTabViewModel::setRange(string value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setMasteringDisplay(int value) {
-    // TODO
-}
-
-void EncoderTabViewModel::setContentLightLevel(int value) {
-    // TODO
+    mColorRange = (value == "full") ? QV2_CR_FULL : QV2_CR_LIMITED;
 }

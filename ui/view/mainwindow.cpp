@@ -14,16 +14,9 @@ MainWindow::MainWindow(QWidget *parent)
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
-
-    // TODO: Temporary for quickly testing
-    ui->input_path->setText("/Volumes/D/Projects/pattern1_yuv422p10le_320x240_25fps.y4m");
     encoderTabViewModel = std::make_unique<EncoderTabViewModel>(ui->openGLWidget);
-    encoderTabViewModel->setWidth(320);
-    encoderTabViewModel->setHeight(240);
-    encoderTabViewModel->setFPS(25);
-    encoderTabViewModel->setBitDepth(10);
 }
-//
+
 //void MainWindow::onPlaying(long currentFrame, long totalFrame) {
 //    if (videoRenderer) {
 //        int progress = static_cast<int>((currentFrame * 100) / totalFrame);
@@ -39,11 +32,31 @@ MainWindow::MainWindow(QWidget *parent)
 //    QTInfo("Encoder", "Playback/Encoding finished.");
 //}
 
+void MainWindow::parseFileNameAndSetUI(const QString &filePath) {
+    QString width = "1920", height = "1080", bit = "8", fps = "30";
+    QStringList parts = QFileInfo(filePath).baseName().toLower().split('_');
+    if (parts.size() < 5) return;
+
+    QStringList res = parts[1].split('x');
+    if (res.size() == 2) {
+        width = res[0]; height = res[1];
+    }
+    bit = parts[3].remove("bit").remove("b");
+    fps = parts[4].remove("fps");
+
+    ui->width->setText(width);
+    ui->height->setText(height);
+    ui->fps->setText(fps);
+    ui->bitdepth->setCurrentText(bit);
+
+    QTInfo("UI", QString("Config Set: %1x%2, %3-bit, %4 FPS")
+        .arg(width, height, bit, fps));
+}
+
 void MainWindow::resetEncoderUI() {
-//    ui->input_path->setText("");
+    ui->input_path->setText("");
     ui->output_path->setText("");
     ui->reconstructed_path->setText("");
-//    ui->text_show_log->setText("");
     ui->encoded_frame->setText("Frames: 0/0");
     ui->time_encoding->setText("Time Encoding: 00:00:00");
     ui->progressBar->setValue(0);
@@ -105,6 +118,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!filePath.isEmpty()) {
             lastInputDir = QFileInfo(filePath).absolutePath();
             ui->input_path->setText(filePath);
+            parseFileNameAndSetUI(filePath);
         }
     });
     connect(ui->btn_outputBrowse, &QPushButton::clicked, window, [this](){

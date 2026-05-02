@@ -3045,7 +3045,7 @@
                     </item>
                     <item>
                      <property name="text">
-                      <string>None</string>
+                      <string>YCbCr420</string>
                      </property>
                     </item>
                     <item>
@@ -3063,9 +3063,71 @@
                       <string>YCbCr4444</string>
                      </property>
                     </item>
+                    <!-- Semi-Planar Formats -->
                     <item>
                      <property name="text">
-                      <string>YCbCR_PLANAR2</string>
+                      <string>NV12</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>NV21</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>NV16</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P010</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P210</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P012</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P212</string>
+                     </property>
+                    </item>
+                    <!-- Packed Formats -->
+                    <item>
+                     <property name="text">
+                      <string>YUY2</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>UYVY</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y210</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y410</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y212</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y412</string>
                      </property>
                     </item>
                    </widget>
