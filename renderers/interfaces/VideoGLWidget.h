@@ -22,6 +22,7 @@ public:
         doneCurrent();
     }
 
+public slots:
     void bindBuffer(std::shared_ptr<Qv2Buffer> buffer) {
         std::cout << __FUNCTION__ << std::endl;
         makeCurrent();

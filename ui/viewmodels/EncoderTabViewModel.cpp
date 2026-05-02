@@ -7,6 +7,7 @@
 
 EncoderTabViewModel::EncoderTabViewModel(VideoGLWidget *glWidget) {
     videoWidget = qobject_cast<VideoGLWidget*>(glWidget);
+    qRegisterMetaType<std::shared_ptr<Qv2Buffer>>("std::shared_ptr<Qv2Buffer>");
 }
 
 EncoderTabViewModel::~EncoderTabViewModel() {
@@ -18,33 +19,31 @@ EncoderTabViewModel::~EncoderTabViewModel() {
 
 void EncoderTabViewModel::start(const std::string &file) {
     if (mIsRunning) return;
-    rawSource = std::make_shared<Y4MSource>();
+    if (std::filesystem::path(file).extension() == ".y4m") {
+        rawSource = std::make_shared<Y4MSource>();
+    } else {
+        rawSource = std::make_shared<YUVSource>();
+    }
 
     rawSource->setDataSource(file, mWidth, mHeight, mBitDepth, QV2_CF_YCBCR422_10LE);
     mIsRunning = true;
     int fps = (mFPS > 0) ? mFPS : 25;
-    long durationPerFPS = 1000 / fps;
+    auto frameDuration = std::chrono::milliseconds(1000 / fps);
 
-    mRenderThread = std::thread([this, durationPerFPS]() {
+    mRenderThread = std::thread([this, frameDuration]() {
         while (mIsRunning) {
-            auto startTime = std::chrono::steady_clock::now();
+            auto nextFrameTime = std::chrono::steady_clock::now() + frameDuration;
             auto frame = rawSource->getBuffer();
             if (frame) {
-                QTDebug("EncoderTabViewModel", "Render frame...");
-                videoWidget->bindBuffer(frame);
+                QMetaObject::invokeMethod(videoWidget, "bindBuffer",
+                                          Qt::QueuedConnection,
+                                          Q_ARG(std::shared_ptr<Qv2Buffer>, frame));
+                // mEncoder->encodeFrame(frame);
             } else {
-                QTInfo("EncoderTabViewModel", "Got EOS frame!");
                 mIsRunning = false;
                 break;
             }
-
-            auto endTime = std::chrono::steady_clock::now();
-            auto processingTime = std::chrono::duration<double, std::milli>(endTime - startTime).count();
-
-            long sleepTime = durationPerFPS - processingTime;
-            if (sleepTime > 0) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-            }
+            std::this_thread::sleep_until(nextFrameTime);
         }
     });
 }
