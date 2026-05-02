@@ -50,11 +50,6 @@ protected:
             mRenderer->renderFrame(frameToRender);
         }
     }
-
-    void resizeGL(int w, int h) override {
-        std::cout << __FUNCTION__ << std::endl;
-        glViewport(0, 0, w, h);
-    }
 private:
     std::unique_ptr<Qv2Renderer> mRenderer;
     std::shared_ptr<Qv2Buffer> mCurrentBuffer;

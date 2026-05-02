@@ -9,9 +9,12 @@ MainWindow::MainWindow(QWidget *parent)
         , ui(std::make_unique<Ui::MainWindow>())
 {
     ui->setupUi(this);
+    ui->openGLWidget->setMinimumSize(1, 1);
+    ui->openGLWidget->show();
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
+
     // TODO: Temporary for quickly testing
     ui->input_path->setText("/Volumes/D/Projects/pattern1_yuv422p10le_320x240_25fps.y4m");
     encoderTabViewModel = std::make_unique<EncoderTabViewModel>(ui->openGLWidget);
@@ -19,9 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
     encoderTabViewModel->setHeight(240);
     encoderTabViewModel->setFPS(25);
     encoderTabViewModel->setBitDepth(10);
-
-    ui->openGLWidget->setMinimumSize(320, 240);
-    ui->openGLWidget->show();
 }
 //
 //void MainWindow::onPlaying(long currentFrame, long totalFrame) {
