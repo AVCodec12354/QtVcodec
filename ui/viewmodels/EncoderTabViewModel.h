@@ -77,6 +77,20 @@ static const unordered_map<string, Qv2ColorFormat> PixelFormatMap = {
         {"YCbCr444", QV2_CF_YCBCR444},
         {"YCbCr4444", QV2_CF_YCBCR4444},
 
+        // Planar Formats (10-bit LE)
+        {"YCbCr400_10LE", QV2_CF_YCBCR400_10LE},
+        {"YCbCr420_10LE", QV2_CF_YCBCR420_10LE},
+        {"YCbCr422_10LE", QV2_CF_YCBCR422_10LE},
+        {"YCbCr444_10LE", QV2_CF_YCBCR444_10LE},
+        {"YCbCr4444_10LE", QV2_CF_YCBCR4444_10LE},
+
+        // Planar Formats (12-bit LE)
+        {"YCbCr400_12LE", QV2_CF_YCBCR400_12LE},
+        {"YCbCr420_12LE", QV2_CF_YCBCR420_12LE},
+        {"YCbCr422_12LE", QV2_CF_YCBCR422_12LE},
+        {"YCbCr444_12LE", QV2_CF_YCBCR444_12LE},
+        {"YCbCr4444_12LE", QV2_CF_YCBCR4444_12LE},
+
         // Semi-Planar Formats
         {"NV12", QV2_CF_NV12},
         {"NV21", QV2_CF_NV21},

@@ -3038,6 +3038,7 @@
                     <property name="sizeAdjustPolicy">
                      <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
                     </property>
+                    <!-- Planar Formats (8-bit) -->
                     <item>
                      <property name="text">
                       <string>YCbCr400</string>
@@ -3061,6 +3062,58 @@
                     <item>
                      <property name="text">
                       <string>YCbCr4444</string>
+                     </property>
+                    </item>
+                    <!-- Planar Formats (10-bit LE) -->
+                    <item>
+                     <property name="text">
+                      <string>YCbCr400_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr420_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr422_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr444_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr4444_10LE</string>
+                     </property>
+                    </item>
+                    <!-- Planar Formats (12-bit LE) -->
+                    <item>
+                     <property name="text">
+                      <string>YCbCr400_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr420_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr422_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr444_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr4444_12LE</string>
                      </property>
                     </item>
                     <!-- Semi-Planar Formats -->
