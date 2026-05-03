@@ -6,7 +6,11 @@
 #define Y4M_HEADER_START_SIZE 9
 
 void Y4MSource::setDataSource(const std::string &filePath, int width, int height,
-                              int bitDepth, Qv2ColorFormat colorFormat) {
+                              int bitDepth, Qv2ColorFormat colorFormat,
+                              Qv2ColorPrimaries colorPrimaries,
+                              Qv2ColorTransfer colorTransfer,
+                              Qv2ColorMatrix colorMatrix,
+                              Qv2ColorRange colorRange) {
     YUVSource::setDataSource(filePath, width, height, bitDepth, colorFormat);
 
     if (isY4M()) {

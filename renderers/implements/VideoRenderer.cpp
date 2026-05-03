@@ -1,6 +1,7 @@
 #include "VideoRenderer.h"
 
 #include <Program.h>
+#include <Qv2Constants.h>
 
 #define MAX_LOG_LENGTH 512
 
@@ -79,12 +80,31 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
     int bitDepth  = block->bitDepth();
     int numPlanes = block->numPlanes();
 
-    if (!mIsInitialized) {
-        initOpenGL(numPlanes);
-        updateSurfaceSize(width, height);
+    if (mIsInitialized &&
+        (mCurrentNumPlanes != numPlanes ||
+        mCurrentWidth != width ||
+        mCurrentHeight != height)
+    ) {
+        mWidget->makeCurrent();
+        glDeleteTextures(mCurrentNumPlanes, mTextures);
+        glDeleteProgram(mShaderProgram);
+        mIsInitialized = false;
     }
 
+    if (!mIsInitialized) {
+        initOpenGL(numPlanes);
+        QMetaObject::invokeMethod(mWidget, [this, width, height]() {
+            this->updateSurfaceSize(width, height);
+        }, Qt::QueuedConnection);
+
+        mCurrentNumPlanes = numPlanes;
+        mCurrentWidth = width;
+        mCurrentHeight = height;
+    }
+    glViewport(0, 0, mWidget->width(), mWidget->height());
+
     glUseProgram(mShaderProgram);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     for (int i = 0; i < numPlanes; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, mTextures[i]);
@@ -98,24 +118,22 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
             // Packed format (YUY2, Y210...)
             internalFormat = (bitDepth <= 8) ? GL_RGBA8 : GL_RGBA16;
             glFormat = GL_RGBA;
-            pW = width / 2;
         } else if (CF_IS_SEMI_PLANAR(format) && i == 1) {
             // Semi-planar (NV12, P010...)
             internalFormat = (bitDepth <= 8) ? GL_RG8 : GL_RG16;
             glFormat = GL_RG;
-            pW = width / 2;
         } else {
             // Planar
             internalFormat = (bitDepth <= 8) ? GL_R8 : GL_R16;
             glFormat = GL_RED;
         }
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         int bytesPerComponent = (bitDepth <= 8) ? 1 : 2;
         int componentsPerPixel = (glFormat == GL_RG) ? 2 : (glFormat == GL_RGBA ? 4 : 1);
         int bpp = bytesPerComponent * componentsPerPixel;
-        if (block->stride(i) % bpp != 0) {
+        if (block->stride(i) < pW * bpp) {
             std::cerr << "Warning: Stride is not a multiple of pixel size!" << std::endl;
+            continue;
         }
         glPixelStorei(GL_UNPACK_ROW_LENGTH, block->stride(i) / bpp);
 
@@ -124,8 +142,9 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
         glUniform1i(glGetUniformLocation(mShaderProgram, samplerName.c_str()), i);
     }
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-    glUniform1i(glGetUniformLocation(mShaderProgram, "isLimitedRange"), 0);
+    glUniform1i(glGetUniformLocation(mShaderProgram, "isLimitedRange"), (block->getColorRange() == QV2_CR_LIMITED));
     glUniform1i(glGetUniformLocation(mShaderProgram, "isPacked"), CF_IS_PACKED(format));
     glUniform1i(glGetUniformLocation(mShaderProgram, "isSemiPlanar"), CF_IS_SEMI_PLANAR(format));
     glUniform1i(glGetUniformLocation(mShaderProgram, "swapUV"), (format == QV2_CF_NV21));
@@ -134,17 +153,34 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
     float bitScale = 1.0f;
     if (bitDepth == 10) bitScale = 65535.0f / 1023.0f;
     else if (bitDepth == 12) bitScale = 65535.0f / 4095.0f;
-
     if (CF_IS_SEMI_PLANAR(format) || CF_IS_PACKED(format)) bitScale = 1.0f;
     glUniform1f(glGetUniformLocation(mShaderProgram, "bitScale"), bitScale);
-    glUniformMatrix3fv(glGetUniformLocation(mShaderProgram, "cs_matrix"), 1, GL_TRUE, bt709);
+
+    GLint matrixLoc = glGetUniformLocation(mShaderProgram, "cs_matrix");
+    if (block->getColorMatrix() == QV2_CM_BT2020NC ||
+        block->getColorMatrix() == QV2_CM_BT2020C
+    ) {
+        std::cout << "Using BT2020" << std::endl;
+        glUniformMatrix3fv(matrixLoc, 1, GL_TRUE, bt2020);
+    } else {
+        std::cout << "Using BT709 (Default)" << std::endl;
+        glUniformMatrix3fv(matrixLoc, 1, GL_TRUE, bt709);
+    }
+
     draw();
     glFlush();
+    glUseProgram(0);
+    for (int i = 0; i < numPlanes; ++i) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 }
 
 void VideoRenderer::draw() {
+    glDisable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GLint vertexInLoc = glGetAttribLocation(mShaderProgram, "vertexIn");
     glEnableVertexAttribArray(vertexInLoc);

@@ -45,7 +45,11 @@ public:
             int width,
             int height,
             int bitDepth = QV2_DEFAULT_BIT_DEPTH,
-            Qv2ColorFormat colorFormat = QV2_CF_YCBCR420
+            Qv2ColorFormat colorFormat = QV2_CF_YCBCR420,
+            Qv2ColorPrimaries colorPrimaries = QV2_CP_BT709,
+            Qv2ColorTransfer colorTransfer = QV2_CT_BT709,
+            Qv2ColorMatrix colorMatrix = QV2_CM_BT709,
+            Qv2ColorRange colorRange = QV2_CR_FULL
     ) {
         std::cout << "Open file: " << filePath << std::endl;
         mFile.open(filePath, std::ios::binary | std::ios::in);
@@ -59,8 +63,12 @@ public:
         mHeight = height;
         mBitDepth = bitDepth;
         mColorFormat = colorFormat;
-        mCurrentFrame = 0;
+        mColorPrimaries = colorPrimaries;
+        mColorTransfer = colorTransfer;
+        mColorMatrix = colorMatrix;
+        mColorRange = colorRange;
 
+        mCurrentFrame = 0;
         calculatePlaneSize();
         mTotalFrame = calculateTotalFrame();
     };
@@ -81,4 +89,8 @@ protected:
     int64_t mCurrentFrame, mTotalFrame;
     std::ifstream mFile;
     Qv2ColorFormat mColorFormat;
+    Qv2ColorPrimaries mColorPrimaries;
+    Qv2ColorTransfer mColorTransfer;
+    Qv2ColorMatrix mColorMatrix;
+    Qv2ColorRange mColorRange;
 };

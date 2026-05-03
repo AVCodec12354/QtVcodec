@@ -33,4 +33,6 @@ private:
     bool mIsInitialized = false;
     GLuint mShaderProgram, mVertexShader, mFragmentShader;
     GLuint mTextures[MAX_NUM_PLANES] = {0};
+    int mCurrentNumPlanes = 0;
+    int mCurrentWidth = 0, mCurrentHeight = 0;
 };

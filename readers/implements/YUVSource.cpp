@@ -22,7 +22,8 @@ std::shared_ptr<Qv2Buffer> YUVSource::getBuffer() {
             delete[] rawData;
             return nullptr;
         }
-        block->setPlane(i, rawData, stride, elevation);
+        block->setPlane(i, rawData, stride, elevation,
+                        mColorPrimaries, mColorTransfer, mColorMatrix, mColorRange);
     }
     return Qv2Buffer::CreateGraphicBuffer(block);
 }
@@ -33,6 +34,13 @@ void YUVSource::calculatePlaneSize() {
     const int halfHeight = (mHeight + 1) / 2;
 
     switch (mColorFormat) {
+        case QV2_CF_YCBCR400:
+        case QV2_CF_YCBCR400_10LE:
+        case QV2_CF_YCBCR400_12LE:
+            mNumOfPlane = 1;
+            mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
+            break;
+
         case QV2_CF_YCBCR420:
         case QV2_CF_YCBCR420_10LE:
         case QV2_CF_YCBCR420_12LE:
@@ -75,6 +83,16 @@ void YUVSource::calculatePlaneSize() {
             mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
             mPlaneInfo[PLANE_U].config(mWidth, mHeight);
             mPlaneInfo[PLANE_V].config(mWidth, mHeight);
+            break;
+
+        case QV2_CF_YCBCR4444:
+        case QV2_CF_YCBCR4444_10LE:
+        case QV2_CF_YCBCR4444_12LE:
+            mNumOfPlane = 4;
+            mPlaneInfo[PLANE_Y].config(mWidth, mHeight);
+            mPlaneInfo[PLANE_U].config(mWidth, mHeight);
+            mPlaneInfo[PLANE_V].config(mWidth, mHeight);
+            mPlaneInfo[PLANE_A].config(mWidth, mHeight);
             break;
 
         case QV2_CF_YUY2:

@@ -134,6 +134,7 @@ enum Qv2ColorFormat : int32_t {
     QV2_CF_Y412 = 0x0C21  // 12-bit 4:4:4 Packed
 };
 
+#define QV2_SUBSAMPLING_400  0
 #define QV2_SUBSAMPLING_420  1
 #define QV2_SUBSAMPLING_422  2
 #define QV2_SUBSAMPLING_444  3
@@ -159,7 +160,16 @@ enum Qv2ColorFormat : int32_t {
     (fmt) == QV2_CF_Y412)  ? 3 : 0   \
 )
 
+#define QV2_GET_BIT_DEPTH(fmt) ( \
+    ((fmt) >= 0x0C00) ? 12 : \
+    ((fmt) >= 0x0A00) ? 10 : 8 \
+)
+
 #define QV2_GET_SUBSAMPLING(fmt) ( \
+    /* 400 */                      \
+    ((fmt) == QV2_CF_YCBCR400 ||   \
+    (fmt) == QV2_CF_YCBCR400_10LE || \
+    (fmt) == QV2_CF_YCBCR400_12LE) ? QV2_SUBSAMPLING_400 : \
     /* 420 */ \
     ((fmt) == QV2_CF_YCBCR420 || \
      (fmt) == QV2_CF_YCBCR420_10LE || \
@@ -189,57 +199,49 @@ enum Qv2ColorFormat : int32_t {
 do { \
     outW = width; \
     outH = height; \
-    \
-    /* ===== PLANAR ===== */ \
-    if ((fmt) == QV2_CF_YCBCR420 || \
-        (fmt) == QV2_CF_YCBCR420_10LE || \
-        (fmt) == QV2_CF_YCBCR420_12LE) { \
-        if (plane > 0) { \
+    /* 1. MONOCHROME (4:0:0) - Chỉ có Plane 0 */ \
+    if (QV2_GET_SUBSAMPLING(fmt) == QV2_SUBSAMPLING_400) { \
+        if (plane == 0) { outW = width; outH = height; } \
+    } \
+    /* 2. PACKED FORMATS (YUY2, UYVY, Y210, Y410...) - Luôn chỉ có Plane 0 */ \
+    else if (CF_IS_PACKED(fmt)) { \
+        if (plane == 0) { outW = (width + 1) / 2; outH = height; } \
+    } \
+    /* 3. SEMI-PLANAR (NV12, P010, NV16, P210...) - Có 2 Planes */ \
+    else if (CF_IS_SEMI_PLANAR(fmt)) { \
+        if (plane == 0) { \
+            outW = width; outH = height; \
+        } else if (plane == 1) { \
             outW = (width + 1) / 2; \
-            outH = (height + 1) / 2; \
+            if (QV2_GET_SUBSAMPLING(fmt) == QV2_SUBSAMPLING_420) \
+                outH = (height + 1) / 2; \
+            else \
+                outH = height; \
         } \
     } \
-    else if ((fmt) == QV2_CF_YCBCR422 || \
-             (fmt) == QV2_CF_YCBCR422_10LE || \
-             (fmt) == QV2_CF_YCBCR422_12LE) { \
-        if (plane > 0) { \
-            outW = (width + 1) / 2; \
-            outH = height; \
+    /* 4. PLANAR FORMATS (YUV separate) */ \
+    else { \
+        if (plane == 0) { \
+            outW = width; outH = height; \
+        } else if (plane == 1 || plane == 2) { \
+            int sub = QV2_GET_SUBSAMPLING(fmt); \
+            if (sub == QV2_SUBSAMPLING_420) { \
+                outW = (width + 1) / 2; outH = (height + 1) / 2; \
+            } else if (sub == QV2_SUBSAMPLING_422) { \
+                outW = (width + 1) / 2; outH = height; \
+            } else { \
+                outW = width; outH = height; \
+            } \
+        } else if (plane == 3) { \
+            /* Plane Alpha cho 4:4:4:4 */ \
+            if ((fmt) == QV2_CF_YCBCR4444 || \
+            (fmt) == QV2_CF_YCBCR4444_10LE || \
+            (fmt) == QV2_CF_YCBCR4444_12LE) { \
+                outW = width; outH = height; \
+            } \
         } \
-    } \
-    \
-    /* ===== SEMIPLANAR ===== */ \
-    else if ((fmt) == QV2_CF_NV12 || \
-             (fmt) == QV2_CF_NV21 || \
-             (fmt) == QV2_CF_P010 || \
-             (fmt) == QV2_CF_P012) { \
-        if (plane == 1) { \
-            outW = width; \
-            outH = (height + 1) / 2; \
-        } \
-    } \
-    else if ((fmt) == QV2_CF_NV16 || \
-             (fmt) == QV2_CF_P210 || \
-             (fmt) == QV2_CF_P212) { \
-        if (plane == 1) { \
-            outW = width; \
-            outH = height; \
-        } \
-    } \
-    \
-    /* ===== PACKED ===== */ \
-    else if ((fmt) == QV2_CF_YUY2 || \
-             (fmt) == QV2_CF_UYVY || \
-             (fmt) == QV2_CF_Y210 || \
-             (fmt) == QV2_CF_Y212 || \
-             (fmt) == QV2_CF_Y410 || \
-             (fmt) == QV2_CF_Y412) { \
-        /* always 1 plane */ \
-        outW = width; \
-        outH = height; \
     } \
 } while(0)
-
 
 enum Qv2ColorRange : int32_t {
     QV2_CR_UNKNOWN = -1,
