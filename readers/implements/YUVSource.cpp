@@ -25,6 +25,7 @@ std::shared_ptr<Qv2Buffer> YUVSource::getBuffer() {
         block->setPlane(i, rawData, stride, elevation,
                         mColorPrimaries, mColorTransfer, mColorMatrix, mColorRange);
     }
+    mCurrentFrame++;
     return Qv2Buffer::CreateGraphicBuffer(block);
 }
 

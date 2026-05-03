@@ -19,13 +19,17 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void onPlaying(long currentFrame, long totalFrame);
+    void onFinished();
+
 private:
     void parseFileNameAndSetUI(const QString &filePath);
 
     std::unique_ptr<Ui::MainWindow> ui;
     QString lastInputDir, lastOutputDir, lastReconstructedDir;
 
-    std::unique_ptr<EncoderTabViewModel> encoderTabViewModel;
+    std::unique_ptr<EncoderTabViewModel> mEncoderTabViewModel;
     void resetEncoderUI();
     void setValidatorForEditText();
     void connectToDecoderUI(MainWindow* window);

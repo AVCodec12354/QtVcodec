@@ -14,23 +14,35 @@ MainWindow::MainWindow(QWidget *parent)
     QTLogger::setOutput(ui->text_show_log);
     setValidatorForEditText();
     connectToEncoderUI(this);
-    encoderTabViewModel = std::make_unique<EncoderTabViewModel>(ui->openGLWidget);
+    mEncoderTabViewModel = std::make_unique<EncoderTabViewModel>(ui->openGLWidget);
+    connect(mEncoderTabViewModel.get(), &EncoderTabViewModel::playing,
+            this, &MainWindow::onPlaying);
+    connect(mEncoderTabViewModel.get(), &EncoderTabViewModel::finished,
+            this, &MainWindow::onFinished);
+
+    ui->matrix->setCurrentIndex(1);
+    ui->range->setCurrentIndex(1);
+    QString primaries = ui->primaries->currentText();
+    mEncoderTabViewModel->setPrimaries(primaries.toStdString());
+    QString transfer = ui->transfer->currentText();
+    mEncoderTabViewModel->setTransfer(transfer.toStdString());
+    QString matrix = ui->matrix->currentText();
+    mEncoderTabViewModel->setMatrix(matrix.toStdString());
+    QString range = ui->range->currentText();
+    mEncoderTabViewModel->setRange(range.toStdString());
 }
 
-//void MainWindow::onPlaying(long currentFrame, long totalFrame) {
-//    if (videoRenderer) {
-//        int progress = static_cast<int>((currentFrame * 100) / totalFrame);
-//        ui->progressBar->setValue(progress);
-//        ui->percent_on_progressBar->setText(QString::number(progress) + "%");
-//        ui->encoded_frame->setText("Frames: " + QString::number(currentFrame) + "/" + QString::number(totalFrame));
-//    }
-//}
-//
-//void MainWindow::onFinished() {
-//    ui->btn_start->setEnabled(true);
-//    resetEncoderUI();
-//    QTInfo("Encoder", "Playback/Encoding finished.");
-//}
+void MainWindow::onPlaying(long currentFrame, long totalFrame) {
+    int progress = static_cast<int>((currentFrame * 100) / totalFrame);
+    ui->progressBar->setValue(progress);
+    ui->percent_on_progressBar->setText(QString::number(progress) + "%");
+    ui->encoded_frame->setText("Frames: " + QString::number(currentFrame) + "/" + QString::number(totalFrame));
+}
+
+void MainWindow::onFinished() {
+    ui->btn_start->setEnabled(true);
+    QTInfo("Encoder", "Playback/Encoding finished.");
+}
 
 void MainWindow::parseFileNameAndSetUI(const QString &filePath) {
     QString width = "1920", height = "1080", bit = "8", fps = "30";
@@ -79,8 +91,8 @@ void MainWindow::resetEncoderUI() {
     ui->height_of_tile->setText("");
     ui->primaries->setCurrentIndex(0);
     ui->transfer->setCurrentIndex(0);
-    ui->matrix->setCurrentIndex(0);
-    ui->range->setCurrentIndex(0);
+    ui->matrix->setCurrentIndex(1);
+    ui->range->setCurrentIndex(1);
     ui->mastering_display->setText("");
     ui->content_light_level->setText("");
 }
@@ -145,7 +157,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
     connect(ui->btn_start, &QPushButton::clicked, window, [this](){
         if (!ui->input_path->text().isEmpty()) {
             std::string inputPath = ui->input_path->text().toStdString();
-            encoderTabViewModel->start(inputPath);
+            mEncoderTabViewModel->start(inputPath);
             ui->btn_start->setEnabled(false);
         } else {
             QTError("Encoder", "Input path is empty!");
@@ -155,7 +167,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         QTDebug("Encoder", "btn_save_config clicked!");
     });
     connect(ui->btn_stop, &QPushButton::clicked, window, [this](){
-        encoderTabViewModel->stop();
+        mEncoderTabViewModel->stop();
         ui->btn_start->setEnabled(true);
     });
     connect(ui->btn_reset, &QPushButton::clicked, window, [this](){
@@ -170,7 +182,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid width input!");
         } else {
-            encoderTabViewModel->setWidth(value);
+            mEncoderTabViewModel->setWidth(value);
         }
     });
     connect(ui->height, &QLineEdit::textChanged, window, [this](const QString &text){
@@ -179,7 +191,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid height input!");
         } else {
-            encoderTabViewModel->setHeight(value);
+            mEncoderTabViewModel->setHeight(value);
         }
     });
     connect(ui->fps, &QLineEdit::textChanged, window, [this](const QString &text){
@@ -188,7 +200,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid FPS input!");
         } else {
-            encoderTabViewModel->setFPS(value);
+            mEncoderTabViewModel->setFPS(value);
         }
     });
     connect(ui->bitdepth, &QComboBox::currentTextChanged,
@@ -198,18 +210,18 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
                 if (!isSuccess) {
                     QTError("Encoder", "Invalid bitdepth input!");
                 } else {
-                    encoderTabViewModel->setBitDepth(value);
+                    mEncoderTabViewModel->setBitDepth(value);
                 }
             });
     connect(ui->colorspace, &QComboBox::currentTextChanged,
             this, [this](const QString &text){
-                encoderTabViewModel->setPixelFormat(text.toStdString());
+                mEncoderTabViewModel->setPixelFormat(text.toStdString());
             });
 
     // Bitrate and Quality
     connect(ui->enableBitrateABR, &QCheckBox::toggled,
             this, [this](bool checked){
-                encoderTabViewModel->enableBitrateABR(checked);
+                mEncoderTabViewModel->enableBitrateABR(checked);
             });
     connect(ui->qp, &QLineEdit::textChanged, window, [this](const QString &text){
         bool isSuccess;
@@ -217,12 +229,12 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid Quantization Parameter input!");
         } else {
-            encoderTabViewModel->setQuantizationParameters(value);
+            mEncoderTabViewModel->setQuantizationParameters(value);
         }
     });
     connect(ui->profile, &QComboBox::currentTextChanged,
             this, [this](const QString &text){
-                encoderTabViewModel->setProfile(text.toStdString());
+                mEncoderTabViewModel->setProfile(text.toStdString());
             });
     connect(ui->level, &QComboBox::currentTextChanged,
             this, [this](const QString &text){
@@ -231,12 +243,12 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
                 if (!isSuccess) {
                     QTError("Encoder", "Invalid level input!");
                 } else {
-                    encoderTabViewModel->setLevel(value);
+                    mEncoderTabViewModel->setLevel(value);
                 }
             });
     connect(ui->family, &QComboBox::currentTextChanged,
             this, [this](const QString &text){
-                encoderTabViewModel->setFamily(text.toStdString());
+                mEncoderTabViewModel->setFamily(text.toStdString());
             });
     connect(ui->band_variable, &QComboBox::currentTextChanged,
             this, [this](const QString &text){
@@ -245,7 +257,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
                 if (!isSuccess) {
                     QTError("Encoder", "Invalid band input!");
                 } else {
-                    encoderTabViewModel->setBand(value);
+                    mEncoderTabViewModel->setBand(value);
                 }
             });
 
@@ -256,7 +268,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid Max CU input!");
         } else {
-            encoderTabViewModel->setMaxCU(value);
+            mEncoderTabViewModel->setMaxCU(value);
         }
     });
     connect(ui->speed_cu, &QLineEdit::textChanged, window, [this](const QString &text){
@@ -265,7 +277,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid Speed CU input!");
         } else {
-            encoderTabViewModel->setSpeedCU(value);
+            mEncoderTabViewModel->setSpeedCU(value);
         }
     });
     connect(ui->width_of_tile, &QLineEdit::textChanged, window, [this](const QString &text){
@@ -274,7 +286,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid Width Of Tile input!");
         } else {
-            encoderTabViewModel->setWidthOfTile(value);
+            mEncoderTabViewModel->setWidthOfTile(value);
         }
     });
     connect(ui->height_of_tile, &QLineEdit::textChanged, window, [this](const QString &text){
@@ -283,26 +295,26 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid Height Of Tile input!");
         } else {
-            encoderTabViewModel->setHeightOfTile(value);
+            mEncoderTabViewModel->setHeightOfTile(value);
         }
     });
 
     // Color Metadata
     connect(ui->primaries, &QComboBox::currentTextChanged,
             this, [this](const QString &text) {
-                encoderTabViewModel->setPrimaries(text.toStdString());
+                mEncoderTabViewModel->setPrimaries(text.toStdString());
             });
     connect(ui->transfer, &QComboBox::currentTextChanged,
             this, [this](const QString &text) {
-                encoderTabViewModel->setTransfer(text.toStdString());
+                mEncoderTabViewModel->setTransfer(text.toStdString());
             });
     connect(ui->matrix, &QComboBox::currentTextChanged,
             this, [this](const QString &text) {
-                encoderTabViewModel->setMatrix(text.toStdString());
+                mEncoderTabViewModel->setMatrix(text.toStdString());
             });
     connect(ui->range, &QComboBox::currentTextChanged,
             this, [this](const QString &text) {
-                encoderTabViewModel->setRange(text.toStdString());
+                mEncoderTabViewModel->setRange(text.toStdString());
             });
     connect(ui->mastering_display, &QLineEdit::textChanged, window, [this](const QString &text){
         bool isSuccess;
@@ -310,7 +322,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid Mastering Display input!");
         } else {
-            encoderTabViewModel->setMasteringDisplay(value);
+            mEncoderTabViewModel->setMasteringDisplay(value);
         }
     });
     connect(ui->content_light_level, &QLineEdit::textChanged, window, [this](const QString &text){
@@ -319,7 +331,7 @@ void MainWindow::connectToEncoderUI(MainWindow* window) {
         if (!isSuccess) {
             QTError("Encoder", "Invalid Content Light Level input!");
         } else {
-            encoderTabViewModel->setContentLightLevel(value);
+            mEncoderTabViewModel->setContentLightLevel(value);
         }
     });
 }

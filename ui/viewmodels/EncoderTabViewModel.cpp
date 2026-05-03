@@ -5,27 +5,28 @@
 #include <Y4MSource.h>
 #include <chrono>
 
-EncoderTabViewModel::EncoderTabViewModel(VideoGLWidget *glWidget) {
-    mVideoWidget = qobject_cast<VideoGLWidget*>(glWidget);
-    qRegisterMetaType<std::shared_ptr<Qv2Buffer>>("std::shared_ptr<Qv2Buffer>");
-}
-
 EncoderTabViewModel::~EncoderTabViewModel() {
     mIsRunning = false;
     if (mRenderThread.joinable()) {
         mRenderThread.join();
     }
+    if (mVideoWidget) {
+        delete mVideoWidget;
+    }
 }
 
 void EncoderTabViewModel::start(const std::string &file) {
     if (mIsRunning) return;
+    if (mRenderThread.joinable()) { mRenderThread.join(); }
+
     if (std::filesystem::path(file).extension() == ".y4m") {
         mRawSource = std::make_shared<Y4MSource>();
     } else {
         mRawSource = std::make_shared<YUVSource>();
     }
 
-    mRawSource->setDataSource(file, mWidth, mHeight, mBitDepth, mPixelFormat);
+    mRawSource->setDataSource(file, mWidth, mHeight, mBitDepth, mPixelFormat,
+                              mColorPrimaries, mColorTransfer, mColorMatrix, mColorRange);
     mIsRunning = true;
     int fps = (mFPS > 0) ? mFPS : 25;
     auto frameDuration = std::chrono::milliseconds(1000 / fps);
@@ -39,10 +40,12 @@ void EncoderTabViewModel::start(const std::string &file) {
                 QMetaObject::invokeMethod(mVideoWidget, "bindBuffer",
                                           Qt::QueuedConnection,
                                           Q_ARG(std::shared_ptr<Qv2Buffer>, frame));
+                emit playing(mRawSource->getCurrentFrame(), mRawSource->getTotalFrame());
                 // mEncoder->encodeFrame(frame);
             } else {
                 QTInfo("EncoderTabViewModel", "EOS received");
                 mIsRunning = false;
+                emit finished();
                 break;
             }
             std::this_thread::sleep_until(nextFrameTime);

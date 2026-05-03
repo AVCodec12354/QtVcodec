@@ -11,12 +11,18 @@
 #include <Qv2ComponentFactory.h>
 #include <Qv2Source.h>
 #include <VideoGLWidget.h>
+#include <QObject>
 
 using namespace std;
 
-class EncoderTabViewModel {
+class EncoderTabViewModel : public QObject {
+    Q_OBJECT
 public:
-    EncoderTabViewModel(VideoGLWidget *glWidget);
+    EncoderTabViewModel(VideoGLWidget *glWidget,
+                        QObject *parent = nullptr) : QObject(parent) {
+        mVideoWidget = qobject_cast<VideoGLWidget*>(glWidget);
+        qRegisterMetaType<std::shared_ptr<Qv2Buffer>>("std::shared_ptr<Qv2Buffer>");
+    };
     ~EncoderTabViewModel();
 
     void start(const std::string &file);
@@ -47,6 +53,10 @@ public:
     void setRange(string value);
     void setMasteringDisplay(int value) { mMasteringDisplay = value; }
     void setContentLightLevel(int value) { mContentLightLevel = value; }
+
+signals:
+    void playing(long currentFrame, long totalFrame);
+    void finished();
 
 private:
     std::thread mRenderThread;
