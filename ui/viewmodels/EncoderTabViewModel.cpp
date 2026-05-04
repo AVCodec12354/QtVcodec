@@ -25,8 +25,7 @@ void EncoderTabViewModel::start(const std::string &file) {
         mRawSource = std::make_shared<YUVSource>();
     }
 
-    mRawSource->setDataSource(file, mWidth, mHeight, mBitDepth, mPixelFormat,
-                              mColorPrimaries, mColorTransfer, mColorMatrix, mColorRange);
+    mRawSource->setDataSource(file, mWidth, mHeight, mBitDepth, mPixelFormat, mColorAspect);
     mIsRunning = true;
     int fps = (mFPS > 0) ? mFPS : 25;
     auto frameDuration = std::chrono::milliseconds(1000 / fps);
@@ -79,17 +78,17 @@ void EncoderTabViewModel::setFamily(string value) {
 }
 
 void EncoderTabViewModel::setPrimaries(string value) {
-    mColorPrimaries = getValue(PrimariesMap, value, QV2_CP_UNKNOWN);
+    mColorAspect.primaries = getValue(PrimariesMap, value, QV2_CP_UNKNOWN);
 }
 
 void EncoderTabViewModel::setTransfer(string value) {
-    mColorTransfer = getValue(TransferMap, value, QV2_CT_UNKNOWN);
+    mColorAspect.transfer = getValue(TransferMap, value, QV2_CT_UNKNOWN);
 }
 
 void EncoderTabViewModel::setMatrix(string value) {
-    mColorMatrix = getValue(MatrixMap, value, QV2_CM_UNKNOWN);
+    mColorAspect.matrix = getValue(MatrixMap, value, QV2_CM_UNKNOWN);
 }
 
 void EncoderTabViewModel::setRange(string value) {
-    mColorRange = (value == "full") ? QV2_CR_FULL : QV2_CR_LIMITED;
+    mColorAspect.range = (value == "full") ? QV2_CR_FULL : QV2_CR_LIMITED;
 }

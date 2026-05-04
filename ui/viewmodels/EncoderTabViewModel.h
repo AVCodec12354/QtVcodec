@@ -72,10 +72,7 @@ private:
     Qv2APVProfile mProfile;
     Qv2APVLevel mLevel;
     Qv2APVFamily mFamily;
-    Qv2ColorPrimaries mColorPrimaries;
-    Qv2ColorTransfer mColorTransfer;
-    Qv2ColorMatrix mColorMatrix;
-    Qv2ColorRange mColorRange;
+    Qv2ColorAspect mColorAspect;
 };
 
 // ================================

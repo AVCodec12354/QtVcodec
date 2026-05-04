@@ -14,7 +14,6 @@ inline const char *vertexShader = R"(
 )";
 
 static inline void generateFragmentShader(std::string &shaderCode, int numOfPlane) {
-    // Phần đầu: Khai báo các biến dùng chung và hàm chuyển đổi màu
     shaderCode = R"(
         varying vec2 textureOut;
 

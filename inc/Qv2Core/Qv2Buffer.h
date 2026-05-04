@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 #include <Qv2Constants.h>
+#include <Qv2Metadata.h>
 
 enum Qv2NumPlane : uint32_t {
     PLANE_Y = 0,
@@ -41,7 +42,7 @@ private:
 class Qv2Block2D {
 public:
     Qv2Block2D(uint32_t width, uint32_t height, uint32_t format, uint32_t bitDepth)
-            : mWidth(width), mHeight(height), mFormat(format), mBitDepth(bitDepth), mNumPlanes(0) {
+        : mWidth(width), mHeight(height), mFormat(format), mBitDepth(bitDepth), mNumPlanes(0) {
         for (uint32_t i = 0; i < MAX_NUM_PLANES; ++i) {
             mAddr[i] = nullptr;
             mStride[i] = 0;
@@ -63,10 +64,7 @@ public:
     uint32_t format() const { return mFormat; }
     uint32_t bitDepth() const { return mBitDepth; }
     uint32_t numPlanes() const { return mNumPlanes; }
-    Qv2ColorPrimaries getColorPrimaries() const { return mColorPrimaries; }
-    Qv2ColorTransfer getColorTransfer() const { return mColorTransfer; }
-    Qv2ColorMatrix getColorMatrix() const { return mColorMatrix; }
-    Qv2ColorRange getColorRange() const { return mColorRange; }
+    Qv2ColorAspect getColorAspect() const { return mColorAspect; }
 
     uint8_t* addr(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mAddr[index] : nullptr; }
     uint32_t stride(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mStride[index] : 0; }
@@ -77,10 +75,7 @@ public:
             uint8_t* addr,
             uint32_t stride,
             uint32_t elevation,
-            Qv2ColorPrimaries colorPrimaries = QV2_CP_BT709,
-            Qv2ColorTransfer colorTransfer = QV2_CT_BT709,
-            Qv2ColorMatrix colorMatrix = QV2_CM_BT709,
-            Qv2ColorRange colorRange = QV2_CR_FULL
+            Qv2ColorAspect colorAspect = Qv2ColorAspect()
     ) {
         if (index < MAX_NUM_PLANES) {
             mAddr[index] = addr;
@@ -88,10 +83,7 @@ public:
             mElevation[index] = elevation;
             if (index >= mNumPlanes) mNumPlanes = index + 1;
         }
-        mColorPrimaries = colorPrimaries;
-        mColorTransfer = colorTransfer;
-        mColorMatrix = colorMatrix;
-        mColorRange = colorRange;
+        mColorAspect = mColorAspect;
     }
 
 private:
@@ -103,10 +95,7 @@ private:
     uint8_t* mAddr[MAX_NUM_PLANES];
     uint32_t mStride[MAX_NUM_PLANES];
     uint32_t mElevation[MAX_NUM_PLANES];
-    Qv2ColorPrimaries mColorPrimaries;
-    Qv2ColorTransfer mColorTransfer;
-    Qv2ColorMatrix mColorMatrix;
-    Qv2ColorRange mColorRange;
+    Qv2ColorAspect mColorAspect;
 };
 
 /**

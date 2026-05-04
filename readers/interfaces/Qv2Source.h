@@ -7,6 +7,7 @@
 
 #include <Qv2Buffer.h>
 #include <Qv2Constants.h>
+#include <Qv2Metadata.h>
 
 #define MAX_PLANE 4
 #define QV2_DEFAULT_BIT_DEPTH 8
@@ -46,10 +47,7 @@ public:
             int height,
             int bitDepth = QV2_DEFAULT_BIT_DEPTH,
             Qv2ColorFormat colorFormat = QV2_CF_YCBCR420,
-            Qv2ColorPrimaries colorPrimaries = QV2_CP_BT709,
-            Qv2ColorTransfer colorTransfer = QV2_CT_BT709,
-            Qv2ColorMatrix colorMatrix = QV2_CM_BT709,
-            Qv2ColorRange colorRange = QV2_CR_FULL
+            Qv2ColorAspect colorAspect = Qv2ColorAspect()
     ) {
         std::cout << "Open file: " << filePath << std::endl;
         mFile.open(filePath, std::ios::binary | std::ios::in);
@@ -63,10 +61,7 @@ public:
         mHeight = height;
         mBitDepth = bitDepth;
         mColorFormat = colorFormat;
-        mColorPrimaries = colorPrimaries;
-        mColorTransfer = colorTransfer;
-        mColorMatrix = colorMatrix;
-        mColorRange = colorRange;
+        mColorAspect = colorAspect;
 
         mCurrentFrame = 0;
         calculatePlaneSize();
@@ -89,8 +84,5 @@ protected:
     int64_t mCurrentFrame, mTotalFrame;
     std::ifstream mFile;
     Qv2ColorFormat mColorFormat;
-    Qv2ColorPrimaries mColorPrimaries;
-    Qv2ColorTransfer mColorTransfer;
-    Qv2ColorMatrix mColorMatrix;
-    Qv2ColorRange mColorRange;
+    Qv2ColorAspect mColorAspect;
 };

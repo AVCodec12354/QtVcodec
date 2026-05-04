@@ -144,7 +144,7 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-    glUniform1i(glGetUniformLocation(mShaderProgram, "isLimitedRange"), (block->getColorRange() == QV2_CR_LIMITED));
+    glUniform1i(glGetUniformLocation(mShaderProgram, "isLimitedRange"), (block->getColorAspect().range == QV2_CR_LIMITED));
     glUniform1i(glGetUniformLocation(mShaderProgram, "isPacked"), CF_IS_PACKED(format));
     glUniform1i(glGetUniformLocation(mShaderProgram, "isSemiPlanar"), CF_IS_SEMI_PLANAR(format));
     glUniform1i(glGetUniformLocation(mShaderProgram, "swapUV"), (format == QV2_CF_NV21));
@@ -157,8 +157,8 @@ void VideoRenderer::renderFrame(std::shared_ptr<Qv2Buffer> buffer) {
     glUniform1f(glGetUniformLocation(mShaderProgram, "bitScale"), bitScale);
 
     GLint matrixLoc = glGetUniformLocation(mShaderProgram, "cs_matrix");
-    if (block->getColorMatrix() == QV2_CM_BT2020NC ||
-        block->getColorMatrix() == QV2_CM_BT2020C
+    if (block->getColorAspect().matrix == QV2_CM_BT2020NC ||
+        block->getColorAspect().matrix == QV2_CM_BT2020C
     ) {
         std::cout << "Using BT2020" << std::endl;
         glUniformMatrix3fv(matrixLoc, 1, GL_TRUE, bt2020);
