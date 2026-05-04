@@ -65,6 +65,7 @@ public:
     uint32_t bitDepth() const { return mBitDepth; }
     uint32_t numPlanes() const { return mNumPlanes; }
     Qv2ColorAspect getColorAspect() const { return mColorAspect; }
+    Qv2HdrStaticMetadata getHDRStaticMetaData() const { return mHdrMetadata; }
 
     uint8_t* addr(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mAddr[index] : nullptr; }
     uint32_t stride(uint32_t index) const { return (index < MAX_NUM_PLANES) ? mStride[index] : 0; }
@@ -95,6 +96,7 @@ private:
     uint8_t* mAddr[MAX_NUM_PLANES];
     uint32_t mStride[MAX_NUM_PLANES];
     uint32_t mElevation[MAX_NUM_PLANES];
+    Qv2HdrStaticMetadata mHdrMetadata;
     Qv2ColorAspect mColorAspect;
 };
 
