@@ -21,8 +21,6 @@ struct Qv2Work {
     uint32_t flags = QV2_WORK_FLAG_NONE;
     uint64_t frameIdx = 0;
     int result = 0;
-    Qv2HdrStaticMetadata hdrMetadata;
-    Qv2ColorAspect colorAspects;
 };
 
 #endif // QV2WORK_H

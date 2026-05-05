@@ -3020,7 +3020,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>Colorspace:</string>
+                     <string>Pixel Format:</string>
                     </property>
                    </widget>
                   </item>
@@ -3038,6 +3038,7 @@
                     <property name="sizeAdjustPolicy">
                      <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
                     </property>
+                    <!-- Planar Formats (8-bit) -->
                     <item>
                      <property name="text">
                       <string>YCbCr400</string>
@@ -3045,7 +3046,7 @@
                     </item>
                     <item>
                      <property name="text">
-                      <string>None</string>
+                      <string>YCbCr420</string>
                      </property>
                     </item>
                     <item>
@@ -3063,9 +3064,123 @@
                       <string>YCbCr4444</string>
                      </property>
                     </item>
+                    <!-- Planar Formats (10-bit LE) -->
                     <item>
                      <property name="text">
-                      <string>YCbCR_PLANAR2</string>
+                      <string>YCbCr400_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr420_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr422_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr444_10LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr4444_10LE</string>
+                     </property>
+                    </item>
+                    <!-- Planar Formats (12-bit LE) -->
+                    <item>
+                     <property name="text">
+                      <string>YCbCr400_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr420_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr422_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr444_12LE</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>YCbCr4444_12LE</string>
+                     </property>
+                    </item>
+                    <!-- Semi-Planar Formats -->
+                    <item>
+                     <property name="text">
+                      <string>NV12</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>NV21</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>NV16</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P010</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P210</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P012</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>P212</string>
+                     </property>
+                    </item>
+                    <!-- Packed Formats -->
+                    <item>
+                     <property name="text">
+                      <string>YUY2</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>UYVY</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y210</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y410</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y212</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Y412</string>
                      </property>
                     </item>
                    </widget>
@@ -3787,7 +3902,7 @@
                 <item>
                  <layout class="QHBoxLayout" name="Layout10" stretch="1,1">
                   <item>
-                   <layout class="QHBoxLayout" name="Primaries" stretch="1,1">
+                   <layout class="QHBoxLayout" name="Primaries" stretch="1,0">
                     <item>
                      <widget class="QLabel" name="label_20">
                       <property name="sizePolicy">
